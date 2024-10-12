@@ -6,33 +6,17 @@
           Defects
         </v-card-title>
         <v-card-text>
-          <v-list
-            v-if="!loading"
-          >
-            <v-list-item
+          <div v-if="!loading">
+            <Defect
               v-for="defect in defects"
               :key="defect.id"
-            >
-              <v-list-item-title>
-                {{ defect.name }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{ defect.location }}
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-          <v-progress-circular
-            v-if="loading"
-            indeterminate
-          />
+              :defect="defect"
+            />
+          </div>
+          <v-progress-circular v-if="loading" indeterminate />
         </v-card-text>
         <v-card-actions>
-          <v-btn
-            color="primary"
-            @click="refetch()"
-          >
-            Refresh
-          </v-btn>
+          <v-btn color="primary" @click="refetch()">Refresh</v-btn>
         </v-card-actions>
       </v-card>
 
@@ -110,7 +94,7 @@
 
   function refetch () {
     loading.value = true
-    fetch('http://localhost:8080/defects')
+    fetch('http://localhost:8080/v1/defects')
       .then(response => response.json())
       .then(data => {
         defects.value = data
