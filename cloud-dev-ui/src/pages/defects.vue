@@ -7,11 +7,13 @@
         </v-card-title>
         <v-card-text>
           <div v-if="!loading">
-            <Defect
+            <v-expansion-panels>
+              <Defect
               v-for="defect in defects"
               :key="defect.id"
-              :defect="defect"
-            />
+                :defect="defect"
+              />
+            </v-expansion-panels> 
           </div>
           <v-progress-circular v-if="loading" indeterminate />
         </v-card-text>

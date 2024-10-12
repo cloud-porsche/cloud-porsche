@@ -1,31 +1,29 @@
 <template>
-  <v-expansion-panels>
-    <v-expansion-panel>
-      <v-expansion-panel-title>
-          <v-row no-gutters>
-            <v-col class="d-flex justify-start" cols="6">
-              <span class="font-weight-bold">{{ defect.name }}</span>
-            </v-col>
-            <v-col cols="6" class="text-right">
-              <span> {{ defect.descriptionShort }} </span>
-            </v-col>
-          </v-row>
-      </v-expansion-panel-title>
-
-      <v-expansion-panel-text>
+  <v-expansion-panel>
+    <v-expansion-panel-title>
         <v-row no-gutters>
-          <v-col cols="12">
-            <p><strong>Long Description:</strong> {{ defect.descriptionLong }}</p>
-            <p><strong>Location:</strong> {{ defect.location }}</p>
+          <v-col class="d-flex justify-start" cols="6">
+            <span class="font-weight-bold">{{ defect.name }}</span>
+          </v-col>
+          <v-col cols="6" class="text-right">
+            <span> {{ defect.descriptionShort }} </span>
           </v-col>
         </v-row>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+    </v-expansion-panel-title>
+
+    <v-expansion-panel-text>
+      <v-row no-gutters>
+        <v-col cols="12">
+          <p><strong>Long Description:</strong> {{ defect.descriptionLong }}</p>
+          <p><strong>Location:</strong> {{ defect.location }}</p>
+        </v-col>
+      </v-row>
+    </v-expansion-panel-text>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts" setup>
-const props = defineProps({
+defineProps({
   defect: Object
 })
 </script>
