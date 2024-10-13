@@ -1,0 +1,23 @@
+{
+  "name": "@cloud-porsche/types",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "publishConfig": {
+    "registry": "https://europe-west6-npm.pkg.dev/cloud-porsche/cloud-dev-npm/"
+  },
+  "scripts": {
+    "build": "tsc",
+    "artifactregistry-login": "npx google-artifactregistry-auth",
+    "publish": "npm publish --registry https://europe-west6-npm.pkg.dev/cloud-porsche/cloud-dev-npm/"
+  },
+  "dependencies": {
+    "@types/node": "^20.14.10",
+    "typescript": "^5.1.3"
+  },
+  "files": [
+    "dist"
+  ]
+}
