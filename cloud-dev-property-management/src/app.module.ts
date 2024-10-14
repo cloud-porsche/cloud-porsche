@@ -13,7 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'property-management',
+      database: 'db/property-management',
       autoLoadEntities: true,
       synchronize: true, // DO NOT USE IN PRODUCTION
     }),
