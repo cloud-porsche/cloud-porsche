@@ -25,7 +25,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./cloud-dev-property-management/property-management:/cloud-dev-property-management/property-management
+      - ./cloud-dev-property-management/property-management:/property-management
     environment:
       - PORT=8080
     networks:
