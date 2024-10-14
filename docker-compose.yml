@@ -1,0 +1,35 @@
+name: cloud-porsche-management
+
+networks:
+  cloud-porsche:
+    driver: bridge
+
+services:
+  ui:
+    image: cloud-porsche-ui
+    build:
+      context: .
+      dockerfile: ./cloud-dev-ui/Dockerfile
+    ports:
+      - "3000:8080"
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+  property-management:
+    image: cloud-porsche-management
+    build:
+      context: .
+      dockerfile: ./cloud-dev-property-management/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./cloud-dev-property-management/db:/db
+    environment:
+      - PORT=8080
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/v1/" ]

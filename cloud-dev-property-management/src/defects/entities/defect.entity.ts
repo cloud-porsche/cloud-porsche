@@ -5,16 +5,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-
-export enum DefectStates {
-  OPEN,
-  IN_WORK,
-  REJECTED,
-  DONE,
-}
+import { DefectStates, IDefect } from '@cloud-porsche/types';
 
 @Entity()
-export class Defect extends BaseEntity {
+export class Defect extends BaseEntity implements IDefect {
   @PrimaryGeneratedColumn()
   id: number;
   @Column()

@@ -5,7 +5,9 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --fix --ignore-path .gitignore"
+    "lint": "eslint . --fix --ignore-path .gitignore",
+    "link-types": "pnpm link ../cloud-dev-types",
+    "unlink-types": "pnpm unlink ../cloud-dev-types"
   },
   "dependencies": {
     "@mdi/font": "7.4.47",
@@ -15,6 +17,7 @@
     "vuetify": "^3.6.11"
   },
   "devDependencies": {
+    "@cloud-porsche/types": "^1.0.0",
     "@babel/types": "^7.24.7",
     "@types/node": "^20.14.10",
     "@vitejs/plugin-vue": "^5.0.5",

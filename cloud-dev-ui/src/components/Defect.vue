@@ -23,9 +23,11 @@
 </template>
 
 <script lang="ts" setup>
-defineProps({
-  defect: Object
-})
+import { IDefect } from '@cloud-porsche/types';
+
+defineProps<{
+  defect: IDefect,
+}>()
 </script>
 
 <style scoped>
