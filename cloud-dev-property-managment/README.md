@@ -3,6 +3,8 @@
 - Use pnpm for package management. Install it globally with `npm install -g pnpm`.
 - Use Prettier for code formatting. The configuration is in the `.prettierrc` file.
 - Tested with Node `>=20.12`
+- For local development install the `@cloud-porsche/types` package with `npm run link-types`.  
+  This will create a symlink to the `@cloud-porsche/types` package in the `node_modules` folder.
 
 ### IDE Configurations
 
