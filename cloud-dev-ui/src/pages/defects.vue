@@ -2,14 +2,16 @@
   <v-responsive>
     <v-container>
       <v-card>
-        <v-card-title> Defects </v-card-title>
+        <v-card-title>
+          Defects
+        </v-card-title>
         <v-card-text>
           <div v-if="!loading">
             <v-expansion-panels>
               <Defect
-                v-for="defect in defects"
-                :key="defect.id"
-                :defect="defect"
+              v-for="defect in defects"
+              :key="defect.id"
+              :defect="defect"
               />
             </v-expansion-panels>
           </div>
@@ -22,74 +24,56 @@
 
       <v-row>
         <v-col class="mt-4 text-left">
-          <v-btn @click="dialog = true"> Add Defect </v-btn>
+          <v-btn @click="openDialog">
+            Add Defect
+          </v-btn>
         </v-col>
       </v-row>
 
-      <v-dialog v-model="dialog" max-width="600">
-        <v-card>
-          <v-card-title> Add New Defect </v-card-title>
-          <v-card-text>
-            <v-row dense>
-              <v-col cols="12" md="6">
-                <v-text-field label="Defect Name*" required />
-              </v-col>
-
-              <v-col cols="12" md="6">
-                <v-text-field label="Location*" required />
-              </v-col>
-
-              <v-col cols="12">
-                <v-text-field label="Short Description*" required />
-              </v-col>
-
-              <v-col cols="12">
-                <v-textarea label="Long Description*" required />
-              </v-col>
-
-              <v-col cols="12">
-                <v-date-input label="Select a date"></v-date-input>
-              </v-col>
-            </v-row>
-
-            <small class="text-caption">*indicates required field</small>
-          </v-card-text>
-
-          <v-divider />
-
-          <v-card-actions>
-            <v-spacer />
-            <v-btn text="Cancel" @click="dialog = false">Cancel</v-btn>
-            <v-btn color="primary" @click="saveDefect">Save</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+      <!-- Add the custom component here -->
+      <AddDefectPopup
+        v-model="dialog"
+        @save="handleSave"
+        @close="dialog = false"
+      />
     </v-container>
   </v-responsive>
 </template>
 
 <script lang="ts" setup>
-import { IDefect } from "@cloud-porsche/types";
+import { IDefect } from '@cloud-porsche/types';
+import { ref } from 'vue'
 
-const loading = ref(true);
+const loading = ref(true)
 const defects = ref<IDefect[]>([]);
-const dialog = ref(false);
-const menu = ref(false);
-const date = ref(null);
+const dialog = ref(false)
 
-refetch();
-
-function saveDefect() {
-  dialog.value = false;
+function refetch () {
+  loading.value = true
+  fetch('http://localhost:8080/v1/defects')
+    .then(response => response.json())
+    .then(data => {
+      defects.value = data as IDefect[]
+      loading.value = false
+    })
 }
 
-function refetch() {
-  loading.value = true;
-  fetch("http://localhost:8080/v1/defects")
-    .then((response) => response.json())
-    .then((data) => {
-      defects.value = data;
-      loading.value = false;
-    });
+function openDialog() {
+  dialog.value = true
 }
+
+function handleSave(newDefect: IDefect) {
+  fetch("http://localhost:8080/v1/defects", {
+    method: "POST",
+    body: JSON.stringify(newDefect),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+  defects.value.push(newDefect)
+
+  dialog.value = false
+}
+
+refetch()
 </script>
