@@ -1,0 +1,30 @@
+name: cloud-porsche-management
+services:
+  ui:
+    image: cloud-porsche-ui
+    build:
+      context: .
+      dockerfile: ./cloud-dev-ui/Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./cloud-dev-ui/.env
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+  property-management:
+    image: cloud-porsche-management
+    build:
+      context: .
+      dockerfile: ./cloud-dev-property-management/Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./cloud-dev-property-management/.env
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/"]
