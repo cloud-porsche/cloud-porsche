@@ -3,7 +3,8 @@
     <deployment type="dockerfile">
       <settings>
         <option name="imageTag" value="cloud-porsche/property-managment:latest" />
-        <option name="containerName" value="property-managment" />
+        <option name="containerName" value="property-management" />
+        <option name="contextFolderPath" value="." />
         <option name="envVars">
           <list>
             <DockerEnvVarImpl>
@@ -20,7 +21,7 @@
             </DockerPortBindingImpl>
           </list>
         </option>
-        <option name="sourceFilePath" value="cloud-dev-property-managment/Dockerfile" />
+        <option name="sourceFilePath" value="cloud-dev-property-management/Dockerfile" />
       </settings>
     </deployment>
     <method v="2" />

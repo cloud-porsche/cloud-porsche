@@ -2,11 +2,11 @@ FROM node:20-alpine as builder
 
 ENV NODE_ENV build
 
+COPY . .
 WORKDIR /cloud-dev-ui
 
 RUN corepack enable pnpm
 
-COPY . .
 RUN pnpm install --frozen-lockfile
 
 RUN pnpm run build
@@ -18,6 +18,7 @@ ENV NODE_ENV production
 # 8080 = http-server default port
 EXPOSE 8080
 
+COPY --from=builder /cloud-dev-types/ ./cloud-dev-types/
 COPY --from=builder /cloud-dev-ui/dist/ ./dist/
 
 RUN npm install -g http-server

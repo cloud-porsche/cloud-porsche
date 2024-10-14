@@ -4,6 +4,7 @@
       <settings>
         <option name="imageTag" value="cloud-porsche/ui:latest" />
         <option name="containerName" value="ui" />
+        <option name="contextFolderPath" value="." />
         <option name="portBindings">
           <list>
             <DockerPortBindingImpl>

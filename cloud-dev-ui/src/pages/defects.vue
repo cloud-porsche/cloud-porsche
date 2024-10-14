@@ -13,7 +13,7 @@
               :key="defect.id"
                 :defect="defect"
               />
-            </v-expansion-panels> 
+            </v-expansion-panels>
           </div>
           <v-progress-circular v-if="loading" indeterminate />
         </v-card-text>
@@ -84,8 +84,10 @@
 </template>
 
 <script lang="ts" setup>
+  import { IDefect } from '@cloud-porsche/types';
+
   const loading = ref(true)
-  const defects = ref([])
+  const defects = ref<IDefect[]>([])
   const dialog = ref(false)
 
   refetch()
