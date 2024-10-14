@@ -2,15 +2,13 @@
   <v-responsive>
     <v-container>
       <v-card>
-        <v-card-title>
-          Defects
-        </v-card-title>
+        <v-card-title> Defects </v-card-title>
         <v-card-text>
           <div v-if="!loading">
             <v-expansion-panels>
               <Defect
-              v-for="defect in defects"
-              :key="defect.id"
+                v-for="defect in defects"
+                :key="defect.id"
                 :defect="defect"
               />
             </v-expansion-panels>
@@ -24,47 +22,34 @@
 
       <v-row>
         <v-col class="mt-4 text-left">
-          <v-btn @click="dialog = true">
-            Add Defect
-          </v-btn>
+          <v-btn @click="dialog = true"> Add Defect </v-btn>
         </v-col>
       </v-row>
 
       <v-dialog v-model="dialog" max-width="600">
         <v-card>
-          <v-card-title>
-            Add New Defect
-          </v-card-title>
+          <v-card-title> Add New Defect </v-card-title>
           <v-card-text>
             <v-row dense>
               <v-col cols="12" md="6">
-                <v-text-field
-                  label="Defect Name*"
-                  required
-                />
+                <v-text-field label="Defect Name*" required />
               </v-col>
 
               <v-col cols="12" md="6">
-                <v-text-field
-                  label="Location*"
-                  required
-                />
+                <v-text-field label="Location*" required />
               </v-col>
 
               <v-col cols="12">
-                <v-text-field
-                  label="Short Description*"
-                  required
-                />
+                <v-text-field label="Short Description*" required />
               </v-col>
 
               <v-col cols="12">
-                <v-textarea
-                  label="Long Description*"
-                  required
-                />
+                <v-textarea label="Long Description*" required />
               </v-col>
-              <!-- TODO: Add a textfield that acts as datepicker here -->
+
+              <v-col cols="12">
+                <v-date-input label="Select a date"></v-date-input>
+              </v-col>
             </v-row>
 
             <small class="text-caption">*indicates required field</small>
@@ -84,25 +69,27 @@
 </template>
 
 <script lang="ts" setup>
-  import { IDefect } from '@cloud-porsche/types';
+import { IDefect } from "@cloud-porsche/types";
 
-  const loading = ref(true)
-  const defects = ref<IDefect[]>([])
-  const dialog = ref(false)
+const loading = ref(true);
+const defects = ref<IDefect[]>([]);
+const dialog = ref(false);
+const menu = ref(false);
+const date = ref(null);
 
-  refetch()
+refetch();
 
-  function saveDefect () {
-    dialog.value = false
-  }
+function saveDefect() {
+  dialog.value = false;
+}
 
-  function refetch () {
-    loading.value = true
-    fetch('http://localhost:8080/v1/defects')
-      .then(response => response.json())
-      .then(data => {
-        defects.value = data
-        loading.value = false
-      })
-  }
+function refetch() {
+  loading.value = true;
+  fetch("http://localhost:8080/v1/defects")
+    .then((response) => response.json())
+    .then((data) => {
+      defects.value = data;
+      loading.value = false;
+    });
+}
 </script>
