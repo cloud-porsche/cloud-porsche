@@ -5,7 +5,7 @@ export enum DefectStates {
   DONE,
 }
 
-export class IDefect {
+export interface IDefect {
   id: number;
   name: string;
   location: string;
