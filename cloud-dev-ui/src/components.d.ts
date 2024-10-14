@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddDefectPopup: typeof import('./components/AddDefectPopup.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     Defect: typeof import('./components/Defect.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
