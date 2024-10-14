@@ -56,13 +56,20 @@
 
 <script lang="ts" setup>
 import { IDefect } from '@cloud-porsche/types';
-import { ref, defineEmits } from 'vue'
+import { ref } from 'vue'
 
 const defectName = ref('')
 const location = ref('')
 const shortDescription = ref('')
 const longDescription = ref('')
 const dialog = ref(false)
+
+function resetForm() {
+  defectName.value = '';
+  location.value = '';
+  shortDescription.value = '';
+  longDescription.value = '';
+}
 
 // Emit events to parent component
 const emit = defineEmits(['save', 'close'])
@@ -82,6 +89,7 @@ function saveDefect () {
 
 function closeDialog () {
   emit('close')
+  resetForm()
 }
 
 </script>
