@@ -5,13 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",
-  "publishConfig": {
-    "registry": "https://europe-west6-npm.pkg.dev/cloud-porsche/cloud-dev-npm/"
-  },
   "scripts": {
-    "build": "tsc",
-    "artifactregistry-login": "npx google-artifactregistry-auth",
-    "publish": "npm publish --registry https://europe-west6-npm.pkg.dev/cloud-porsche/cloud-dev-npm/"
+    "build": "tsc"
   },
   "files": [
     "dist"
