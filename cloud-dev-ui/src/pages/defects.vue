@@ -2,53 +2,14 @@
   <v-responsive>
     <v-container>
       <v-card>
-        <v-card-title class="d-flex align-center pe-2">
-          Defects
-
-          <v-spacer></v-spacer>
-        
-          <v-text-field
-          v-model="search"
-          class="pe-2"
-          max-width="400"
-          density="compact"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="solo-filled"
-          flat
-          hide-details
-          single-line
-          ></v-text-field>
-
-          <v-chip-group
-            v-model="filter"
-            selected-class="text-primary"
-            mandatory
-          >
-          <v-chip
-            text="Name"
-            value="name"
-            variant="outlined"
-          ></v-chip>
-          <v-chip
-          text="Location"
-          value="location"
-          variant="outlined"
-          ></v-chip>
-          <v-chip
-          text="Date"
-          value="date"
-          variant="outlined"
-        ></v-chip>
-          </v-chip-group>
-        </v-card-title>
+        <SearchFilter @updateList="handleUpdateList" />
         <v-card-text>
           <div v-if="!loading">
             <v-expansion-panels>
               <Defect
-              v-for="defect in defects"
-              :key="defect.id"
-              :defect="defect"
+                v-for="defect in defects"
+                :key="defect.id"
+                :defect="defect"
               />
             </v-expansion-panels> 
           </div>
@@ -67,13 +28,11 @@
         </v-col>
       </v-row>
 
-      <!-- Add the custom component here -->
       <AddDefectPopup
         v-model="dialog"
         @save="handleSave"
         @close="dialog = false"
       />
-      {{ filter }}
     </v-container>
   </v-responsive>
 </template>
@@ -81,9 +40,6 @@
 <script lang="ts" setup>
 import { IDefect } from '@cloud-porsche/types';
 import { ref } from 'vue'
-
-const search = ref('')
-const filter = ref('')
 
 const loading = ref(true)
 const defects = ref<IDefect[]>([]);
@@ -99,10 +55,12 @@ function refetch () {
     })
 }
 
+// Open dialog for adding a defect
 function openDialog() {
   dialog.value = true
 }
 
+// Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect) {
   fetch("http://localhost:8080/v1/defects", {
     method: "POST",
@@ -112,8 +70,19 @@ function handleSave(newDefect: IDefect) {
     }
   })
   defects.value.push(newDefect)
-
   dialog.value = false
+}
+
+// Function to handle search/filter update from SearchFilter component
+function handleUpdateList(search: String, filter: String) {
+  console.log(search, filter)
+  loading.value = true
+  fetch(`http://localhost:8080/v1/defects?search=${search}&filter=${filter}`)
+    .then(response => response.json())
+    .then(data => {
+      defects.value = data as IDefect[]
+      loading.value = false
+    })
 }
 
 refetch()

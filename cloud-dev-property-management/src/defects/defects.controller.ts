@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { DefectsService } from './defects.service';
 import { CreateDefectDto } from './dto/create-defect.dto';
@@ -25,10 +26,16 @@ export class DefectsController {
     return this.defectsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.defectsService.findOne(id);
+  @Get('search')
+  findBySearchAndFilter(
+    @Query('search') search: string, 
+    @Query('filter') filter: string
+  ) {
+    return this.defectsService.findFiltered(search, filter);
   }
+
+
+
 
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateDefectDto: UpdateDefectDto) {

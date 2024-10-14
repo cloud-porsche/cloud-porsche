@@ -20,6 +20,16 @@ export class DefectsService {
     return this.defectRepository.find();
   }
 
+  async findFiltered(search: string, filter: string) {
+    console.log("search " + search + "filter " + filter)
+    // Build the query dynamically, checking if the search string exists in the chosen filter
+    const query = this.defectRepository.createQueryBuilder('defect')
+      .where(`defect.${filter} LIKE :search`, { search: `%${search}%` });
+
+    // Execute the query and return the result
+    return await query.getMany();
+  }
+
   findOne(id: number) {
     return this.defectRepository.findOneBy({ id });
   }
