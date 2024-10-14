@@ -57,7 +57,7 @@
   }
   
   function emitUpdate() {
-    emit('updateList', { search: search.value, filter: filter.value })
+    emit('updateList', search.value, filter.value)
   }
   </script>
   

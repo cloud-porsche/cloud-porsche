@@ -75,9 +75,8 @@ function handleSave(newDefect: IDefect) {
 
 // Function to handle search/filter update from SearchFilter component
 function handleUpdateList(search: String, filter: String) {
-  console.log(search, filter)
   loading.value = true
-  fetch(`http://localhost:8080/v1/defects?search=${search}&filter=${filter}`)
+  fetch(`http://localhost:8080/v1/defects/search?search=${search}&filter=${filter}`)
     .then(response => response.json())
     .then(data => {
       defects.value = data as IDefect[]
