@@ -79,7 +79,7 @@ function resetForm() {
   location.value = "";
   shortDescription.value = "";
   longDescription.value = "";
-  defectDate.value = undefined;
+  defectDate.value = new Date();
   valid.value = false;
 }
 

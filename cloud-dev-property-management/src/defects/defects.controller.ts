@@ -26,17 +26,17 @@ export class DefectsController {
     return this.defectsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.defectsService.findOne(id);
-  }
-
   @Get('search')
   findBySearchAndFilter(
     @Query('search') search: string,
     @Query('filter') filter: string,
   ) {
     return this.defectsService.findFiltered(search, filter);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.defectsService.findOne(id);
   }
 
   @Patch(':id')

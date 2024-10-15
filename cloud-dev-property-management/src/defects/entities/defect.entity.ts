@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { DefectStates, IDefect } from '@cloud-porsche/types';
+import { DefectState, IDefect } from '@cloud-porsche/types';
 
 @Entity()
 export class Defect extends BaseEntity implements IDefect {
@@ -15,8 +15,8 @@ export class Defect extends BaseEntity implements IDefect {
   descriptionLong: string;
   @Column()
   reportedDate: Date;
-  @Column({ default: DefectStates.OPEN, enum: DefectStates })
-  status: DefectStates;
+  @Column({ default: DefectState.OPEN, enum: DefectState })
+  status: DefectState;
 
   constructor(obj: Partial<Defect>) {
     super();

@@ -59,4 +59,8 @@ function onClick() {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.v-responsive {
+  padding: 2em;
+}
+</style>

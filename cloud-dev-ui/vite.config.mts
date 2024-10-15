@@ -66,5 +66,13 @@ export default ({ mode }) => {
     server: {
       port: process.env.VITE_PORT ?? 3000,
     },
+    optimizeDeps: {
+      include: ["@cloud-porsche/types"],
+    },
+    build: {
+      rollupOptions: {
+        external: ["@cloud-porsche/types"],
+      },
+    },
   });
 };

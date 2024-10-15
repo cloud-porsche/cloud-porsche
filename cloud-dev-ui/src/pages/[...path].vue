@@ -1,5 +1,5 @@
 <template>
-  <v-responsive class="pa-5">
+  <v-responsive>
     <h1>Nothing here</h1>
     <p>You will be redirected to the home page in {{ counter }} seconds.</p>
   </v-responsive>
