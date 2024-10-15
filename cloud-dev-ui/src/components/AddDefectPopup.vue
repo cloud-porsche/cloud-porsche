@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" max-width="600">
     <v-card>
-      <v-card-title> Add New Defect </v-card-title>
+      <v-card-title>Add New Defect</v-card-title>
       <v-card-text>
         <v-form v-model="valid" @submit.prevent="validateForm">
           <v-row dense>
@@ -14,18 +14,14 @@
             </v-col>
 
             <v-col cols="12" md="6">
-              <v-text-field
-                label="Location*"
-                v-model="location"
-                :rules="[required]"
-              />
+              <v-text-field label="Location*" v-model="location" :rules="[]" />
             </v-col>
 
             <v-col cols="12">
               <v-text-field
                 label="Short Description*"
                 v-model="shortDescription"
-                :rules="[required]"
+                :rules="[]"
               />
             </v-col>
 
@@ -33,7 +29,7 @@
               <v-textarea
                 label="Long Description*"
                 v-model="longDescription"
-                :rules="[required]"
+                :rules="[]"
               />
             </v-col>
 
@@ -41,7 +37,7 @@
               <v-date-input
                 label="Select a date"
                 v-model="defectDate"
-                :rules="[required]"
+                :rules="[]"
               />
             </v-col>
           </v-row>

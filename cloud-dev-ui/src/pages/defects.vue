@@ -37,12 +37,13 @@
 
 <script lang="ts" setup>
 import { IDefect } from "@cloud-porsche/types";
-import { ref } from "vue";
 import { get, postJSON } from "@/http/http";
 
 const loading = ref(true);
 const defects = ref<IDefect[]>([]);
 const dialog = ref(false);
+
+refetch();
 
 function refetch() {
   loading.value = true;
@@ -76,6 +77,4 @@ function handleUpdateList(search: String, filter: String) {
       loading.value = false;
     });
 }
-
-refetch();
 </script>

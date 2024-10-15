@@ -22,10 +22,11 @@ export class DefectsService {
 
   async findFiltered(search: string, filter: string) {
     const query = this.defectRepository.createQueryBuilder('defect');
-  
+
     if (filter === 'reportedDate') {
-      console.log('test')
-      query.where(`strftime('%d.%m.%Y', defect.${filter}) LIKE :search`, { search: `%${search}%` });
+      query.where(`strftime('%d.%m.%Y', defect.${filter}) LIKE :search`, {
+        search: `%${search}%`,
+      });
     } else {
       query.where(`defect.${filter} LIKE :search`, { search: `%${search}%` });
     }
