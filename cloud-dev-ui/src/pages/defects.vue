@@ -63,7 +63,7 @@ function openDialog() {
 // Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect) {
   postJSON("/v1/defects", newDefect);
-  defects.value.push(newDefect);
+  refetch();
   dialog.value = false;
 }
 

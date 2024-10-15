@@ -12,36 +12,35 @@
                 :rules="[required]"
               />
             </v-col>
-
             <v-col cols="12" md="6">
-              <v-text-field label="Location*" v-model="location" :rules="[]" />
+              <v-text-field
+                label="Location*"
+                v-model="location"
+                :rules="[required]"
+              />
             </v-col>
-
             <v-col cols="12">
               <v-text-field
                 label="Short Description*"
                 v-model="shortDescription"
-                :rules="[]"
+                :rules="[required]"
               />
             </v-col>
-
             <v-col cols="12">
               <v-textarea
                 label="Long Description*"
                 v-model="longDescription"
-                :rules="[]"
+                :rules="[required]"
               />
             </v-col>
-
             <v-col cols="12">
               <v-date-input
-                label="Select a date"
+                label="Select a date*"
                 v-model="defectDate"
-                :rules="[]"
+                :rules="[required]"
               />
             </v-col>
           </v-row>
-
           <small class="text-caption">*indicates required field</small>
         </v-form>
       </v-card-text>
@@ -67,7 +66,7 @@ const defectName = ref("");
 const location = ref("");
 const shortDescription = ref("");
 const longDescription = ref("");
-const defectDate = ref<Date | undefined>(undefined);
+const defectDate = ref<Date>(new Date());
 const dialog = ref(false);
 const valid = ref(false);
 
@@ -96,7 +95,7 @@ function saveDefect() {
     location: location.value,
     descriptionShort: shortDescription.value,
     descriptionLong: longDescription.value,
-    reportedDate: defectDate.value,
+    reportedDate: toGmt0(defectDate.value),
   };
 
   emit("save", newDefect);
@@ -106,5 +105,10 @@ function saveDefect() {
 function closeDialog() {
   emit("close");
   resetForm();
+}
+
+function toGmt0(date: Date): Date {
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60 * 1000);
 }
 </script>
