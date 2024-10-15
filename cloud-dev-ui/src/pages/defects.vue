@@ -35,7 +35,11 @@
       <template v-slot:expanded-row="{ columns, item }">
         <tr>
           <td :colspan="columns.length" class="pa-5">
-            <div v-for="column in columns" :key="column.value" class="pa-2">
+            <div
+              v-for="column in columns"
+              :key="column.value as string"
+              class="pa-2"
+            >
               <strong>{{ column.title }}</strong>
               <div v-if="column.value === 'reportedDate'">
                 {{ formatDate(item.reportedDate) }}
@@ -59,7 +63,7 @@
                   >Delete
                 </v-btn>
               </div>
-              <div v-else>{{ item[column.value] }}</div>
+              <div v-else>{{ item[column.value as keyof IDefect] }}</div>
               <v-divider v-if="column.title !== ''" class="mt-2" />
             </div>
           </td>
@@ -72,7 +76,7 @@
       :defect="activeDefect"
       :patch="!!activeDefect.id"
       @save="handleSave"
-      @patch="patchDefect(activeDefect.id, $event)"
+      @patch="patchDefect(activeDefect.id!, $event)"
       @close="closeDialog"
     />
   </v-responsive>
@@ -189,14 +193,14 @@ function handleUpdateList(search: String, filter: String) {
     });
 }
 
-function deleteDefect(id: string) {
+function deleteDefect(id: string | number) {
   loading.value = true;
   del(`/v1/defects/${id}`).then(() => {
     refetch();
   });
 }
 
-function patchDefect(id: string, defect: Partial<IDefect>) {
+function patchDefect(id: string | number, defect: Partial<IDefect>) {
   loading.value = true;
   patchJSON(`/v1/defects/${id}`, defect).then(() => {
     refetch();

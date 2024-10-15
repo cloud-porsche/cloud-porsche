@@ -51,11 +51,11 @@
                 ]"
                 v-model="status"
               >
-                <template v-slot:selection="{ item, index }">
+                <template v-slot:selection="{ item }">
                   <StatusChip :defect="{ status: item.raw }" />
                 </template>
                 <template v-slot:item="{ props, item }">
-                  <v-list-item v-bind:props @click="props.onClick">
+                  <v-list-item v-bind:props @click="props.onClick as any">
                     <StatusChip :defect="{ status: item.raw }" />
                   </v-list-item>
                 </template>
@@ -82,7 +82,6 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { DefectState, IDefect } from "@cloud-porsche/types";
-import { patch } from "@/http/http";
 
 const props = defineProps<{
   defect: Partial<IDefect>;
@@ -90,7 +89,7 @@ const props = defineProps<{
 }>();
 
 const defectSubscription = computed(() => props.defect);
-const patchSubscription = computed(() => props.patch);
+const patchSubscription = computed(() => props.patch ?? false);
 
 watch(defectSubscription, () => {
   defectName.value = props.defect.name ?? "";
@@ -133,7 +132,7 @@ function saveDefect() {
     reportedDate: toGmt0(defectDate.value),
   };
 
-  if (patchSubscription)
+  if (patchSubscription.value)
     emit("patch", {
       ...newDefect,
       status: status.value,

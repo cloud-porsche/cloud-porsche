@@ -12,7 +12,7 @@
 import { DefectState, IDefect } from "@cloud-porsche/types";
 
 defineProps<{
-  defect: Partial<IDefect>;
+  defect: Pick<IDefect, "status">;
 }>();
 
 function toStatusText(status: DefectState) {
