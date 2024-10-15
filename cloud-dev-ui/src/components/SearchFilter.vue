@@ -12,7 +12,7 @@
       >Refresh
     </v-btn>
   </h1>
-  <v-divider class="pa-2" thickness="0" />
+  <v-divider class="pa-1" thickness="0" />
   <v-text-field
     :loading="loading"
     v-model="search"
@@ -31,7 +31,7 @@
       onInputChange();
     "
   ></v-text-field>
-
+  <v-divider class="pa-1" thickness="0" />
   <v-chip-group
     filter
     v-model="filter"
