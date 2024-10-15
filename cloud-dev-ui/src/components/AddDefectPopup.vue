@@ -3,40 +3,51 @@
     <v-card>
       <v-card-title> Add New Defect </v-card-title>
       <v-card-text>
-        <v-row dense>
-          <v-col cols="12" md="6">
-            <v-text-field label="Defect Name*" v-model="defectName" required />
-          </v-col>
+        <v-form v-model="valid" @submit.prevent="validateForm">
+          <v-row dense>
+            <v-col cols="12" md="6">
+              <v-text-field
+                label="Defect Name*"
+                v-model="defectName"
+                :rules="[required]"
+              />
+            </v-col>
 
-          <v-col cols="12" md="6">
-            <v-text-field label="Location*" v-model="location" required />
-          </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                label="Location*"
+                v-model="location"
+                :rules="[required]"
+              />
+            </v-col>
 
-          <v-col cols="12">
-            <v-text-field
-              label="Short Description*"
-              v-model="shortDescription"
-              required
-            />
-          </v-col>
+            <v-col cols="12">
+              <v-text-field
+                label="Short Description*"
+                v-model="shortDescription"
+                :rules="[required]"
+              />
+            </v-col>
 
-          <v-col cols="12">
-            <v-textarea
-              label="Long Description*"
-              v-model="longDescription"
-              required
-            />
-          </v-col>
+            <v-col cols="12">
+              <v-textarea
+                label="Long Description*"
+                v-model="longDescription"
+                :rules="[required]"
+              />
+            </v-col>
 
-          <v-col cols="12">
-            <v-date-input
-              label="Select a date"
-              v-model="defectDate"
-            ></v-date-input>
-          </v-col>
-        </v-row>
+            <v-col cols="12">
+              <v-date-input
+                label="Select a date"
+                v-model="defectDate"
+                :rules="[required]"
+              />
+            </v-col>
+          </v-row>
 
-        <small class="text-caption">*indicates required field</small>
+          <small class="text-caption">*indicates required field</small>
+        </v-form>
       </v-card-text>
 
       <v-divider />
@@ -44,15 +55,17 @@
       <v-card-actions>
         <v-spacer />
         <v-btn text="Cancel" @click="closeDialog">Cancel</v-btn>
-        <v-btn color="primary" @click="saveDefect">Save</v-btn>
+        <v-btn :disabled="!valid" color="primary" @click="validateForm">
+          Save
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script lang="ts" setup>
-import { IDefect } from "@cloud-porsche/types";
 import { ref } from "vue";
+import { IDefect } from "@cloud-porsche/types";
 
 const defectName = ref("");
 const location = ref("");
@@ -60,6 +73,11 @@ const shortDescription = ref("");
 const longDescription = ref("");
 const defectDate = ref<Date | undefined>(undefined);
 const dialog = ref(false);
+const valid = ref(false);
+
+const required = (v: string | undefined) => !!v || "This field is required.";
+
+const emit = defineEmits(["save", "close"]);
 
 function resetForm() {
   defectName.value = "";
@@ -67,10 +85,14 @@ function resetForm() {
   shortDescription.value = "";
   longDescription.value = "";
   defectDate.value = undefined;
+  valid.value = false;
 }
 
-// Emit events to parent component
-const emit = defineEmits(["save", "close"]);
+function validateForm() {
+  if (valid.value) {
+    saveDefect();
+  }
+}
 
 function saveDefect() {
   const newDefect: Partial<IDefect> = {
