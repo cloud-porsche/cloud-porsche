@@ -1,14 +1,14 @@
 <template>
   <v-expansion-panel>
     <v-expansion-panel-title>
-        <v-row no-gutters>
-          <v-col class="d-flex justify-start" cols="6">
-            <span class="font-weight-bold">{{ defect.name }}</span>
-          </v-col>
-          <v-col cols="6" class="text-right">
-            <span> {{ defect.descriptionShort }} </span>
-          </v-col>
-        </v-row>
+      <v-row no-gutters>
+        <v-col class="d-flex justify-start" cols="6">
+          <span class="font-weight-bold">{{ defect.name }}</span>
+        </v-col>
+        <v-col cols="6" class="text-right">
+          <span> {{ defect.descriptionShort }} </span>
+        </v-col>
+      </v-row>
     </v-expansion-panel-title>
 
     <v-expansion-panel-text>
@@ -16,6 +16,10 @@
         <v-col cols="12">
           <p><strong>Long Description:</strong> {{ defect.descriptionLong }}</p>
           <p><strong>Location:</strong> {{ defect.location }}</p>
+          <p>
+            <strong>Reported Date:</strong>
+            {{ formatDate(defect.reportedDate) }}
+          </p>
         </v-col>
       </v-row>
     </v-expansion-panel-text>
@@ -23,11 +27,21 @@
 </template>
 
 <script lang="ts" setup>
-import { IDefect } from '@cloud-porsche/types';
+import { IDefect } from "@cloud-porsche/types";
 
 defineProps<{
-  defect: IDefect,
-}>()
+  defect: IDefect;
+}>();
+
+function formatDate(date: string | Date) {
+  const options: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  };
+
+  return new Intl.DateTimeFormat("de-DE", options).format(new Date(date));
+}
 </script>
 
 <style scoped>
@@ -65,6 +79,8 @@ defineProps<{
 }
 
 .v-expand-transition {
-  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; /* Smoother expansion */
+  transition:
+    max-height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out; /* Smoother expansion */
 }
 </style>
