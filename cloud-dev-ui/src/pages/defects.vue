@@ -22,9 +22,7 @@
 
       <v-row>
         <v-col class="mt-4 text-left">
-          <v-btn @click="openDialog">
-            Add Defect
-          </v-btn>
+          <v-btn @click="openDialog"> Add Defect</v-btn>
         </v-col>
       </v-row>
 
@@ -38,51 +36,46 @@
 </template>
 
 <script lang="ts" setup>
-import { IDefect } from '@cloud-porsche/types';
-import { ref } from 'vue'
+import { IDefect } from "@cloud-porsche/types";
+import { ref } from "vue";
+import { get, postJSON } from "@/http/http";
 
-const loading = ref(true)
+const loading = ref(true);
 const defects = ref<IDefect[]>([]);
-const dialog = ref(false)
+const dialog = ref(false);
 
-function refetch () {
-  loading.value = true
-  fetch('http://localhost:8080/v1/defects')
-    .then(response => response.json())
-    .then(data => {
-      defects.value = data as IDefect[]
-      loading.value = false
-    })
+function refetch() {
+  loading.value = true;
+  get("/v1/defects")
+    .json()
+    .then((data) => {
+      defects.value = data as IDefect[];
+      loading.value = false;
+    });
 }
 
 // Open dialog for adding a defect
 function openDialog() {
-  dialog.value = true
+  dialog.value = true;
 }
 
 // Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect) {
-  fetch("http://localhost:8080/v1/defects", {
-    method: "POST",
-    body: JSON.stringify(newDefect),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  })
-  defects.value.push(newDefect)
-  dialog.value = false
+  postJSON("/v1/defects", newDefect);
+  defects.value.push(newDefect);
+  dialog.value = false;
 }
 
 // Function to handle search/filter update from SearchFilter component
 function handleUpdateList(search: String, filter: String) {
-  loading.value = true
-  fetch(`http://localhost:8080/v1/defects/search?search=${search}&filter=${filter}`)
-    .then(response => response.json())
-    .then(data => {
-      defects.value = data as IDefect[]
-      loading.value = false
-    })
+  loading.value = true;
+  get(`/v1/defects/search?search=${search}&filter=${filter}`)
+    .json()
+    .then((data) => {
+      defects.value = data as IDefect[];
+      loading.value = false;
+    });
 }
 
-refetch()
+refetch();
 </script>
