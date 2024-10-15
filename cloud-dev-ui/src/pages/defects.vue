@@ -20,6 +20,17 @@
       <template v-slot:item.reportedDate="{ item }">
         {{ formatDate(item.reportedDate) }}
       </template>
+      <template v-slot:item.actions="{ item }">
+        <v-btn
+          prepend-icon="mdi-pencil"
+          @click="
+            activeDefect = item;
+            dialog = true;
+          "
+          variant="plain"
+          >Edit
+        </v-btn>
+      </template>
 
       <template v-slot:expanded-row="{ columns, item }">
         <tr>
@@ -51,14 +62,17 @@
 
     <AddDefectPopup
       v-model="dialog"
+      :defect="activeDefect"
+      :patch="!!activeDefect.id"
       @save="handleSave"
-      @close="dialog = false"
+      @patch="patchDefect(activeDefect.id, $event)"
+      @close="closeDialog"
     />
   </v-responsive>
 </template>
 
 <script lang="ts" setup>
-import { del, get, postJSON } from "@/http/http";
+import { del, get, patchJSON, postJSON } from "@/http/http";
 import { IDefect } from "@cloud-porsche/types";
 import StatusChip from "@/components/StatusChip.vue";
 
@@ -66,19 +80,38 @@ const loading = ref(true);
 const defects = ref<IDefect[]>([]);
 const dialog = ref(false);
 
+const activeDefect = ref<Partial<IDefect>>({});
+
 const headers = [
-  { title: "ID", value: "id", maxWidth: "100px" },
-  { title: "Name", value: "name", maxWidth: "100px" },
-  { title: "Location", value: "location", maxWidth: "100px" },
+  {
+    title: "ID",
+    value: "id",
+    sortable: true,
+    maxWidth: "100px",
+  },
+  {
+    title: "Name",
+    value: "name",
+    sortable: true,
+    maxWidth: "100px",
+  },
+  {
+    title: "Location",
+    value: "location",
+    sortable: true,
+    maxWidth: "100px",
+  },
   {
     title: "Description Short",
     value: "descriptionShort",
+    sortable: true,
     maxWidth: "120px",
     nowrap: true,
   },
   {
     title: "Description Long",
     value: "descriptionLong",
+    sortable: true,
     maxWidth: "100px",
     nowrap: true,
   },
@@ -87,7 +120,12 @@ const headers = [
     value: "reportedDate",
     nowrap: true,
   },
-  { title: "Status", value: "status", maxWidth: "100px" },
+  {
+    title: "Status",
+    value: "status",
+    sortable: true,
+    maxWidth: "100px",
+  },
   {
     title: "Actions",
     value: "actions",
@@ -114,6 +152,12 @@ function openDialog() {
   dialog.value = true;
 }
 
+function closeDialog() {
+  dialog.value = false;
+  // offset until transition/animation is done
+  setTimeout(() => (activeDefect.value = {}), 100);
+}
+
 // Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect) {
   postJSON("/v1/defects", newDefect).then(() => {
@@ -136,6 +180,13 @@ function handleUpdateList(search: String, filter: String) {
 function deleteDefect(id: string) {
   loading.value = true;
   del(`/v1/defects/${id}`).then(() => {
+    refetch();
+  });
+}
+
+function patchDefect(id: string, defect: Partial<IDefect>) {
+  loading.value = true;
+  patchJSON(`/v1/defects/${id}`, defect).then(() => {
     refetch();
   });
 }

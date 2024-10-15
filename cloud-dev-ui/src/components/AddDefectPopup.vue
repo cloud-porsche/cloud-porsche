@@ -61,27 +61,39 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { IDefect } from "@cloud-porsche/types";
+import { patch } from "@/http/http";
 
-const defectName = ref("");
-const location = ref("");
-const shortDescription = ref("");
-const longDescription = ref("");
-const defectDate = ref<Date>(new Date());
+const props = defineProps<{
+  defect: Partial<IDefect>;
+  patch: boolean;
+}>();
+
+const defectSubscription = computed(() => props.defect);
+const patchSubscription = computed(() => props.patch);
+
+watch(defectSubscription, () => {
+  defectName.value = props.defect.name ?? "";
+  location.value = props.defect.location ?? "";
+  shortDescription.value = props.defect.descriptionShort ?? "";
+  longDescription.value = props.defect.descriptionLong ?? "";
+  defectDate.value = props.defect.reportedDate
+    ? new Date(props.defect.reportedDate)
+    : new Date();
+});
+
+const defectName = ref(props.defect.name ?? "");
+const location = ref(props.defect.location ?? "");
+const shortDescription = ref(props.defect.descriptionShort ?? "");
+const longDescription = ref(props.defect.descriptionLong ?? "");
+const defectDate = ref<Date>(
+  props.defect.reportedDate ? new Date(props.defect.reportedDate) : new Date(),
+);
 const dialog = ref(false);
 const valid = ref(false);
 
 const required = (v: string | undefined) => !!v || "This field is required.";
 
-const emit = defineEmits(["save", "close"]);
-
-function resetForm() {
-  defectName.value = "";
-  location.value = "";
-  shortDescription.value = "";
-  longDescription.value = "";
-  defectDate.value = new Date();
-  valid.value = false;
-}
+const emit = defineEmits(["save", "patch", "close"]);
 
 function validateForm() {
   if (valid.value) {
@@ -98,13 +110,13 @@ function saveDefect() {
     reportedDate: toGmt0(defectDate.value),
   };
 
-  emit("save", newDefect);
+  if (patchSubscription) emit("patch", newDefect);
+  else emit("save", newDefect);
   closeDialog();
 }
 
 function closeDialog() {
   emit("close");
-  resetForm();
 }
 
 function toGmt0(date: Date): Date {
