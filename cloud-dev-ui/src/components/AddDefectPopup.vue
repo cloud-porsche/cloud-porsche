@@ -58,7 +58,7 @@ const defectName = ref("");
 const location = ref("");
 const shortDescription = ref("");
 const longDescription = ref("");
-const defectDate = ref(null);
+const defectDate = ref<Date | undefined>(undefined);
 const dialog = ref(false);
 
 function resetForm() {
@@ -66,7 +66,7 @@ function resetForm() {
   location.value = "";
   shortDescription.value = "";
   longDescription.value = "";
-  defectDate.value = null;
+  defectDate.value = undefined;
 }
 
 // Emit events to parent component
