@@ -21,14 +21,7 @@
         {{ formatDate(item.reportedDate) }}
       </template>
       <template v-slot:item.actions="{ item }">
-        <v-btn
-          prepend-icon="mdi-pencil"
-          @click="
-            activeDefect = item;
-            dialog = true;
-          "
-          variant="plain"
-          >Edit
+        <v-btn icon="mdi-pencil" @click="editDialog(item)" variant="plain">
         </v-btn>
       </template>
 
@@ -44,6 +37,13 @@
                 <StatusChip :defect="item" />
               </div>
               <div v-else-if="column.value === 'actions'">
+                <v-btn
+                  prepend-icon="mdi-pencil"
+                  class="me-2"
+                  @click="editDialog(item)"
+                  variant="tonal"
+                  >Edit
+                </v-btn>
                 <v-btn
                   prepend-icon="mdi-delete"
                   color="error"
@@ -156,6 +156,11 @@ function closeDialog() {
   dialog.value = false;
   // offset until transition/animation is done
   setTimeout(() => (activeDefect.value = {}), 100);
+}
+
+function editDialog(defect: IDefect) {
+  activeDefect.value = defect;
+  dialog.value = true;
 }
 
 // Handle the save action from AddDefectPopup

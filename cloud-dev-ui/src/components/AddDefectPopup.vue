@@ -33,12 +33,33 @@
                 :rules="[required]"
               />
             </v-col>
-            <v-col cols="12">
+            <v-col :cols="patchSubscription ? 6 : 12">
               <v-date-input
                 label="Select a date*"
                 v-model="defectDate"
                 :rules="[required]"
               />
+            </v-col>
+            <v-col v-if="patchSubscription" cols="6">
+              <v-select
+                label="Status"
+                :items="[
+                  DefectState.OPEN,
+                  DefectState.IN_WORK,
+                  DefectState.DONE,
+                  DefectState.REJECTED,
+                ]"
+                v-model="status"
+              >
+                <template v-slot:selection="{ item, index }">
+                  <StatusChip :defect="{ status: item.raw }" />
+                </template>
+                <template v-slot:item="{ props, item }">
+                  <v-list-item v-bind:props @click="props.onClick">
+                    <StatusChip :defect="{ status: item.raw }" />
+                  </v-list-item>
+                </template>
+              </v-select>
             </v-col>
           </v-row>
           <small class="text-caption">*indicates required field</small>
@@ -60,7 +81,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import { IDefect } from "@cloud-porsche/types";
+import { DefectState, IDefect } from "@cloud-porsche/types";
 import { patch } from "@/http/http";
 
 const props = defineProps<{
@@ -79,6 +100,7 @@ watch(defectSubscription, () => {
   defectDate.value = props.defect.reportedDate
     ? new Date(props.defect.reportedDate)
     : new Date();
+  status.value = props.defect.status;
 });
 
 const defectName = ref(props.defect.name ?? "");
@@ -88,6 +110,7 @@ const longDescription = ref(props.defect.descriptionLong ?? "");
 const defectDate = ref<Date>(
   props.defect.reportedDate ? new Date(props.defect.reportedDate) : new Date(),
 );
+const status = ref<DefectState | undefined>(props.defect.status);
 const dialog = ref(false);
 const valid = ref(false);
 
@@ -110,7 +133,11 @@ function saveDefect() {
     reportedDate: toGmt0(defectDate.value),
   };
 
-  if (patchSubscription) emit("patch", newDefect);
+  if (patchSubscription)
+    emit("patch", {
+      ...newDefect,
+      status: status.value,
+    });
   else emit("save", newDefect);
   closeDialog();
 }

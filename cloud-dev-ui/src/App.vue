@@ -60,6 +60,10 @@ function onClick() {
 </script>
 
 <style lang="scss">
+:root {
+  scrollbar-width: thin;
+}
+
 .v-responsive {
   padding: 2em;
 }
