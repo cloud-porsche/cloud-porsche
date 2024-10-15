@@ -44,10 +44,18 @@
 <script lang="ts" setup>
 import router from "@/router";
 
-const theme = ref("light");
+const localTheme = localStorage.getItem("theme");
+const theme = ref(
+  localTheme !== null
+    ? localTheme
+    : window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light",
+);
 
 function onClick() {
   theme.value = theme.value === "light" ? "dark" : "light";
+  localStorage.setItem("theme", theme.value);
 }
 </script>
 
