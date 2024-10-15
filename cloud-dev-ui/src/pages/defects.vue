@@ -58,7 +58,7 @@
                 <v-btn
                   prepend-icon="mdi-delete"
                   color="error"
-                  @click="deleteDefect(item.id)"
+                  @click="initiateDeletion(item)"
                   variant="tonal"
                   >Delete
                 </v-btn>
@@ -80,6 +80,17 @@
       @close="closeDialog"
     />
   </v-responsive>
+  <v-dialog v-model="confirmDialog" max-width="400">
+    <v-card>
+      <v-card-title>Confirm Delete</v-card-title>
+      <v-card-subtitle>Defect name: {{ toDelete.name }}</v-card-subtitle>
+      <v-card-text> Are you sure you want to delete this defect?</v-card-text>
+      <v-card-actions>
+        <v-btn variant="text" @click="confirmDialog = false">Cancel</v-btn>
+        <v-btn color="error" @click="deleteDefect(toDelete.id)">Delete</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -90,8 +101,10 @@ import StatusChip from "@/components/StatusChip.vue";
 const loading = ref(true);
 const defects = ref<IDefect[]>([]);
 const dialog = ref(false);
+const confirmDialog = ref(false);
 
 const activeDefect = ref<Partial<IDefect>>({});
+const toDelete = ref<IDefect | undefined>(undefined);
 
 const headers = [
   {
@@ -174,6 +187,15 @@ function editDialog(defect: IDefect) {
   dialog.value = true;
 }
 
+function initiateDeletion(defect: Partial<IDefect> | undefined) {
+  if (!defect) {
+    console.error("No defect to delete");
+    return;
+  }
+  toDelete.value = defect;
+  confirmDialog.value = true;
+}
+
 // Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect) {
   postJSON("/v1/defects", newDefect).then(() => {
@@ -198,6 +220,7 @@ function deleteDefect(id: string | number) {
   del(`/v1/defects/${id}`).then(() => {
     refetch();
   });
+  confirmDialog.value = false;
 }
 
 function patchDefect(id: string | number, defect: Partial<IDefect>) {
