@@ -2,16 +2,14 @@
   <v-responsive>
     <v-container>
       <v-card>
-        <v-card-title>
-          Defects
-        </v-card-title>
+        <SearchFilter @updateList="handleUpdateList" />
         <v-card-text>
           <div v-if="!loading">
             <v-expansion-panels>
               <Defect
-              v-for="defect in defects"
-              :key="defect.id"
-              :defect="defect"
+                v-for="defect in defects"
+                :key="defect.id"
+                :defect="defect"
               />
             </v-expansion-panels>
           </div>
@@ -30,7 +28,6 @@
         </v-col>
       </v-row>
 
-      <!-- Add the custom component here -->
       <AddDefectPopup
         v-model="dialog"
         @save="handleSave"
@@ -58,10 +55,12 @@ function refetch () {
     })
 }
 
+// Open dialog for adding a defect
 function openDialog() {
   dialog.value = true
 }
 
+// Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect) {
   fetch("http://localhost:8080/v1/defects", {
     method: "POST",
@@ -71,8 +70,18 @@ function handleSave(newDefect: IDefect) {
     }
   })
   defects.value.push(newDefect)
-
   dialog.value = false
+}
+
+// Function to handle search/filter update from SearchFilter component
+function handleUpdateList(search: String, filter: String) {
+  loading.value = true
+  fetch(`http://localhost:8080/v1/defects/search?search=${search}&filter=${filter}`)
+    .then(response => response.json())
+    .then(data => {
+      defects.value = data as IDefect[]
+      loading.value = false
+    })
 }
 
 refetch()
