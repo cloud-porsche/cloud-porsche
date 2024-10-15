@@ -16,16 +16,19 @@
     <v-navigation-drawer>
       <v-list nav>
         <v-list-item
-          prepend-icon="mdi-account-multiple"
+          prepend-icon="mdi-view-dashboard"
+          to="/"
           title="Dashboard"
           value=""
-          @click="navigateTo('/')"
-        />
+          :active="router.currentRoute.value.path === '/'"
+        >
+        </v-list-item>
         <v-list-item
-          prepend-icon="mdi-trash"
+          prepend-icon="mdi-hammer-screwdriver"
+          to="/defects"
           title="Defects"
           value="defects"
-          @click="navigateTo('/defects')"
+          :active="router.currentRoute.value.path === '/defects'"
         />
       </v-list>
     </v-navigation-drawer>
@@ -41,19 +44,19 @@
 <script lang="ts" setup>
 import router from "@/router";
 
-const theme = ref("light");
+const localTheme = localStorage.getItem("theme");
+const theme = ref(
+  localTheme !== null
+    ? localTheme
+    : window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light",
+);
 
 function onClick() {
   theme.value = theme.value === "light" ? "dark" : "light";
-}
-
-function navigateTo(path: string) {
-  router.push({ path });
+  localStorage.setItem("theme", theme.value);
 }
 </script>
 
-<style lang="scss">
-RouterLink {
-  text-decoration: none;
-}
-</style>
+<style lang="scss"></style>

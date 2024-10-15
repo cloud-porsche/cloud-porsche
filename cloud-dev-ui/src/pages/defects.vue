@@ -11,7 +11,7 @@
                 :key="defect.id"
                 :defect="defect"
               />
-            </v-expansion-panels> 
+            </v-expansion-panels>
           </div>
           <v-progress-circular v-if="loading" indeterminate />
         </v-card-text>

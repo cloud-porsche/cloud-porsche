@@ -27,7 +27,13 @@
               required
             />
           </v-col>
-          <!-- TODO: Add a textfield that acts as a datepicker here -->
+
+          <v-col cols="12">
+            <v-date-input
+              label="Select a date"
+              v-model="defectDate"
+            ></v-date-input>
+          </v-col>
         </v-row>
 
         <small class="text-caption">*indicates required field</small>
@@ -52,6 +58,7 @@ const defectName = ref("");
 const location = ref("");
 const shortDescription = ref("");
 const longDescription = ref("");
+const defectDate = ref<Date | undefined>(undefined);
 const dialog = ref(false);
 
 function resetForm() {
@@ -59,6 +66,7 @@ function resetForm() {
   location.value = "";
   shortDescription.value = "";
   longDescription.value = "";
+  defectDate.value = undefined;
 }
 
 // Emit events to parent component
@@ -70,6 +78,7 @@ function saveDefect() {
     location: location.value,
     descriptionShort: shortDescription.value,
     descriptionLong: longDescription.value,
+    reportedDate: defectDate.value,
   };
 
   emit("save", newDefect);
