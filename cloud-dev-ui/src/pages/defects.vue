@@ -8,9 +8,16 @@
     />
 
     <v-data-table
+      class="data-table rounded"
+      density="comfortable"
       :items="defects"
       :headers="headers"
-      class="data-table"
+      :items-per-page-options="[
+        { value: 5, title: '5' },
+        { value: 10, title: '10' },
+        { value: 25, title: '25' },
+        { value: -1, title: 'All' },
+      ]"
       show-expand
       multi-sort
     >

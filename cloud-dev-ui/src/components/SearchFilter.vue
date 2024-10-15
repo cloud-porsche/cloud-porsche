@@ -24,18 +24,28 @@
     hide-details
     single-line
     @input="onInputChange"
+    @keydown.enter="onInputChange"
+    clearable
+    @click:clear="
+      search = '';
+      onInputChange();
+    "
   ></v-text-field>
 
   <v-chip-group
+    filter
     v-model="filter"
     selected-class="text-primary"
     mandatory
     @change="onFilterChange"
   >
+    <v-chip text="ID" value="id" variant="outlined"></v-chip>
     <v-chip text="Name" value="name" variant="outlined"></v-chip>
     <v-chip text="Location" value="location" variant="outlined"></v-chip>
     <v-chip text="Date" value="reportedDate" variant="outlined"></v-chip>
   </v-chip-group>
+
+  <v-divider class="pa-1" thickness="0" />
 </template>
 
 <script lang="ts" setup>
