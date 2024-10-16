@@ -10,14 +10,14 @@ services:
         - VITE_PROPERTY_MANAGEMENT_API_URL=${VITE_PROPERTY_MANAGEMENT_API_URL}
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
   property-management:
     image: cloud-porsche-management
     build:
       context: .
       dockerfile: ./cloud-dev-property-management/Dockerfile
     volumes:
-      - cloud-dev-property-management-db:/db
+      - cloud-dev-property-management-db:/db/property-management
     environment:
       - PORT=8080
       - CORS_ORIGIN=${CORS_ORIGIN}
