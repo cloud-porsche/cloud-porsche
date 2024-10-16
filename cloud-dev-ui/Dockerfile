@@ -3,7 +3,7 @@ FROM node:20-alpine as builder
 ARG VITE_PROPERTY_MANAGEMENT_API_URL=http://localhost:8080
 
 ENV VITE_PROPERTY_MANAGEMENT_API_URL=$VITE_PROPERTY_MANAGEMENT_API_URL
-ENV NODE_ENV build
+ENV NODE_ENV=build
 
 COPY . .
 WORKDIR /cloud-dev-ui
@@ -14,16 +14,13 @@ RUN pnpm install --frozen-lockfile
 
 RUN pnpm run build
 
-FROM node:20-alpine
 
-ENV NODE_ENV production
+FROM nginx as production
 
-# 8080 = http-server default port
-EXPOSE 8080
+EXPOSE 80
 
-COPY --from=builder /cloud-dev-ui/dist/ ./dist/
+RUN mkdir /app
 
-RUN npm install -g http-server
+COPY --from=builder /cloud-dev-ui/dist/ /app
 
-USER node
-CMD ["http-server", "dist"]
+COPY /cloud-dev-ui/nginx.conf /etc/nginx/nginx.conf

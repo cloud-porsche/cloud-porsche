@@ -13,12 +13,12 @@ services:
       args:
         - VITE_PROPERTY_MANAGEMENT_API_URL=http://localhost:8080
     ports:
-      - "3000:8080"
+      - "3000:80"
     networks:
       - cloud-porsche
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
   property-management:
     image: cloud-porsche-management
     build:

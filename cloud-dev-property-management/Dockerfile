@@ -1,6 +1,6 @@
 FROM node:20-alpine as builder
 
-ENV NODE_ENV build
+ENV NODE_ENV=build
 
 COPY . .
 WORKDIR /cloud-dev-property-management
@@ -13,7 +13,7 @@ RUN pnpm run build
 
 FROM node:20-alpine
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 EXPOSE ${PORT:-3000}
 
