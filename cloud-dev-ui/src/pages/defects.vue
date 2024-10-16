@@ -4,12 +4,14 @@
       @updateList="handleUpdateList"
       @refresh="refetch()"
       @add="openDialog"
+      :error="error"
       :loading="loading"
     />
 
     <v-data-table
       class="data-table rounded"
       density="comfortable"
+      :no-data-text="error ? 'A network error occurred ⚡' : 'No defects found'"
       :items="defects"
       :headers="headers"
       :items-per-page-options="[
@@ -99,6 +101,7 @@ import { IDefect } from "@cloud-porsche/types";
 import StatusChip from "@/components/StatusChip.vue";
 
 const loading = ref(true);
+const error = ref(false);
 const defects = ref<IDefect[]>([]);
 const dialog = ref(false);
 const confirmDialog = ref(false);
@@ -161,6 +164,11 @@ const headers = [
 
 refetch();
 
+function errHandler(err: Error) {
+  loading.value = false;
+  error.value = true;
+}
+
 function refetch() {
   loading.value = true;
   get("/v1/defects")
@@ -168,7 +176,9 @@ function refetch() {
     .then((data) => {
       defects.value = data as IDefect[];
       loading.value = false;
-    });
+      error.value = false;
+    })
+    .catch(errHandler);
 }
 
 // Open dialog for adding a defect

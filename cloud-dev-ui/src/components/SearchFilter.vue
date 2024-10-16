@@ -9,6 +9,7 @@
       prepend-icon="mdi-refresh"
       @click="emit('refresh')"
       :loading="loading"
+      :color="error ? 'error' : 'primary'"
       >Refresh
     </v-btn>
   </h1>
@@ -30,6 +31,7 @@
       search = '';
       onInputChange();
     "
+    :error="error"
   ></v-text-field>
   <v-divider class="pa-1" thickness="0" />
   <v-chip-group
@@ -54,9 +56,12 @@ const filter = ref("name");
 
 const emit = defineEmits(["updateList", "refresh", "add"]);
 
-defineProps<{
+const props = defineProps<{
   loading: boolean;
+  error: boolean;
 }>();
+
+const error = computed(() => props.error);
 
 function onInputChange() {
   emitUpdate();
