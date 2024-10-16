@@ -9,7 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     DefectsModule,
     ConfigModule.forRoot({
-      envFilePath: ['.env', '.env.development'],
+      envFilePath: ['.env', '.env.production', '.env.development'],
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
