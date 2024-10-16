@@ -69,14 +69,14 @@ export default ({ mode }) => {
       port: process.env.VITE_PORT ?? 3000,
     },
     optimizeDeps: {
-      exclude: ["@cloud-porsche/types"],
+      include: ["@cloud-porsche/types"],
     },
     build: {
       rollupOptions: {
         cache: false,
       },
       commonjsOptions: {
-        include: [/types/, /node_modules/],
+        include: [/types/, /@cloud-porsche/, /node_modules/],
       },
     },
   });
