@@ -24,4 +24,6 @@ EXPOSE 8080
 COPY --from=builder /cloud-dev-ui/dist/ ./dist/
 
 RUN npm install -g http-server
+
+USER node
 CMD ["http-server", "dist"]
