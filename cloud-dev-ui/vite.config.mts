@@ -75,6 +75,9 @@ export default ({ mode }) => {
       rollupOptions: {
         cache: false,
       },
+      commonjsOptions: {
+        include: [/types/, /node_modules/],
+      },
     },
   });
 };
