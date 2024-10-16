@@ -3,12 +3,15 @@ FROM node:20-alpine as builder
 ENV NODE_ENV=build
 
 COPY . .
-WORKDIR /cloud-dev-property-management
 
 RUN corepack enable pnpm
 
+WORKDIR /cloud-dev-types
 RUN pnpm install --frozen-lockfile
+RUN pnpm run build
 
+WORKDIR /cloud-dev-property-management
+RUN pnpm install --frozen-lockfile
 RUN pnpm run build
 
 FROM node:20-alpine

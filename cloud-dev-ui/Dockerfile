@@ -6,12 +6,15 @@ ENV VITE_PROPERTY_MANAGEMENT_API_URL=$VITE_PROPERTY_MANAGEMENT_API_URL
 ENV NODE_ENV=build
 
 COPY . .
-WORKDIR /cloud-dev-ui
 
 RUN corepack enable pnpm
 
+WORKDIR /cloud-dev-types
 RUN pnpm install --frozen-lockfile
+RUN pnpm run build
 
+WORKDIR /cloud-dev-ui
+RUN pnpm install --frozen-lockfile
 RUN pnpm run build
 
 
