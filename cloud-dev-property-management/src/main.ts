@@ -6,7 +6,7 @@ import { VersioningType } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: [app.get(ConfigService).get('CORS_ORIGIN', 'localhost')],
+    origin: [app.get(ConfigService).get('CORS_ORIGIN', '*')],
     methods: 'GET,POST,PUT,PATCH,DELETE',
   });
   app.enableVersioning({
