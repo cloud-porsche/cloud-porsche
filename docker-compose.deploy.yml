@@ -21,8 +21,6 @@ services:
       dockerfile: ./cloud-dev-property-management/Dockerfile
     volumes:
       - cloud-dev-property-management-db:/db/
-    ports:
-      - "8089:8080"
     environment:
       - PORT=8080
       - CORS_ORIGIN=${CORS_ORIGIN}
