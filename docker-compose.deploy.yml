@@ -1,5 +1,8 @@
 name: cloud-porsche-management
 
+volumes:
+  cloud-dev-property-management-db:
+
 services:
   ui:
     image: cloud-porsche-ui
