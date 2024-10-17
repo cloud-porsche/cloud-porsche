@@ -1,5 +1,8 @@
 FROM node:20-alpine as builder
 
+ARG VITE_PROPERTY_MANAGEMENT_API_URL=http://localhost:8080
+
+ENV VITE_PROPERTY_MANAGEMENT_API_URL=$VITE_PROPERTY_MANAGEMENT_API_URL
 ENV NODE_ENV build
 
 COPY . .
@@ -21,4 +24,6 @@ EXPOSE 8080
 COPY --from=builder /cloud-dev-ui/dist/ ./dist/
 
 RUN npm install -g http-server
+
+USER node
 CMD ["http-server", "dist"]

@@ -15,6 +15,8 @@ export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
   return defineConfig({
+    base: process.env.VITE_BASE_URL ?? "/",
+    appType: "spa",
     plugins: [
       VueRouter({
         dts: "src/typed-router.d.ts",
@@ -65,6 +67,17 @@ export default ({ mode }) => {
     },
     server: {
       port: process.env.VITE_PORT ?? 3000,
+    },
+    optimizeDeps: {
+      include: ["@cloud-porsche/types"],
+    },
+    build: {
+      rollupOptions: {
+        cache: false,
+      },
+      commonjsOptions: {
+        include: [/types/, /@cloud-porsche/, /node_modules/],
+      },
     },
   });
 };

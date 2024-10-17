@@ -103,7 +103,6 @@ function request<T extends BodyInit>(
     !input.startsWith("http") &&
     !input.startsWith("ws")
   ) {
-    console.log(api_url);
     input = `${api_url}${input.startsWith("/") ? input : `/${input}`}`;
   }
 

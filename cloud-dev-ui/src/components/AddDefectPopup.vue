@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" max-width="600">
     <v-card>
-      <v-card-title> Add New Defect </v-card-title>
+      <v-card-title>Add New Defect</v-card-title>
       <v-card-text>
         <v-form v-model="valid" @submit.prevent="validateForm">
           <v-row dense>
@@ -12,7 +12,6 @@
                 :rules="[required]"
               />
             </v-col>
-
             <v-col cols="12" md="6">
               <v-text-field
                 label="Location*"
@@ -20,7 +19,6 @@
                 :rules="[required]"
               />
             </v-col>
-
             <v-col cols="12">
               <v-text-field
                 label="Short Description*"
@@ -28,7 +26,6 @@
                 :rules="[required]"
               />
             </v-col>
-
             <v-col cols="12">
               <v-textarea
                 label="Long Description*"
@@ -36,16 +33,35 @@
                 :rules="[required]"
               />
             </v-col>
-
-            <v-col cols="12">
+            <v-col :cols="patchSubscription ? 6 : 12">
               <v-date-input
-                label="Select a date"
+                label="Select a date*"
                 v-model="defectDate"
                 :rules="[required]"
               />
             </v-col>
+            <v-col v-if="patchSubscription" cols="6">
+              <v-select
+                label="Status"
+                :items="[
+                  DefectState.OPEN,
+                  DefectState.IN_WORK,
+                  DefectState.DONE,
+                  DefectState.REJECTED,
+                ]"
+                v-model="status"
+              >
+                <template v-slot:selection="{ item }">
+                  <StatusChip :defect="{ status: item.raw }" />
+                </template>
+                <template v-slot:item="{ props, item }">
+                  <v-list-item v-bind:props @click="props.onClick as any">
+                    <StatusChip :defect="{ status: item.raw }" />
+                  </v-list-item>
+                </template>
+              </v-select>
+            </v-col>
           </v-row>
-
           <small class="text-caption">*indicates required field</small>
         </v-form>
       </v-card-text>
@@ -65,28 +81,41 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import { IDefect } from "@cloud-porsche/types";
+import { DefectState, IDefect } from "@cloud-porsche/types";
 
-const defectName = ref("");
-const location = ref("");
-const shortDescription = ref("");
-const longDescription = ref("");
-const defectDate = ref<Date | undefined>(undefined);
+const props = defineProps<{
+  defect: Partial<IDefect>;
+  patch: boolean;
+}>();
+
+const defectSubscription = computed(() => props.defect);
+const patchSubscription = computed(() => props.patch ?? false);
+
+watch(defectSubscription, () => {
+  defectName.value = props.defect.name ?? "";
+  location.value = props.defect.location ?? "";
+  shortDescription.value = props.defect.descriptionShort ?? "";
+  longDescription.value = props.defect.descriptionLong ?? "";
+  defectDate.value = props.defect.reportedDate
+    ? new Date(props.defect.reportedDate)
+    : new Date();
+  status.value = props.defect.status;
+});
+
+const defectName = ref(props.defect.name ?? "");
+const location = ref(props.defect.location ?? "");
+const shortDescription = ref(props.defect.descriptionShort ?? "");
+const longDescription = ref(props.defect.descriptionLong ?? "");
+const defectDate = ref<Date>(
+  props.defect.reportedDate ? new Date(props.defect.reportedDate) : new Date(),
+);
+const status = ref<DefectState | undefined>(props.defect.status);
 const dialog = ref(false);
 const valid = ref(false);
 
 const required = (v: string | undefined) => !!v || "This field is required.";
 
-const emit = defineEmits(["save", "close"]);
-
-function resetForm() {
-  defectName.value = "";
-  location.value = "";
-  shortDescription.value = "";
-  longDescription.value = "";
-  defectDate.value = undefined;
-  valid.value = false;
-}
+const emit = defineEmits(["save", "patch", "close"]);
 
 function validateForm() {
   if (valid.value) {
@@ -100,15 +129,24 @@ function saveDefect() {
     location: location.value,
     descriptionShort: shortDescription.value,
     descriptionLong: longDescription.value,
-    reportedDate: defectDate.value,
+    reportedDate: toGmt0(defectDate.value),
   };
 
-  emit("save", newDefect);
+  if (patchSubscription.value)
+    emit("patch", {
+      ...newDefect,
+      status: status.value,
+    });
+  else emit("save", newDefect);
   closeDialog();
 }
 
 function closeDialog() {
   emit("close");
-  resetForm();
+}
+
+function toGmt0(date: Date): Date {
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60 * 1000);
 }
 </script>

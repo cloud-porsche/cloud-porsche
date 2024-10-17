@@ -5,7 +5,8 @@
 - Tested with Node `>=20.12`
 - For local development install the `@cloud-porsche/types` package with `npm run link-types`.  
   This will create a symlink to the `@cloud-porsche/types` package in the `node_modules` folder.
-
+- Use `pnpm run dev-clean-cache` if you changed the `@cloud-porsche/types` package and get issues with missing exports.
+  
 ___
 
 # Vuetify (Default)

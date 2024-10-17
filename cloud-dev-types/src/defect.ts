@@ -1,4 +1,4 @@
-export enum DefectStates {
+export enum DefectState {
   OPEN,
   IN_WORK,
   REJECTED,
@@ -12,5 +12,5 @@ export interface IDefect {
   descriptionShort: string;
   descriptionLong: string;
   reportedDate: Date;
-  status: DefectStates;
+  status: DefectState;
 }

@@ -28,14 +28,16 @@ export class DefectsController {
 
   @Get('search')
   findBySearchAndFilter(
-    @Query('search') search: string, 
-    @Query('filter') filter: string
+    @Query('search') search: string,
+    @Query('filter') filter: string,
   ) {
     return this.defectsService.findFiltered(search, filter);
   }
 
-
-
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.defectsService.findOne(id);
+  }
 
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateDefectDto: UpdateDefectDto) {

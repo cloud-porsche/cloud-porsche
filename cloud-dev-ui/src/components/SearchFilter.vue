@@ -1,63 +1,77 @@
 <template>
-    <v-card-title class="d-flex align-center pe-2">
-      Defects
-      <v-spacer></v-spacer>
-      <v-text-field
-        v-model="search"
-        class="pe-2"
-        max-width="400"
-        density="compact"
-        label="Search"
-        prepend-inner-icon="mdi-magnify"
-        variant="solo-filled"
-        flat
-        hide-details
-        single-line
-        @input="onInputChange"
-      ></v-text-field>
-  
-      <v-chip-group
-        v-model="filter"
-        selected-class="text-primary"
-        mandatory
-        @change="onFilterChange"
-      >
-        <v-chip
-          text="Name"
-          value="name"
-          variant="outlined"
-        ></v-chip>
-        <v-chip
-          text="Location"
-          value="location"
-          variant="outlined"
-        ></v-chip>
-        <v-chip
-          text="Date"
-          value="reportedDate"
-          variant="outlined"
-        ></v-chip>
-      </v-chip-group>
-    </v-card-title>
-  </template>
-  
-  <script lang="ts" setup>
-  import { ref } from 'vue'
-  
-  const search = ref('')
-  const filter = ref('name')
+  <h1 class="d-flex w-100 pb-1">
+    Defects
+    <v-spacer />
+    <v-btn prepend-icon="mdi-plus" @click="emit('add')" class="me-2"
+      >Add Defect
+    </v-btn>
+    <v-btn
+      prepend-icon="mdi-refresh"
+      @click="emit('refresh')"
+      :loading="loading"
+      :color="error ? 'error' : 'primary'"
+      >Refresh
+    </v-btn>
+  </h1>
+  <v-divider class="pa-1" thickness="0" />
+  <v-text-field
+    :loading="loading"
+    v-model="search"
+    density="comfortable"
+    label="Search"
+    prepend-inner-icon="mdi-magnify"
+    variant="solo-filled"
+    flat
+    hide-details
+    single-line
+    @input="onInputChange"
+    @keydown.enter="onInputChange"
+    clearable
+    @click:clear="
+      search = '';
+      onInputChange();
+    "
+    :error="error"
+  ></v-text-field>
+  <v-divider class="pa-1" thickness="0" />
+  <v-chip-group
+    filter
+    v-model="filter"
+    selected-class="text-primary"
+    mandatory
+    @change="onFilterChange"
+  >
+    <v-chip text="ID" value="id" variant="outlined"></v-chip>
+    <v-chip text="Name" value="name" variant="outlined"></v-chip>
+    <v-chip text="Location" value="location" variant="outlined"></v-chip>
+    <v-chip text="Date" value="reportedDate" variant="outlined"></v-chip>
+  </v-chip-group>
 
-  const emit = defineEmits(['updateList'])
+  <v-divider class="pa-1" thickness="0" />
+</template>
 
-  function onInputChange() {
-    emitUpdate()
-  }
-  function onFilterChange() {
-    emitUpdate()
-  }
-  
-  function emitUpdate() {
-    emit('updateList', search.value, filter.value)
-  }
-  </script>
-  
+<script lang="ts" setup>
+const search = ref("");
+const filter = ref("name");
+
+const emit = defineEmits(["updateList", "refresh", "add"]);
+
+const props = defineProps<{
+  loading: boolean;
+  error: boolean;
+}>();
+
+const error = computed(() => props.error);
+
+function onInputChange() {
+  emitUpdate();
+}
+
+function onFilterChange() {
+  emitUpdate();
+}
+
+function emitUpdate() {
+  emit("updateList", search.value, filter.value);
+}
+</script>

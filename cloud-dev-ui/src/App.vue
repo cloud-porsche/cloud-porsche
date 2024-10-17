@@ -1,6 +1,11 @@
 <template>
   <v-app :theme="theme">
     <v-app-bar title="Porsche Software Premium">
+      <template v-slot:prepend>
+        <v-app-bar-nav-icon
+          @click="drawerOpen = !drawerOpen"
+        ></v-app-bar-nav-icon>
+      </template>
       <v-spacer />
 
       <v-btn
@@ -13,7 +18,7 @@
       />
     </v-app-bar>
 
-    <v-navigation-drawer>
+    <v-navigation-drawer v-model="drawerOpen">
       <v-list nav>
         <v-list-item
           prepend-icon="mdi-view-dashboard"
@@ -52,6 +57,7 @@ const theme = ref(
       ? "dark"
       : "light",
 );
+const drawerOpen = ref(true);
 
 function onClick() {
   theme.value = theme.value === "light" ? "dark" : "light";
@@ -59,4 +65,12 @@ function onClick() {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+:root {
+  scrollbar-width: thin;
+}
+
+.v-responsive {
+  padding: 2em;
+}
+</style>
