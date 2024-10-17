@@ -26,4 +26,4 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN}
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "wget", "-qO", "http://localhost:8080/v1/" ]
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/v1/" ]
