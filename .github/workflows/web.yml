@@ -13,9 +13,16 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
+
+      # Add a build step if needed (this depends on how you're building your project)
+      - name: Install and Build
+        run: |
+          pnpm install
+          pnpm run build # Adjust based on your build command
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/develop'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./cloud-dev-ui # deploy src folder
+          publish_dir: ./dist # Change to the directory where compiled files are output (e.g., dist)
