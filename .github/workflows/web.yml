@@ -14,10 +14,10 @@ jobs:
       contents: write
     steps:
       # Step 1: Check out the repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # Step 2: Set up Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'  # Specify the version of Node.js you need
       # Step 3: Change working directory and install pnpm

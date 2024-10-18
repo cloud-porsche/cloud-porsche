@@ -6,12 +6,14 @@
 </template>
 
 <script lang="ts" setup>
+import router from "@/router";
+
 const counter = ref(5);
 
 setInterval(() => {
   counter.value -= 1;
   if (counter.value === 0) {
-    window.location.href = "/#/";
+    router.push("/");
   }
 }, 1000);
 </script>
