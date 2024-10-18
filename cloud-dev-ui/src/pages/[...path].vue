@@ -11,7 +11,7 @@ const counter = ref(5);
 setInterval(() => {
   counter.value -= 1;
   if (counter.value === 0) {
-    window.location.href = import.meta.env.VITE_BASE_URL ?? "/";
+    window.location.href = `/${import.meta.env.VITE_BASE_URL}`;
   }
 }, 1000);
 </script>
