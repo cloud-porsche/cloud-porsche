@@ -45,6 +45,7 @@ jobs:
         run: pnpm build  # Adjust the build command if necessary (e.g., pnpm run build)
         env:
           VITE_BASE_URL: cloud-porsche
+          VITE_PROPERTY_MANAGEMENT_API_URL: https://cloud-porsche-backend-319164640160.europe-west1.run.app
 
       # Step 6: Deploy to GitHub Pages
       - name: Deploy
