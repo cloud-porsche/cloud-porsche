@@ -21,16 +21,19 @@ jobs:
         with:
           node-version: '18'  # Specify the version of Node.js you need
 
-      # Step 3: Install pnpm
+      # Step 3: Change working directory and install pnpm
       - name: Install pnpm
+        working-directory: ./cloud-dev-ui  # Change working directory to ./cloud-dev-ui
         run: npm install -g pnpm
 
-      # Step 4: Install dependencies using pnpm
+      # Step 4: Install dependencies using pnpm in the working directory
       - name: Install dependencies
+        working-directory: ./cloud-dev-ui  # Change working directory to ./cloud-dev-ui
         run: pnpm install
 
-      # Step 5: Build the project
+      # Step 5: Build the project in the working directory
       - name: Build project
+        working-directory: ./cloud-dev-ui  # Change working directory to ./cloud-dev-ui
         run: pnpm build  # Adjust the build command if necessary (e.g., pnpm run build)
 
       # Step 6: Deploy to GitHub Pages
@@ -39,4 +42,4 @@ jobs:
         if: github.ref == 'refs/heads/develop'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist  # Replace with your actual output directory
+          publish_dir: ./cloud-dev-ui/dist  # Use the correct path for the build output
