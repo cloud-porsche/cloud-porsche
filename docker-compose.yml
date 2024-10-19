@@ -12,6 +12,7 @@ services:
       dockerfile: ./cloud-dev-ui/Dockerfile
       args:
         - VITE_PROPERTY_MANAGEMENT_API_URL=http://localhost:8080
+        - VITE_PROPERTY_MANAGEMENT_API_OPTIONS=http://localhost:8080
     ports:
       - "3000:80"
     networks:
