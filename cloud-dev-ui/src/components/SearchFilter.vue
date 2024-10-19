@@ -2,15 +2,24 @@
   <h1 class="d-flex w-100 pb-1">
     Defects
     <v-spacer />
-    <v-btn prepend-icon="mdi-plus" @click="emit('add')" class="me-2"
-      >Add Defect
+    <v-btn
+      :prepend-icon="mobile ? undefined : 'mdi-plus'"
+      :icon="mobile ? 'mdi-plus' : undefined"
+      @click="emit('add')"
+      class="me-2"
+      v-tooltip="'Add Defect'"
+      :text="mobile ? '' : 'Add Defect'"
+    >
     </v-btn>
     <v-btn
-      prepend-icon="mdi-refresh"
+      :prepend-icon="mobile ? undefined : 'mdi-refresh'"
+      :icon="mobile ? 'mdi-refresh' : undefined"
       @click="emit('refresh')"
       :loading="loading"
       :color="error ? 'error' : 'primary'"
-      >Refresh
+      v-tooltip="'Refresh'"
+      :text="mobile ? '' : 'Refresh'"
+    >
     </v-btn>
   </h1>
   <v-divider class="pa-1" thickness="0" />
@@ -51,6 +60,10 @@
 </template>
 
 <script lang="ts" setup>
+import { useDisplay } from "vuetify";
+
+const { mobile } = useDisplay();
+
 const search = ref("");
 const filter = ref("name");
 

@@ -10,6 +10,7 @@
 
     <v-data-table
       class="data-table rounded"
+      :mobile="mobile"
       density="comfortable"
       :no-data-text="error ? 'A network error occurred ⚡' : 'No defects found'"
       :items="defects"
@@ -40,7 +41,7 @@
             <div
               v-for="column in columns"
               :key="column.value as string"
-              class="pa-2"
+              class="expanded-defect pa-2"
             >
               <strong>{{ column.title }}</strong>
               <div v-if="column.value === 'reportedDate'">
@@ -99,6 +100,9 @@
 import { del, get, patchJSON, postJSON } from "@/http/http";
 import { IDefect } from "@cloud-porsche/types";
 import StatusChip from "@/components/StatusChip.vue";
+import { useDisplay } from "vuetify";
+
+const { mobile } = useDisplay();
 
 const loading = ref(true);
 const error = ref(false);
@@ -254,5 +258,18 @@ function formatDate(date: string | Date) {
 .data-table td {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.v-data-table__tr--mobile td div:nth-child(2) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expanded-defect {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 </style>

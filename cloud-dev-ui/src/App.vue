@@ -1,6 +1,9 @@
 <template>
   <v-app :theme="theme">
-    <v-app-bar title="Porsche Software Premium">
+    <v-app-bar
+      :title="mobile ? 'PSP' : 'Porsche Software Premium'"
+      density="comfortable"
+    >
       <template v-slot:prepend>
         <v-app-bar-nav-icon
           @click="drawerOpen = !drawerOpen"
@@ -9,11 +12,9 @@
       <v-spacer />
 
       <v-btn
-        :prepend-icon="
-          theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'
-        "
+        :icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'"
         slim
-        text="Toggle Theme"
+        v-tooltip="'Toggle Theme'"
         @click="onClick"
       />
     </v-app-bar>
@@ -48,6 +49,9 @@
 
 <script lang="ts" setup>
 import router from "@/router";
+import { useDisplay } from "vuetify";
+
+const { mobile } = useDisplay();
 
 const localTheme = localStorage.getItem("theme");
 const theme = ref(
