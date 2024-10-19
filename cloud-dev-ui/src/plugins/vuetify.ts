@@ -15,7 +15,6 @@ import { VDateInput } from "vuetify/labs/VDateInput";
 
 // Vuetify icons (optional)
 import { aliases, mdi } from "vuetify/iconsets/mdi";
-import { MaterialVersion } from "@/stores/app";
 import { md1, md2, md3 } from "vuetify/blueprints";
 
 export enum MaterialVersion {
@@ -40,7 +39,7 @@ function getTheme(material: MaterialVersion) {
 
 // Create Vuetify theme configuration
 const vuetify = createVuetify({
-  blueprint: getTheme(localStorage.getItem("material")),
+  blueprint: getTheme(localStorage.getItem("material") as MaterialVersion),
   theme: {
     themes: {
       light: {

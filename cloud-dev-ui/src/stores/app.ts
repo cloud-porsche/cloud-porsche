@@ -11,14 +11,14 @@ export const useAppStore = defineStore("app", {
     },
   }),
   getters: {
-    isDark() {
-      return this.theme.dark;
+    isDark(state) {
+      return state.theme.dark;
     },
   },
   actions: {
     toggleTheme() {
       this.theme.dark = !this.theme.dark;
-      localStorage.setItem("dark", this.theme.dark);
+      localStorage.setItem("dark", this.theme.dark.toString());
     },
     changePropertyManagementApiURL(url: string) {
       this.api.propertyManagement = url;
