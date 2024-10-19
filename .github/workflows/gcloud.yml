@@ -18,14 +18,12 @@ jobs:
         with:
           project_id: 'cloud-porsche'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
-      - uses: RafikFarhad/push-to-gcr-github-action@v5-rc1
-        with:
-          registry: gcr.io
-          project_id: cloud-porsche
-          image_name: property-management
-          image_tag: latest
-          dockerfile: ./cloud-dev-property-management/Dockerfile
-          context: .
+      - name: Configure Docker to use the gcloud command-line tool as a credential helper
+        run: gcloud auth configure-docker europe-west4-docker.pkg.dev
+      - name: Build the Docker image
+        run: |
+          docker build -t europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:latest -f ./cloud-dev-property-management/Dockerfile .
+          docker push europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:latest
 
   cloud-run:
     name: Deploy to Cloud Run
@@ -47,7 +45,7 @@ jobs:
         id: deploy
         with:
           service: property-management
-          image: gcr.io/cloud-porsche/property-management:latest
+          image: europe-west4-docker.pkg.dev/cloud-porsche/property-management:latest
           region: europe-west4
       - name: Print the URL
         run: echo "${{ steps.deploy.outputs.url }}"
