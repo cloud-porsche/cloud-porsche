@@ -5,7 +5,7 @@ on:
       - develop
 jobs:
   build-and-push-to-gcr:
-    name: Build and Push image to GCR
+    name: Build and Push image to GCR 📦
     runs-on: ubuntu-22.04
     permissions:
       id-token: 'write'
@@ -19,14 +19,14 @@ jobs:
           project_id: 'cloud-porsche'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
-        run: gcloud auth configure-docker europe-west4-docker.pkg.dev
+        run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - name: Build the Docker image
         run: |
           docker build -t europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:latest -f ./cloud-dev-property-management/Dockerfile .
           docker push europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:latest
 
   cloud-run:
-    name: Deploy to Cloud Run
+    name: Deploy to Cloud Run 🚀
     runs-on: ubuntu-22.04
     needs:
       - build-and-push-to-gcr
@@ -40,6 +40,7 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           project_id: 'cloud-porsche'
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
       - uses: google-github-actions/deploy-cloudrun@v2
         id: deploy
