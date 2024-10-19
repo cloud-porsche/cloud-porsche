@@ -1,0 +1,53 @@
+name: Google Cloud
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build-and-push-to-gcr:
+    name: Build and Push image to GCR
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: 'write'
+      contents: 'read'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      - uses: RafikFarhad/push-to-gcr-github-action@v5-rc1
+        with:
+          registry: gcr.io
+          project_id: cloud-porsche
+          image_name: property-management
+          image_tag: latest
+          dockerfile: ./cloud-dev-property-management/Dockerfile
+          context: .
+
+  cloud-run:
+    name: Deploy to Cloud Run
+    runs-on: ubuntu-22.04
+    needs:
+      - build-and-push-to-gcr
+    permissions:
+      id-token: 'write'
+      contents: 'read'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      - uses: google-github-actions/deploy-cloudrun@v2
+        id: deploy
+        with:
+          service: property-management
+          image: gcr.io/cloud-porsche/property-management:latest
+          region: europe-west4
+      - name: Print the URL
+        run: echo "${{ steps.deploy.outputs.url }}"
