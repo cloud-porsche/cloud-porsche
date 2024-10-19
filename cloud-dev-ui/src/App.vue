@@ -1,7 +1,7 @@
 <template>
-  <v-app :theme="theme">
+  <v-app :theme="isDark ? 'dark' : 'light'">
     <v-app-bar
-      :title="mobile ? 'PSP' : 'Porsche Software Premium'"
+      :title="mobile ? 'P. Software' : 'Porsche Software Premium'"
       density="comfortable"
     >
       <template v-slot:prepend>
@@ -12,10 +12,10 @@
       <v-spacer />
 
       <v-btn
-        :icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+        :icon="isDark ? 'mdi-weather-night' : 'mdi-weather-sunny'"
         slim
         v-tooltip="'Toggle Theme'"
-        @click="onClick"
+        @click="appStore.toggleTheme()"
       />
     </v-app-bar>
 
@@ -37,6 +37,17 @@
           :active="router.currentRoute.value.path === '/defects'"
         />
       </v-list>
+      <template v-slot:append>
+        <v-list nav>
+          <v-list-item
+            prepend-icon="mdi-cog"
+            to="/settings"
+            title="Settings"
+            value="settings"
+            :active="router.currentRoute.value.path === '/settings'"
+          />
+        </v-list>
+      </template>
     </v-navigation-drawer>
 
     <v-main>
@@ -50,23 +61,14 @@
 <script lang="ts" setup>
 import router from "@/router";
 import { useDisplay } from "vuetify";
+import { useAppStore } from "@/stores/app";
 
 const { mobile } = useDisplay();
 
-const localTheme = localStorage.getItem("theme");
-const theme = ref(
-  localTheme !== null
-    ? localTheme
-    : window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light",
-);
 const drawerOpen = ref(true);
 
-function onClick() {
-  theme.value = theme.value === "light" ? "dark" : "light";
-  localStorage.setItem("theme", theme.value);
-}
+const appStore = useAppStore();
+const isDark = computed(() => appStore.isDark);
 </script>
 
 <style lang="scss">

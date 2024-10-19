@@ -1,6 +1,7 @@
 /// Source: https://github.com/tkrotoff/fetch/blob/master/src/Http.ts
 
 import { HttpError } from "@/http/http-error";
+import { useAppStore } from "@/stores/app";
 
 /**
  * `Promise<`[`Response`](https://fetch.spec.whatwg.org/#response)`>` with added methods from [`Body`](https://fetch.spec.whatwg.org/#body-mixin).
@@ -95,7 +96,9 @@ function request<T extends BodyInit>(
   // ADJUSTED PART
   // if input is not a full url, prepend the base url in env
 
-  const api_url = import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL;
+  const api_url =
+    useAppStore().api.propertyManagement ??
+    import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL;
   if (
     typeof input === "string" &&
     api_url !== undefined &&
