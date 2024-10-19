@@ -7,7 +7,10 @@ export const useAppStore = defineStore("app", {
       dark: initDark(),
     },
     api: {
-      propertyManagement: localStorage.getItem("propertyManagement"),
+      propertyManagement:
+        localStorage.getItem("propertyManagement") ??
+        import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL ??
+        "",
     },
   }),
   getters: {

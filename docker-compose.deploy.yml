@@ -11,6 +11,7 @@ services:
       dockerfile: ./cloud-dev-ui/Dockerfile
       args:
         - VITE_PROPERTY_MANAGEMENT_API_URL=${VITE_PROPERTY_MANAGEMENT_API_URL}
+        - VITE_PROPERTY_MANAGEMENT_API_OPTIONS=${VITE_PROPERTY_MANAGEMENT_API_OPTIONS}
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80" ]
@@ -24,6 +25,7 @@ services:
     environment:
       - PORT=8080
       - CORS_ORIGIN=${CORS_ORIGIN}
+      - CORS_ORIGINS=${CORS_ORIGINS}
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost:8080/v1/" ]

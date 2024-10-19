@@ -75,13 +75,16 @@ const tabs = computed(() => [
       {
         title: "API Endpoint",
         text: "This will be the communication endpoint for Defects.",
-        options: (
-          import.meta.env.VITE_PROPERTY_MANAGEMENT_API_OPTIONS ?? ""
-        ).split(","),
-        initial:
-          appStore.api.propertyManagement ??
-          import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL ??
-          "",
+        options: [
+          ...new Set<string>([
+            ...(
+              import.meta.env.VITE_PROPERTY_MANAGEMENT_API_OPTIONS ?? ""
+            ).split(","),
+            import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL,
+            appStore.api.propertyManagement,
+          ]),
+        ],
+        initial: appStore.api.propertyManagement,
         valueChange: (value: string) => {
           appStore.changePropertyManagementApiURL(value);
         },

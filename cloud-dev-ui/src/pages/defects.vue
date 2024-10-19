@@ -168,7 +168,7 @@ const headers = [
 
 refetch();
 
-function errHandler(err: Error) {
+function errHandler(_: Error) {
   loading.value = false;
   error.value = true;
 }
