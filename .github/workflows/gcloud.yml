@@ -40,7 +40,6 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           project_id: 'cloud-porsche'
-          service_account: ${{ secrets.SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
       - uses: google-github-actions/deploy-cloudrun@v2
         id: deploy
