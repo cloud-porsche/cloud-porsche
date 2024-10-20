@@ -42,7 +42,7 @@ jobs:
           VITE_BASE_URL: cloud-porsche
           VITE_PROPERTY_MANAGEMENT_API_URL: https://cloud-porsche-backend-319164640160.europe-west1.run.app
           VITE_PROPERTY_MANAGEMENT_API_OPTIONS:
-            https://cloud-porsche-backend-319164640160.europe-west1.run.app,https://cloud-property-management.ostabo.com,property-management-c4okt5o2kq-ez.a.run.app
+            https://cloud-porsche-backend-319164640160.europe-west1.run.app,https://cloud-property-management.ostabo.com,https://property-management-c4okt5o2kq-ez.a.run.app
       # Step 6: Upload the build output as an artifact
       - name: Upload static files as artifact
         id: deployment
