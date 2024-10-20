@@ -45,7 +45,7 @@ jobs:
         id: deploy
         with:
           service: property-management
-          image: europe-west4-docker.pkg.dev/cloud-porsche/property-management:latest
+          image: europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:latest
           region: europe-west4
       - name: Print the URL
         run: echo "${{ steps.deploy.outputs.url }}"
