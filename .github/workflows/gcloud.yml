@@ -50,5 +50,7 @@ jobs:
           env_vars: |-
             CORS_ORIGIN=https://cloud-porsche.github.io
             CORS_ORIGINS=https://cloud-porsche.github.io\,https://cloud-dev.ostabo.com
+          flags: |-
+            --allow-unauthenticated
       - name: Print the URL
         run: echo "${{ steps.deploy.outputs.url }}"
