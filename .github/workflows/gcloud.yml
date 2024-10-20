@@ -47,6 +47,9 @@ jobs:
           service: property-management
           image: europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:latest
           region: europe-west4
+          env_vars: |-
+            CORS_ORIGIN=https://cloud-porsche.github.io
+            CORS_ORIGINS=https://cloud-porsche.github.io\,https://cloud-dev.ostabo.com
           flags: |-
             --allow-unauthenticated
       - name: Print the URL
