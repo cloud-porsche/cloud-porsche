@@ -1,7 +1,9 @@
 <template>
   <v-dialog v-model="dialog" max-width="600">
     <v-card>
-      <v-card-title>Add New Defect</v-card-title>
+      <v-card-title
+        >{{ patchSubscription ? "Change" : "Add New" }} Defect</v-card-title
+      >
       <v-card-text>
         <v-form v-model="valid" @submit.prevent="validateForm">
           <v-row dense>
