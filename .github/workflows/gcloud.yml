@@ -51,6 +51,8 @@ jobs:
             CORS_ORIGIN=https://cloud-porsche.github.io
             CORS_ORIGINS=https://cloud-porsche.github.io\,https://cloud-dev.ostabo.com
           flags: |-
-            --allow-unauthenticated
+            --allow-unauthenticated 
+            --add-volume name=cloud-porsche,type=cloud-storage,bucket=cloud-porsche
+            --add-volume-mount volume=cloud-porsche,mount-path=/db/
       - name: Print the URL
         run: echo "${{ steps.deploy.outputs.url }}"
