@@ -3,8 +3,17 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as admin from 'firebase-admin';
+import { initialize } from 'fireorm';
 
 async function bootstrap() {
+  admin.initializeApp({
+    databaseURL: process.env.FIRESTORE_URL,
+    projectId: 'cloud-porsche',
+  });
+
+  initialize(admin.firestore());
+
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: [

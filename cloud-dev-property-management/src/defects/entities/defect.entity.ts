@@ -1,25 +1,17 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { DefectState, IDefect } from '@cloud-porsche/types';
+import { Collection } from 'fireorm';
 
-@Entity()
-export class Defect extends BaseEntity implements IDefect {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column()
+@Collection()
+export class Defect implements IDefect {
+  id: string;
   name: string;
-  @Column()
   location: string;
-  @Column({ length: 80 })
   descriptionShort: string;
-  @Column()
   descriptionLong: string;
-  @Column()
   reportedDate: Date;
-  @Column({ default: DefectState.OPEN, enum: DefectState })
-  status: DefectState;
+  status: DefectState = DefectState.OPEN;
 
-  constructor(obj: Partial<Defect>) {
-    super();
+  constructor(obj?: Partial<Defect>) {
     Object.assign(this, obj);
   }
 }

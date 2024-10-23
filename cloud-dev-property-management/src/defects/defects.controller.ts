@@ -11,41 +11,45 @@ import {
 import { DefectsService } from './defects.service';
 import { CreateDefectDto } from './dto/create-defect.dto';
 import { UpdateDefectDto } from './dto/update-defect.dto';
+import { Defect } from './entities/defect.entity';
 
 @Controller('defects')
 export class DefectsController {
   constructor(private readonly defectsService: DefectsService) {}
 
   @Post()
-  create(@Body() createDefectDto: CreateDefectDto) {
-    return this.defectsService.create(createDefectDto);
+  async create(@Body() createDefectDto: CreateDefectDto) {
+    return await this.defectsService.create(createDefectDto);
   }
 
   @Get()
-  findAll() {
-    return this.defectsService.findAll();
+  async findAll() {
+    return await this.defectsService.findAll();
   }
 
   @Get('search')
-  findBySearchAndFilter(
+  async findBySearchAndFilter(
     @Query('search') search: string,
-    @Query('filter') filter: string,
+    @Query('filter') filter: keyof Defect,
   ) {
-    return this.defectsService.findFiltered(search, filter);
+    return await this.defectsService.findFiltered(search, filter);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.defectsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.defectsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateDefectDto: UpdateDefectDto) {
-    return this.defectsService.update(id, updateDefectDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateDefectDto: UpdateDefectDto,
+  ) {
+    return await this.defectsService.update(id, updateDefectDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.defectsService.remove(id);
+  async remove(@Param('id') id: string) {
+    return await this.defectsService.remove(id);
   }
 }

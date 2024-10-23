@@ -6,7 +6,7 @@ export enum DefectState {
 }
 
 export interface IDefect {
-  id: number;
+  id: string;
   name: string;
   location: string;
   descriptionShort: string;
