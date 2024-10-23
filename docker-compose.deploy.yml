@@ -23,9 +23,15 @@ services:
     volumes:
       - cloud-dev-property-management-db:/db/
     environment:
-      - PORT=8080
+      - PORT=${PORT:-8080}
       - CORS_ORIGIN=${CORS_ORIGIN}
       - CORS_ORIGINS=${CORS_ORIGINS}
+      - FIREBASE_PROJECT_ID=${FIREBASE_STORAGE_BUCKET:-cloud-porsche}
+      - FIRESTORE_EMULATOR_HOST=${FIRESTORE_EMULATOR_HOST:-}
+      - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET:-cloud-porsche}
+      - FIREBASE_OVERWRITE_CREDENTIALS=${FIREBASE_OVERWRITE_CREDENTIALS:-true}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost:8080/v1/" ]

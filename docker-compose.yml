@@ -32,6 +32,10 @@ services:
     environment:
       - PORT=8080
       - CORS_ORIGIN=localhost
+      - FIRESTORE_EMULATOR_HOST=
+      - FIREBASE_OVERWRITE_CREDENTIALS=true
+    env_file:
+      - ./cloud-dev-property-management/.env
     networks:
       - cloud-porsche
     restart: unless-stopped

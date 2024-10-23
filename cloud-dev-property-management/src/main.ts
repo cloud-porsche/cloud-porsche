@@ -7,9 +7,23 @@ import * as admin from 'firebase-admin';
 import { initialize } from 'fireorm';
 
 async function bootstrap() {
+  require('dotenv').config();
   admin.initializeApp({
-    databaseURL: process.env.FIRESTORE_URL,
-    projectId: 'cloud-porsche',
+    credential:
+      process.env.FIREBASE_OVERWRITE_CREDENTIALS === 'true'
+        ? admin.credential.cert(
+            process.env.FIREBASE_CLIENT_EMAIL
+              ? {
+                  projectId: process.env.FIREBASE_PROJECT_ID,
+                  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                  privateKey: process.env.FIREBASE_PRIVATE_KEY,
+                }
+              : require('cloud-porsche.json'),
+          )
+        : admin.credential.applicationDefault(),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    projectId: process.env.FIREBASE_PROJECT_ID,
   });
 
   initialize(admin.firestore());

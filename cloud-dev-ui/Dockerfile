@@ -1,4 +1,4 @@
-FROM node:20-alpine as builder
+FROM node:20-alpine AS builder
 
 ARG VITE_PROPERTY_MANAGEMENT_API_URL=http://localhost:8080
 ARG VITE_PROPERTY_MANAGEMENT_API_OPTIONS
@@ -20,7 +20,7 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm run build
 
 
-FROM nginx as production
+FROM nginx AS production
 
 EXPOSE 80
 
