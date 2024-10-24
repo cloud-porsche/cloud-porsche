@@ -1,0 +1,70 @@
+name: cloud-porsche-management
+
+networks:
+  cloud-porsche:
+    driver: bridge
+
+volumes:
+  firebase-emulator:
+
+services:
+  ui:
+    image: cloud-porsche-ui
+    build:
+      context: .
+      dockerfile: ./cloud-dev-ui/Dockerfile
+      args:
+        - VITE_PROPERTY_MANAGEMENT_API_URL=http://localhost:8080
+        - VITE_PROPERTY_MANAGEMENT_API_OPTIONS=http://localhost:8080,https://cloud-property-management.ostabo.com,https://property-management-c4okt5o2kq-ez.a.run.app
+    ports:
+      - "3000:80"
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
+  property-management:
+    image: cloud-porsche-management
+    build:
+      context: .
+      dockerfile: ./cloud-dev-property-management/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./cloud-dev-property-management/db:/db
+    environment:
+      - PORT=8080
+      - CORS_ORIGIN=localhost
+      - FIRESTORE_EMULATOR_HOST=firebase-emulator:8081
+      - FIREBASE_OVERWRITE_CREDENTIALS=true
+    env_file:
+      - ./cloud-dev-property-management/.env
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/v1/" ]
+  firebase-emulator:
+    image: fixl/firebase-emulator-suite
+    ports:
+      - "4000:4000"
+      - "8081:8081"
+      - "9099:9099"
+      - "9199:9199"
+    environment:
+      FIREBASE_PROJECT_ID: cloud-porsche
+      FIRESTORE: true
+      STORAGE: true
+      AUTH: true
+    env_file:
+      - ./cloud-dev-property-management/.env
+    volumes:
+      - firebase-emulator:/data
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: /usr/bin/wget -qO- http://localhost:4000
+      timeout: 30s
+      interval: 3s
+      retries: 20

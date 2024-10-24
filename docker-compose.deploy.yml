@@ -2,6 +2,10 @@ name: cloud-porsche-management
 
 volumes:
   cloud-dev-property-management-db:
+  firebase-emulator:
+
+networks:
+  cloud-porsche:
 
 services:
   ui:
@@ -27,11 +31,32 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN}
       - CORS_ORIGINS=${CORS_ORIGINS}
       - FIREBASE_PROJECT_ID=${FIREBASE_STORAGE_BUCKET:-cloud-porsche}
-      - FIRESTORE_EMULATOR_HOST=${FIRESTORE_EMULATOR_HOST:-}
+      - FIRESTORE_EMULATOR_HOST=${FIRESTORE_EMULATOR_HOST:-firebase-emulator:8081}
       - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET:-cloud-porsche}
       - FIREBASE_OVERWRITE_CREDENTIALS=${FIREBASE_OVERWRITE_CREDENTIALS:-true}
       - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
       - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
     restart: unless-stopped
+    networks:
+      - cloud-porsche
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost:8080/v1/" ]
+  firebase-emulator:
+    # ref: https://hub.docker.com/r/fixl/firebase-emulator-suite
+    image: fixl/firebase-emulator-suite
+    environment:
+      - FIREBASE_TOKEN=${FIREBASE_TOKEN}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-cloud-porsche}
+      - FIRESTORE=${FIRESTORE:-true}
+      - STORAGE=${STORAGE:-true}
+      - AUTH=${AUTH:-true}
+    volumes:
+      - firebase-emulator:/data
+    restart: unless-stopped
+    networks:
+      - cloud-porsche
+    healthcheck:
+      test: /usr/bin/wget -qO- http://localhost:4000
+      timeout: 30s
+      interval: 3s
+      retries: 20
