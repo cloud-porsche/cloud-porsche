@@ -37,4 +37,14 @@ export class ObjectStorageService {
       blobStream.end(file.buffer);
     });
   }
+
+  async getFile(file: string): Promise<Buffer> {
+    const bucket = this.storage.bucket(this.bucket);
+    const fileRef = bucket.file(file);
+
+    console.log(fileRef);
+    const [fileBuffer] = await fileRef.download();
+    console.log(fileBuffer);
+    return fileBuffer; // This will be a Buffer containing the file data
+  }
 }

@@ -1,6 +1,7 @@
 import {
-    Body,
     Controller,
+    Get,
+    Param,
     Post,
     UploadedFile,
     UseInterceptors,
@@ -31,6 +32,12 @@ export class ObjectStorageController {
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     console.log(file.originalname);
     return await this.objectStorageService.uploadFile(file);
+  }
+
+  @Get(':file')
+  async getFile(@Param('file') file: string) {
+    console.log(file);
+    return await this.objectStorageService.getFile(file);
   }
 }
   

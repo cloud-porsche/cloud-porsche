@@ -30,9 +30,9 @@
       <template v-slot:item.reportedDate="{ item }">
         {{ formatDate(item.reportedDate) }}
       </template>
-      <template v-slot:item.imageUrl="{ item }">
+      <template v-slot:item.image="{ item }">
         <v-img
-          src="@/assets/logo.png"
+          :src="getImageUrl(item.image)"
           max-width="10"
           aspect-ratio="1"
           contain
@@ -201,6 +201,36 @@ function refetch() {
     .catch(errHandler);
 }
 
+const imageCache = new Map<string, string>();
+
+function getImageUrl(fileName: string) {
+  if (imageCache.has(fileName)) {
+    return imageCache.get(fileName);
+  }
+
+  fetchImage(fileName).then((url) => {
+    imageCache.set(fileName, url);
+  });
+
+  return ''; // Return an empty string or a placeholder URL initially
+}
+
+async function fetchImage(fileName: string) {
+  try {
+    const response = await fetch(`http://localhost:8080/v1/storage?file=Samsung-Galaxy-A34.png`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch image');
+    }
+
+    const imageBlob = await response.blob();
+    const imageUrl = URL.createObjectURL(imageBlob);
+    return imageUrl;
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    return '';
+  }
+}
+
 // Open dialog for adding a defect
 function openDialog() {
   dialog.value = true;
@@ -268,6 +298,9 @@ function formatDate(date: string | Date) {
   };
   return new Intl.DateTimeFormat("de-DE", options).format(new Date(date));
 }
+
+
+
 </script>
 
 <style>
