@@ -30,6 +30,14 @@
       <template v-slot:item.reportedDate="{ item }">
         {{ formatDate(item.reportedDate) }}
       </template>
+      <template v-slot:item.imageUrl="{ item }">
+        <v-img
+          src="@/assets/logo.png"
+          max-width="10"
+          aspect-ratio="1"
+          contain
+        />
+      </template>
       <template v-slot:item.actions="{ item }">
         <v-btn icon="mdi-pencil" @click="editDialog(item)" variant="plain">
         </v-btn>
@@ -73,6 +81,7 @@
         </tr>
       </template>
     </v-data-table>
+  
 
     <AddDefectPopup
       v-model="dialog"
@@ -156,6 +165,13 @@ const headers = [
     value: "status",
     sortable: true,
     maxWidth: "100px",
+  },
+  {
+    title: "Image",
+    value: "image",
+    sortable: false,
+    nowrap: true,
+    maxWidth: "150px", // Adjust as needed
   },
   {
     title: "Actions",

@@ -132,6 +132,7 @@ function saveDefect() {
     descriptionShort: shortDescription.value,
     descriptionLong: longDescription.value,
     reportedDate: toGmt0(defectDate.value),
+    image: "",
   };
 
   if (patchSubscription.value)
