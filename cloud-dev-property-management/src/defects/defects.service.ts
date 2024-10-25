@@ -3,13 +3,17 @@ import { CreateDefectDto } from './dto/create-defect.dto';
 import { UpdateDefectDto } from './dto/update-defect.dto';
 import { Defect } from './entities/defect.entity';
 import { BaseFirestoreRepository, getRepository } from 'fireorm';
+import { ObjectStorageService } from 'src/object_storage/object_storage.service';
 
 @Injectable()
 export class DefectsService {
   defectRepository: BaseFirestoreRepository<Defect> = getRepository(Defect);
+  objectStorageService: ObjectStorageService;
+  
 
   constructor() {
     this.defectRepository = getRepository(Defect);
+    this.objectStorageService = new ObjectStorageService();
   }
 
   async create(createDefectDto: CreateDefectDto) {

@@ -10,6 +10,7 @@ export class Defect implements IDefect {
   descriptionLong: string;
   reportedDate: Date;
   status: DefectState = DefectState.OPEN;
+  image: string;
 
   constructor(obj?: Partial<Defect>) {
     Object.assign(this, obj);

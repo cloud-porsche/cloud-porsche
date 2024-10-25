@@ -7,4 +7,5 @@ export class CreateDefectDto extends PickType(Defect, [
   'descriptionShort',
   'descriptionLong',
   'reportedDate',
+  'image',
 ] as const) {}
