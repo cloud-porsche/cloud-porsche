@@ -20,7 +20,6 @@ export class ObjectStorageService {
 
   async uploadFile(file: Express.Multer.File) {
     const bucket = this.storage.bucket(this.bucket);
-    console.log(file)
     const blob = bucket.file(file.originalname);
     const blobStream = blob.createWriteStream();
 
@@ -38,13 +37,26 @@ export class ObjectStorageService {
     });
   }
 
-  async getFile(file: string): Promise<Buffer> {
+  async getFile(file: string): Promise<{ buffer: Buffer, contentType: string }> {
+    console.log("Attempting to download file:", file);
     const bucket = this.storage.bucket(this.bucket);
     const fileRef = bucket.file(file);
-
-    console.log(fileRef);
-    const [fileBuffer] = await fileRef.download();
-    console.log(fileBuffer);
-    return fileBuffer; // This will be a Buffer containing the file data
+    
+    try {
+      console.log("Attempting to download file ---:", file);
+  
+      // Fetch the buffer
+      const [fileBuffer] = await fileRef.download();
+      console.log("File downloaded successfully");
+  
+      // Fetch metadata to get the content type
+      const [metadata] = await fileRef.getMetadata();
+      const contentType = metadata.contentType || 'application/octet-stream'; // Default to a binary if unknown
+  
+      return { buffer: fileBuffer, contentType };
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      throw error;
+    }
   }
 }

@@ -32,7 +32,7 @@
       </template>
       <template v-slot:item.image="{ item }">
         <v-img
-          :src="getImageUrl(item.image)"
+          :src="getImageUrl('Lo-Fi-Wallpaper-Images.jpg')"
           max-width="10"
           aspect-ratio="1"
           contain
@@ -204,30 +204,37 @@ function refetch() {
 const imageCache = new Map<string, string>();
 
 function getImageUrl(fileName: string) {
+  // Check if the image is already cached
   if (imageCache.has(fileName)) {
     return imageCache.get(fileName);
   }
 
+  console.log('Fetching image:', fileName);
+
+  // Fetch the image and store it in the cache
   fetchImage(fileName).then((url) => {
-    imageCache.set(fileName, url);
+    if (url) {
+      imageCache.set(fileName, url);
+    }
   });
 
-  return ''; // Return an empty string or a placeholder URL initially
+  return ''; // Return an empty string or a placeholder URL while fetching
 }
 
 async function fetchImage(fileName: string) {
   try {
-    const response = await fetch(`http://localhost:8080/v1/storage?file=Samsung-Galaxy-A34.png`);
+    const response = await fetch(`/v1/storage/${fileName}`);
+    console.log("RESPONSE:", response);
+
     if (!response.ok) {
       throw new Error('Failed to fetch image');
     }
-
-    const imageBlob = await response.blob();
-    const imageUrl = URL.createObjectURL(imageBlob);
+    const arrayBuffer = await response.arrayBuffer();
+    const blob = new Blob([arrayBuffer], { type: response.headers.get('content-type') || 'application/octet-stream' });
+    const imageUrl = URL.createObjectURL(blob);
     return imageUrl;
   } catch (error) {
-    console.error('Error fetching image:', error);
-    return '';
+    return ''; 
   }
 }
 

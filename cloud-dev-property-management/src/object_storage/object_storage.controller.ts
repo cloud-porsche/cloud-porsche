@@ -36,8 +36,8 @@ export class ObjectStorageController {
 
   @Get(':file')
   async getFile(@Param('file') file: string) {
-    console.log(file);
-    return await this.objectStorageService.getFile(file);
+    const fileBuffer = await this.objectStorageService.getFile(file);
+    return fileBuffer;
   }
 }
   
