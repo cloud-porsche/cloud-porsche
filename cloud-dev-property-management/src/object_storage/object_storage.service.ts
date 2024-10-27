@@ -14,8 +14,6 @@ export class ObjectStorageService {
     });
 
     this.bucket = process.env.FIREBASE_STORAGE_BUCKET;
-    console.log(this.bucket);
-    console.log(this.storage);
   }
 
   async uploadFile(file: Express.Multer.File) {

@@ -42,6 +42,14 @@
                 :rules="[required]"
               />
             </v-col>
+            <v-col cols="12">
+              <v-file-input
+                label="Upload Image"
+                v-model="imageFile"
+                accept="image/*"
+                prepend-icon="mdi-camera"
+              />
+            </v-col>
             <v-col v-if="patchSubscription" cols="6">
               <v-select
                 label="Status"
@@ -111,6 +119,7 @@ const longDescription = ref(props.defect.descriptionLong ?? "");
 const defectDate = ref<Date>(
   props.defect.reportedDate ? new Date(props.defect.reportedDate) : new Date(),
 );
+const imageFile = ref<File | null>(null);
 const status = ref<DefectState | undefined>(props.defect.status);
 const dialog = ref(false);
 const valid = ref(false);
@@ -140,7 +149,7 @@ function saveDefect() {
       ...newDefect,
       status: status.value,
     });
-  else emit("save", newDefect);
+  else emit("save", newDefect, imageFile.value);
   closeDialog();
 }
 

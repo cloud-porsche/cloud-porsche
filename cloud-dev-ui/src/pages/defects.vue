@@ -106,7 +106,7 @@
 </template>
 
 <script lang="ts" setup>
-import { del, get, patchJSON, postJSON } from "@/http/http";
+import { del, get, patchJSON, post, postJSON } from "@/http/http";
 import { IDefect } from "@cloud-porsche/types";
 import StatusChip from "@/components/StatusChip.vue";
 import { useDisplay } from "vuetify";
@@ -197,7 +197,7 @@ function refetch() {
       const defectsWithImages = await Promise.all(
         (data as IDefect[]).map(async (defect) => {
           // Fetch the image URL and assign it to the defect object
-          defect.image = await fetchImage('Lo-Fi-Wallpaper-Images.jpg'); // Replace with actual image filename as needed
+          defect.image = await fetchImage(defect.image); // Replace with actual image filename as needed
           return defect;
         })
       );
@@ -210,20 +210,13 @@ function refetch() {
 
 async function fetchImage(fileName: string) {
   try {
-    // Fetch the signed URL from the backend
     const response = await get(`/v1/storage/${fileName}`);
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch signed URL');
-    }
-    console.log(response);
-
+    if (!response.ok) throw new Error('Failed to fetch signed URL');
     const { signedUrl } = await response.json();
-
-    return signedUrl; // Pass this URL to the image source
+    return signedUrl;
   } catch (error) {
     console.error("Error fetching signed URL:", error);
-    return '@/assets/logo.png'; // Return a placeholder image URL
+    return '@/assets/logo.png';
   }
 }
 // Open dialog for adding a defect
@@ -252,7 +245,16 @@ function initiateDeletion(defect: IDefect | undefined) {
 }
 
 // Handle the save action from AddDefectPopup
-function handleSave(newDefect: IDefect) {
+function handleSave(newDefect: IDefect, image: File | null) {
+  if (image) {
+    const randomImageId = crypto.randomUUID() + '.jpg';
+    newDefect.image = randomImageId;
+    const newFile = new File([image], randomImageId, { type: image.type });
+
+    const formData = new FormData();
+    formData.append("file", newFile);
+    post("/v1/storage/upload", formData)
+  } 
   postJSON("/v1/defects", newDefect).then(() => {
     refetch();
   });
