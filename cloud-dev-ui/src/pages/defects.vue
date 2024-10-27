@@ -32,7 +32,7 @@
       </template>
       <template v-slot:item.image="{ item }">
         <v-img
-          :src="getImageUrl('Lo-Fi-Wallpaper-Images.jpg')"
+          :src="item.image"
           max-width="10"
           aspect-ratio="1"
           contain
@@ -193,51 +193,39 @@ function refetch() {
   loading.value = true;
   get("/v1/defects")
     .json()
-    .then((data) => {
-      defects.value = data as IDefect[];
+    .then(async (data) => {
+      const defectsWithImages = await Promise.all(
+        (data as IDefect[]).map(async (defect) => {
+          // Fetch the image URL and assign it to the defect object
+          defect.image = await fetchImage('Lo-Fi-Wallpaper-Images.jpg'); // Replace with actual image filename as needed
+          return defect;
+        })
+      );
+      defects.value = defectsWithImages;
       loading.value = false;
       error.value = false;
     })
     .catch(errHandler);
 }
 
-const imageCache = new Map<string, string>();
-
-function getImageUrl(fileName: string) {
-  // Check if the image is already cached
-  if (imageCache.has(fileName)) {
-    return imageCache.get(fileName);
-  }
-
-  console.log('Fetching image:', fileName);
-
-  // Fetch the image and store it in the cache
-  fetchImage(fileName).then((url) => {
-    if (url) {
-      imageCache.set(fileName, url);
-    }
-  });
-
-  return ''; // Return an empty string or a placeholder URL while fetching
-}
-
 async function fetchImage(fileName: string) {
   try {
-    const response = await fetch(`/v1/storage/${fileName}`);
-    console.log("RESPONSE:", response);
+    // Fetch the signed URL from the backend
+    const response = await get(`/v1/storage/${fileName}`);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch image');
+      throw new Error('Failed to fetch signed URL');
     }
-    const arrayBuffer = await response.arrayBuffer();
-    const blob = new Blob([arrayBuffer], { type: response.headers.get('content-type') || 'application/octet-stream' });
-    const imageUrl = URL.createObjectURL(blob);
-    return imageUrl;
+    console.log(response);
+
+    const { signedUrl } = await response.json();
+
+    return signedUrl; // Pass this URL to the image source
   } catch (error) {
-    return ''; 
+    console.error("Error fetching signed URL:", error);
+    return '@/assets/logo.png'; // Return a placeholder image URL
   }
 }
-
 // Open dialog for adding a defect
 function openDialog() {
   dialog.value = true;

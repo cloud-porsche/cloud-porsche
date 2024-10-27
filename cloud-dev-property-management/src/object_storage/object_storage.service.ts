@@ -37,25 +37,23 @@ export class ObjectStorageService {
     });
   }
 
-  async getFile(file: string): Promise<{ buffer: Buffer, contentType: string }> {
-    console.log("Attempting to download file:", file);
+  // Function to generate a signed URL
+  async getFile(file: string): Promise<{ signedUrl: string }> {
+    console.log("Generating signed URL for file:", file);
     const bucket = this.storage.bucket(this.bucket);
     const fileRef = bucket.file(file);
-    
+
     try {
-      console.log("Attempting to download file ---:", file);
-  
-      // Fetch the buffer
-      const [fileBuffer] = await fileRef.download();
-      console.log("File downloaded successfully");
-  
-      // Fetch metadata to get the content type
-      const [metadata] = await fileRef.getMetadata();
-      const contentType = metadata.contentType || 'application/octet-stream'; // Default to a binary if unknown
-  
-      return { buffer: fileBuffer, contentType };
+      // Generate a signed URL with an expiration time (e.g., 15 minutes)
+      const [signedUrl] = await fileRef.getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 15 * 60 * 1000, // 15 minutes from now
+      });
+
+      console.log("Signed URL generated successfully:", signedUrl);
+      return { signedUrl: signedUrl };
     } catch (error) {
-      console.error("Error downloading file:", error);
+      console.error("Error generating signed URL:", error);
       throw error;
     }
   }
