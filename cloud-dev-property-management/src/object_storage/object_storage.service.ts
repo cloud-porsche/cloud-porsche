@@ -55,4 +55,24 @@ export class ObjectStorageService {
       throw error;
     }
   }
+
+  // Function to delete a file
+  async deleteFile(file: string): Promise<void> {
+    console.log("Deleting file:", file);
+    const bucket = this.storage.bucket(this.bucket);
+    const fileRef = bucket.file(file);
+
+    try {
+      await fileRef.delete();
+      console.log("File deleted successfully:", file);
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      throw error;
+    }
+  }
+
+  async updateFile(file: string, newFile: Express.Multer.File) {
+    await this.deleteFile(file);
+    return await this.uploadFile(newFile);
+  }
 }
