@@ -32,11 +32,26 @@
       </template>
       <template v-slot:item.image="{ item }">
         <v-img
+          v-if="item.image?.length > 0"
           :src="item.image"
           max-width="10"
           aspect-ratio="1"
           contain
-        />
+        >
+          <template v-slot:error>
+            <div class="d-flex align-center justify-center fill-height">
+              <v-icon color="error" icon="mdi-image-broken-variant"></v-icon>
+            </div>
+          </template>
+          <template v-slot:placeholder>
+            <div class="d-flex align-center justify-center fill-height">
+              <v-progress-circular
+                size="24"
+                indeterminate
+              ></v-progress-circular>
+            </div>
+          </template>
+        </v-img>
       </template>
       <template v-slot:item.actions="{ item }">
         <v-btn icon="mdi-pencil" @click="editDialog(item)" variant="plain">
@@ -57,6 +72,28 @@
               </div>
               <div v-else-if="column.value === 'status'">
                 <StatusChip :defect="item" />
+              </div>
+              <div v-else-if="column.value === 'image'">
+                <v-img
+                  v-if="item.image?.length > 0"
+                  :src="item.image"
+                  contain
+                  max-width="30%"
+                >
+                  <template v-slot:error>
+                    <div class="d-flex align-center justify-center fill-height">
+                      <v-icon
+                        color="error"
+                        icon="mdi-image-broken-variant"
+                      ></v-icon>
+                    </div>
+                  </template>
+                  <template v-slot:placeholder>
+                    <div class="d-flex align-center justify-center fill-height">
+                      <v-progress-circular indeterminate></v-progress-circular>
+                    </div>
+                  </template>
+                </v-img>
               </div>
               <div v-else-if="column.value === 'actions'">
                 <v-btn
@@ -81,7 +118,6 @@
         </tr>
       </template>
     </v-data-table>
-  
 
     <AddDefectPopup
       v-model="dialog"
@@ -89,7 +125,6 @@
       :patch="!!activeDefect.id"
       @save="handleSave"
       @patch="patchDefect(activeDefect.id!, $event)"
-      @close="closeDialog"
     />
   </v-responsive>
   <v-dialog v-model="confirmDialog" max-width="400">
@@ -118,6 +153,12 @@ const error = ref(false);
 const defects = ref<IDefect[]>([]);
 const dialog = ref(false);
 const confirmDialog = ref(false);
+
+watch(dialog, (newVal) => {
+  if (!newVal) {
+    closeDialog();
+  }
+});
 
 const activeDefect = ref<Partial<IDefect>>({});
 const toDelete = ref<IDefect | undefined>(undefined);
@@ -194,14 +235,13 @@ function refetch() {
   get("/v1/defects")
     .json()
     .then(async (data) => {
-      const defectsWithImages = await Promise.all(
+      defects.value = await Promise.all(
         (data as IDefect[]).map(async (defect) => {
           // Fetch the image URL and assign it to the defect object
           defect.image = await fetchImage(defect.image); // Replace with actual image filename as needed
           return defect;
-        })
+        }),
       );
-      defects.value = defectsWithImages;
       loading.value = false;
       error.value = false;
     })
@@ -211,14 +251,15 @@ function refetch() {
 async function fetchImage(fileName: string) {
   try {
     const response = await get(`/v1/storage/${fileName}`);
-    if (!response.ok) throw new Error('Failed to fetch signed URL');
+    if (!response.ok) throw new Error("Failed to fetch signed URL");
     const { signedUrl } = await response.json();
     return signedUrl;
   } catch (error) {
     console.error("Error fetching signed URL:", error);
-    return '@/assets/logo.png';
+    return "";
   }
 }
+
 // Open dialog for adding a defect
 function openDialog() {
   dialog.value = true;
@@ -247,14 +288,14 @@ function initiateDeletion(defect: IDefect | undefined) {
 // Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect, image: File | null) {
   if (image) {
-    const randomImageId = crypto.randomUUID() + '.jpg';
+    const randomImageId = crypto.randomUUID() + ".jpg";
     newDefect.image = randomImageId;
     const newFile = new File([image], randomImageId, { type: image.type });
 
     const formData = new FormData();
     formData.append("file", newFile);
-    post("/v1/storage/upload", formData)
-  } 
+    post("/v1/storage/upload", formData);
+  }
   postJSON("/v1/defects", newDefect).then(() => {
     refetch();
   });
@@ -295,9 +336,6 @@ function formatDate(date: string | Date) {
   };
   return new Intl.DateTimeFormat("de-DE", options).format(new Date(date));
 }
-
-
-
 </script>
 
 <style>

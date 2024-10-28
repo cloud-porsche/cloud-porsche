@@ -2,8 +2,8 @@
   <v-dialog v-model="dialog" max-width="600">
     <v-card>
       <v-card-title
-        >{{ patchSubscription ? "Change" : "Add New" }} Defect</v-card-title
-      >
+        >{{ patchSubscription ? "Change" : "Add New" }} Defect
+      </v-card-title>
       <v-card-text>
         <v-form v-model="valid" @submit.prevent="validateForm">
           <v-row dense>
@@ -42,14 +42,6 @@
                 :rules="[required]"
               />
             </v-col>
-            <v-col cols="12">
-              <v-file-input
-                label="Upload Image"
-                v-model="imageFile"
-                accept="image/*"
-                prepend-icon="mdi-camera"
-              />
-            </v-col>
             <v-col v-if="patchSubscription" cols="6">
               <v-select
                 label="Status"
@@ -70,6 +62,14 @@
                   </v-list-item>
                 </template>
               </v-select>
+            </v-col>
+            <v-col cols="12">
+              <v-file-input
+                label="Upload Image"
+                v-model="imageFile"
+                accept="image/*"
+                prepend-icon="mdi-image"
+              />
             </v-col>
           </v-row>
           <small class="text-caption">*indicates required field</small>
@@ -92,6 +92,8 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { DefectState, IDefect } from "@cloud-porsche/types";
+
+const dialog = defineModel<boolean>();
 
 const props = defineProps<{
   defect: Partial<IDefect>;
@@ -121,7 +123,6 @@ const defectDate = ref<Date>(
 );
 const imageFile = ref<File | null>(null);
 const status = ref<DefectState | undefined>(props.defect.status);
-const dialog = ref(false);
 const valid = ref(false);
 
 const required = (v: string | undefined) => !!v || "This field is required.";
@@ -154,7 +155,7 @@ function saveDefect() {
 }
 
 function closeDialog() {
-  emit("close");
+  dialog.value = false;
 }
 
 function toGmt0(date: Date): Date {

@@ -1,15 +1,15 @@
 import {
-    Controller,
-    Get,
-    Param,
-    Post,
-    UploadedFile,
-    UseInterceptors,
-  } from '@nestjs/common';
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ObjectStorageService } from './object_storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
-  
+
 @Controller('storage')
 export class ObjectStorageController {
   constructor(private readonly objectStorageService: ObjectStorageService) {}
@@ -35,8 +35,7 @@ export class ObjectStorageController {
 
   @Get(':file')
   async getFile(@Param('file') file: string) {
-    const fileUrl = await this.objectStorageService.getFile(file);
-    return fileUrl;
+    return await this.objectStorageService.getFile(file);
   }
 
   @Get('delete/:file')
@@ -60,8 +59,10 @@ export class ObjectStorageController {
       },
     },
   })
-  async updateFile(@UploadedFile() newFile: Express.Multer.File, @Param('file') fileUrl: string) {
+  async updateFile(
+    @UploadedFile() newFile: Express.Multer.File,
+    @Param('file') fileUrl: string,
+  ) {
     return await this.objectStorageService.updateFile(fileUrl, newFile);
   }
 }
-  

@@ -1,5 +1,7 @@
 import { Storage } from '@google-cloud/storage';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class ObjectStorageService {
   storage: Storage;
   bucket: string;
@@ -10,7 +12,7 @@ export class ObjectStorageService {
       credentials: {
         client_email: process.env.FIREBASE_CLIENT_EMAIL,
         private_key: process.env.FIREBASE_PRIVATE_KEY,
-      }
+      },
     });
 
     this.bucket = process.env.FIREBASE_STORAGE_BUCKET;
@@ -37,7 +39,7 @@ export class ObjectStorageService {
 
   // Function to generate a signed URL
   async getFile(file: string): Promise<{ signedUrl: string }> {
-    console.log("Generating signed URL for file:", file);
+    console.log('Generating signed URL for file:', file);
     const bucket = this.storage.bucket(this.bucket);
     const fileRef = bucket.file(file);
 
@@ -48,25 +50,25 @@ export class ObjectStorageService {
         expires: Date.now() + 15 * 60 * 1000, // 15 minutes from now
       });
 
-      console.log("Signed URL generated successfully:", signedUrl);
+      console.log('Signed URL generated successfully:', signedUrl);
       return { signedUrl: signedUrl };
     } catch (error) {
-      console.error("Error generating signed URL:", error);
+      console.error('Error generating signed URL:', error);
       throw error;
     }
   }
 
   // Function to delete a file
   async deleteFile(file: string): Promise<void> {
-    console.log("Deleting file:", file);
+    console.log('Deleting file:', file);
     const bucket = this.storage.bucket(this.bucket);
     const fileRef = bucket.file(file);
 
     try {
       await fileRef.delete();
-      console.log("File deleted successfully:", file);
+      console.log('File deleted successfully:', file);
     } catch (error) {
-      console.error("Error deleting file:", error);
+      console.error('Error deleting file:', error);
       throw error;
     }
   }
