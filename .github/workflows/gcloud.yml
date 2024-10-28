@@ -50,8 +50,9 @@ jobs:
           env_vars: |-
             CORS_ORIGIN=https://cloud-porsche.github.io
             CORS_ORIGINS=https://cloud-porsche.github.io\,https://cloud-dev.ostabo.com
+            FIRESTORE_EMULATOR_HOST=
+            FIREBASE_STORAGE_EMULATOR_HOST=
           flags: |-
-            --allow-unauthenticated 
-            --add-volume name=cloud-porsche,type=cloud-storage,bucket=cloud-porsche
+            --allow-unauthenticated
       - name: Print the URL
         run: echo "${{ steps.deploy.outputs.url }}"
