@@ -112,6 +112,9 @@ watch(defectSubscription, () => {
     ? new Date(props.defect.reportedDate)
     : new Date();
   status.value = props.defect.status;
+  imageFile.value = props.defect.image
+    ? new File([], props.defect.image)
+    : undefined;
 });
 
 const defectName = ref(props.defect.name ?? "");
@@ -121,7 +124,9 @@ const longDescription = ref(props.defect.descriptionLong ?? "");
 const defectDate = ref<Date>(
   props.defect.reportedDate ? new Date(props.defect.reportedDate) : new Date(),
 );
-const imageFile = ref<File | null>(null);
+const imageFile = ref<File | undefined>(
+  props.defect.image ? new File([], props.defect.image) : undefined,
+);
 const status = ref<DefectState | undefined>(props.defect.status);
 const valid = ref(false);
 
@@ -142,14 +147,18 @@ function saveDefect() {
     descriptionShort: shortDescription.value,
     descriptionLong: longDescription.value,
     reportedDate: toGmt0(defectDate.value),
-    image: "",
+    image: crypto.randomUUID() + "." + imageFile.value?.name.split(".").pop(),
   };
 
   if (patchSubscription.value)
-    emit("patch", {
-      ...newDefect,
-      status: status.value,
-    });
+    emit("patch", [
+      {
+        ...newDefect,
+        status: status.value,
+      },
+      imageFile.value,
+      props.defect.image,
+    ]);
   else emit("save", newDefect, imageFile.value);
   closeDialog();
 }

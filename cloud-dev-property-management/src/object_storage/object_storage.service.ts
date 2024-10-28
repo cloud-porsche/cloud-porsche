@@ -1,21 +1,18 @@
-import { Storage } from '@google-cloud/storage';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { storage } from 'firebase-admin';
 
 @Injectable()
 export class ObjectStorageService {
-  storage: Storage;
+  private readonly logger = new Logger(ObjectStorageService.name);
+
+  storage: storage.Storage;
   bucket: string;
 
   constructor() {
-    this.storage = new Storage({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      credentials: {
-        client_email: process.env.FIREBASE_CLIENT_EMAIL,
-        private_key: process.env.FIREBASE_PRIVATE_KEY,
-      },
-    });
-
-    this.bucket = process.env.FIREBASE_STORAGE_BUCKET;
+    this.storage = storage();
+    this.logger.debug(
+      `Cloud Storage initialized at: ${this.storage.bucket().name}`,
+    );
   }
 
   async uploadFile(file: Express.Multer.File) {
@@ -39,7 +36,7 @@ export class ObjectStorageService {
 
   // Function to generate a signed URL
   async getFile(file: string): Promise<{ signedUrl: string }> {
-    console.debug('Generating signed URL for file:', file);
+    this.logger.debug(`Generating signed URL for file: ${file}`);
     const bucket = this.storage.bucket(this.bucket);
     const fileRef = bucket.file(file);
 
@@ -50,25 +47,25 @@ export class ObjectStorageService {
         expires: Date.now() + 15 * 60 * 1000, // 15 minutes from now
       });
 
-      console.debug('Signed URL generated successfully:', signedUrl);
+      this.logger.debug(`Signed URL generated successfully: ${signedUrl}`);
       return { signedUrl: signedUrl };
     } catch (error) {
-      console.error('Error generating signed URL:', error);
+      this.logger.error(`Error generating signed URL: ${error}`);
       throw error;
     }
   }
 
   // Function to delete a file
   async deleteFile(file: string): Promise<void> {
-    console.debug('Deleting file:', file);
+    this.logger.debug(`Deleting file: ${file}`);
     const bucket = this.storage.bucket(this.bucket);
     const fileRef = bucket.file(file);
 
     try {
       await fileRef.delete();
-      console.debug('File deleted successfully:', file);
+      this.logger.debug(`File deleted successfully: ${file}`);
     } catch (error) {
-      console.error('Error deleting file:', error);
+      this.logger.error(`Error deleting file: ${error}`);
       throw error;
     }
   }

@@ -30,14 +30,14 @@
       <template v-slot:item.reportedDate="{ item }">
         {{ formatDate(item.reportedDate) }}
       </template>
-      <template v-slot:item.image="{ item }">
+      <template v-slot:item.signedImage="{ item }">
         <v-img
-          v-if="item.image?.length > 0"
-          :src="item.image"
+          v-if="item.signedImage?.length > 0"
+          :src="item.signedImage"
           max-width="10"
           aspect-ratio="1"
           contain
-          @click="inspectedImage = { open: true, src: item.image }"
+          @click="inspectedImage = { open: true, src: item.signedImage }"
         >
           <template v-slot:error>
             <div class="d-flex align-center justify-center fill-height">
@@ -74,13 +74,15 @@
               <div v-else-if="column.value === 'status'">
                 <StatusChip :defect="item" />
               </div>
-              <div v-else-if="column.value === 'image'">
+              <div v-else-if="column.value === 'signedImage'">
                 <v-img
-                  v-if="item.image?.length > 0"
-                  :src="item.image"
+                  v-if="item.signedImage?.length > 0"
+                  :src="item.signedImage"
                   contain
                   max-height="300"
-                  @click="inspectedImage = { open: true, src: item.image }"
+                  @click="
+                    inspectedImage = { open: true, src: item.signedImage }
+                  "
                 >
                   <template v-slot:error>
                     <div class="d-flex align-center justify-center fill-height">
@@ -113,7 +115,7 @@
                   >Delete
                 </v-btn>
               </div>
-              <div v-else>{{ item[column.value as keyof IDefect] }}</div>
+              <div v-else>{{ item[column.value as keyof SignedDefect] }}</div>
               <v-divider v-if="column.title !== ''" class="mt-2" />
             </div>
           </td>
@@ -150,7 +152,7 @@
       :defect="activeDefect"
       :patch="!!activeDefect.id"
       @save="handleSave"
-      @patch="patchDefect(activeDefect.id!, $event)"
+      @patch="patchDefect(activeDefect.id!, $event[0], $event[1], $event[2])"
     />
   </v-responsive>
   <v-dialog v-model="confirmDialog" max-width="400">
@@ -167,16 +169,18 @@
 </template>
 
 <script lang="ts" setup>
-import { del, get, patchJSON, post, postJSON } from "@/http/http";
+import { del, get, patch, patchJSON, post, postJSON } from "@/http/http";
 import { IDefect } from "@cloud-porsche/types";
 import StatusChip from "@/components/StatusChip.vue";
 import { useDisplay } from "vuetify";
+
+export type SignedDefect = IDefect & { signedImage: string };
 
 const { mobile } = useDisplay();
 
 const loading = ref(true);
 const error = ref(false);
-const defects = ref<IDefect[]>([]);
+const defects = ref<SignedDefect[]>([]);
 const dialog = ref(false);
 const confirmDialog = ref(false);
 
@@ -191,8 +195,8 @@ watch(dialog, (newVal) => {
   }
 });
 
-const activeDefect = ref<Partial<IDefect>>({});
-const toDelete = ref<IDefect | undefined>(undefined);
+const activeDefect = ref<Partial<SignedDefect>>({});
+const toDelete = ref<SignedDefect | undefined>(undefined);
 
 const headers = [
   {
@@ -240,7 +244,7 @@ const headers = [
   },
   {
     title: "Image",
-    value: "image",
+    value: "signedImage",
     sortable: false,
     nowrap: true,
     maxWidth: "150px", // Adjust as needed
@@ -267,9 +271,9 @@ function refetch() {
     .json()
     .then(async (data) => {
       defects.value = await Promise.all(
-        (data as IDefect[]).map(async (defect) => {
+        (data as SignedDefect[]).map(async (defect) => {
           // Fetch the image URL and assign it to the defect object
-          defect.image = await fetchImage(defect.image); // Replace with actual image filename as needed
+          defect.signedImage = await fetchImage(defect.image); // Replace with actual image filename as needed
           return defect;
         }),
       );
@@ -302,12 +306,12 @@ function closeDialog() {
   setTimeout(() => (activeDefect.value = {}), 100);
 }
 
-function editDialog(defect: IDefect) {
+function editDialog(defect: SignedDefect) {
   activeDefect.value = defect;
   dialog.value = true;
 }
 
-function initiateDeletion(defect: IDefect | undefined) {
+function initiateDeletion(defect: SignedDefect | undefined) {
   if (!defect) {
     console.error("No defect to delete");
     return;
@@ -317,24 +321,27 @@ function initiateDeletion(defect: IDefect | undefined) {
 }
 
 // Handle the save action from AddDefectPopup
-function handleSave(newDefect: IDefect, image: File | null) {
+function handleSave(newDefect: IDefect, image?: File) {
+  loading.value = true;
   if (image) {
-    const randomImageId = crypto.randomUUID() + ".jpg";
-    newDefect.image = randomImageId;
-    const newFile = new File([image], randomImageId, { type: image.type });
+    const newFile = new File([image], newDefect.image, { type: image.type });
 
     const formData = new FormData();
     formData.append("file", newFile);
     // need to wait for the image to be uploaded before refetching
-    post("/v1/storage/upload", formData).then(() =>
-      postJSON("/v1/defects", newDefect).then(() => {
-        refetch();
-      }),
-    );
+    post("/v1/storage/upload", formData)
+      .then(() =>
+        postJSON("/v1/defects", newDefect).then(() => {
+          refetch();
+        }),
+      )
+      .catch(errHandler);
   } else {
-    postJSON("/v1/defects", newDefect).then(() => {
-      refetch();
-    });
+    postJSON("/v1/defects", newDefect)
+      .then(() => {
+        refetch();
+      })
+      .catch(errHandler);
   }
   dialog.value = false;
 }
@@ -345,7 +352,7 @@ function handleUpdateList(search: String, filter: String) {
   get(`/v1/defects/search?search=${search}&filter=${filter}`)
     .json()
     .then((data) => {
-      defects.value = data as IDefect[];
+      defects.value = data as SignedDefect[];
       loading.value = false;
     });
 }
@@ -358,11 +365,36 @@ function deleteDefect(id: string | number) {
   confirmDialog.value = false;
 }
 
-function patchDefect(id: string | number, defect: Partial<IDefect>) {
+function patchDefect(
+  id: string,
+  defect: Partial<SignedDefect>,
+  image?: File,
+  oldId?: string,
+) {
   loading.value = true;
-  patchJSON(`/v1/defects/${id}`, defect).then(() => {
-    refetch();
-  });
+  if (image && defect.image) {
+    const newFile = new File([image], defect.image, { type: image.type });
+
+    const formData = new FormData();
+    formData.append("file", newFile);
+    // need to wait for the image to be uploaded before refetching
+    (oldId
+      ? patch(`/v1/storage/upload/${oldId}`, formData)
+      : post(`/v1/storage/upload`, formData)
+    )
+      .then(() =>
+        patchJSON(`/v1/defects/${id}`, defect).then(() => {
+          refetch();
+        }),
+      )
+      .catch(errHandler);
+  } else {
+    patchJSON(`/v1/defects/${id}`, defect)
+      .then(() => {
+        refetch();
+      })
+      .catch(errHandler);
+  }
 }
 
 function formatDate(date: string | Date) {

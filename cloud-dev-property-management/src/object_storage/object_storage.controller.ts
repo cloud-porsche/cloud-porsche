@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -44,7 +45,7 @@ export class ObjectStorageController {
     return 'File deleted successfully';
   }
 
-  @Post('update')
+  @Patch('upload/:file')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data') // Specify the content type
   @ApiBody({
@@ -60,9 +61,9 @@ export class ObjectStorageController {
     },
   })
   async updateFile(
+    @Param('file') fileName: string,
     @UploadedFile() newFile: Express.Multer.File,
-    @Param('file') fileUrl: string,
   ) {
-    return await this.objectStorageService.updateFile(fileUrl, newFile);
+    return await this.objectStorageService.updateFile(fileName, newFile);
   }
 }
