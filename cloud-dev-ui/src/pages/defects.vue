@@ -284,6 +284,7 @@ function refetch() {
 }
 
 async function fetchImage(fileName: string) {
+  if (!fileName) return "";
   try {
     const response = await get(`/v1/storage/${fileName}`);
     if (!response.ok) throw new Error("Failed to fetch signed URL");
@@ -387,6 +388,14 @@ function patchDefect(
           refetch();
         }),
       )
+      .catch(errHandler);
+  } else if (!image && oldId) {
+    del(`/v1/storage/${oldId}`)
+      .then(() => {
+        patchJSON(`/v1/defects/${id}`, defect).then(() => {
+          refetch();
+        });
+      })
       .catch(errHandler);
   } else {
     patchJSON(`/v1/defects/${id}`, defect)

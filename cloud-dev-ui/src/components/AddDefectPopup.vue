@@ -147,7 +147,9 @@ function saveDefect() {
     descriptionShort: shortDescription.value,
     descriptionLong: longDescription.value,
     reportedDate: toGmt0(defectDate.value),
-    image: crypto.randomUUID() + "." + imageFile.value?.name.split(".").pop(),
+    image: imageFile.value
+      ? crypto.randomUUID() + "." + imageFile.value?.name.split(".").pop()
+      : "",
   };
 
   if (patchSubscription.value)

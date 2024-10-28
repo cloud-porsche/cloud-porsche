@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -39,7 +40,7 @@ export class ObjectStorageController {
     return await this.objectStorageService.getFile(file);
   }
 
-  @Get('delete/:file')
+  @Delete(':file')
   async deleteFile(@Param('file') file: string) {
     await this.objectStorageService.deleteFile(file);
     return 'File deleted successfully';
