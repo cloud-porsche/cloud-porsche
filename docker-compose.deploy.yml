@@ -1,7 +1,6 @@
 name: cloud-porsche-management
 
 volumes:
-  cloud-dev-property-management-db:
   firebase-emulator:
 
 networks:
@@ -24,8 +23,6 @@ services:
     build:
       context: .
       dockerfile: ./cloud-dev-property-management/Dockerfile
-    volumes:
-      - cloud-dev-property-management-db:/db/
     environment:
       - PORT=${PORT:-8080}
       - CORS_ORIGIN=${CORS_ORIGIN}
