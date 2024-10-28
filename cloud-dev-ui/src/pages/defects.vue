@@ -37,6 +37,7 @@
           max-width="10"
           aspect-ratio="1"
           contain
+          @click="inspectedImage = { open: true, src: item.image }"
         >
           <template v-slot:error>
             <div class="d-flex align-center justify-center fill-height">
@@ -78,7 +79,8 @@
                   v-if="item.image?.length > 0"
                   :src="item.image"
                   contain
-                  max-width="30%"
+                  max-height="300"
+                  @click="inspectedImage = { open: true, src: item.image }"
                 >
                   <template v-slot:error>
                     <div class="d-flex align-center justify-center fill-height">
@@ -119,6 +121,30 @@
       </template>
     </v-data-table>
 
+    <v-dialog v-model="inspectedImage.open" max-width="50%" max-height="80%">
+      <v-card rounded class="d-flex flex-row overflow-hidden">
+        <v-img
+          v-if="inspectedImage.src"
+          :src="inspectedImage.src"
+          contain
+          max-height="100%"
+          rounded
+          @click="inspectedImage = { open: false, src: undefined }"
+        >
+          <template v-slot:error>
+            <div class="d-flex align-center justify-center fill-height">
+              <v-icon color="error" icon="mdi-image-broken-variant"></v-icon>
+            </div>
+          </template>
+          <template v-slot:placeholder>
+            <div class="d-flex align-center justify-center fill-height">
+              <v-progress-circular indeterminate></v-progress-circular>
+            </div>
+          </template>
+        </v-img>
+      </v-card>
+    </v-dialog>
+
     <AddDefectPopup
       v-model="dialog"
       :defect="activeDefect"
@@ -153,6 +179,11 @@ const error = ref(false);
 const defects = ref<IDefect[]>([]);
 const dialog = ref(false);
 const confirmDialog = ref(false);
+
+const inspectedImage = ref<{ open: boolean; src?: string }>({
+  open: false,
+  src: undefined,
+});
 
 watch(dialog, (newVal) => {
   if (!newVal) {
@@ -294,11 +325,17 @@ function handleSave(newDefect: IDefect, image: File | null) {
 
     const formData = new FormData();
     formData.append("file", newFile);
-    post("/v1/storage/upload", formData);
+    // need to wait for the image to be uploaded before refetching
+    post("/v1/storage/upload", formData).then(() =>
+      postJSON("/v1/defects", newDefect).then(() => {
+        refetch();
+      }),
+    );
+  } else {
+    postJSON("/v1/defects", newDefect).then(() => {
+      refetch();
+    });
   }
-  postJSON("/v1/defects", newDefect).then(() => {
-    refetch();
-  });
   dialog.value = false;
 }
 

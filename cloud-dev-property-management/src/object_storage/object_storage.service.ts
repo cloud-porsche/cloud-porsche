@@ -39,7 +39,7 @@ export class ObjectStorageService {
 
   // Function to generate a signed URL
   async getFile(file: string): Promise<{ signedUrl: string }> {
-    console.log('Generating signed URL for file:', file);
+    console.debug('Generating signed URL for file:', file);
     const bucket = this.storage.bucket(this.bucket);
     const fileRef = bucket.file(file);
 
@@ -50,7 +50,7 @@ export class ObjectStorageService {
         expires: Date.now() + 15 * 60 * 1000, // 15 minutes from now
       });
 
-      console.log('Signed URL generated successfully:', signedUrl);
+      console.debug('Signed URL generated successfully:', signedUrl);
       return { signedUrl: signedUrl };
     } catch (error) {
       console.error('Error generating signed URL:', error);
@@ -60,13 +60,13 @@ export class ObjectStorageService {
 
   // Function to delete a file
   async deleteFile(file: string): Promise<void> {
-    console.log('Deleting file:', file);
+    console.debug('Deleting file:', file);
     const bucket = this.storage.bucket(this.bucket);
     const fileRef = bucket.file(file);
 
     try {
       await fileRef.delete();
-      console.log('File deleted successfully:', file);
+      console.debug('File deleted successfully:', file);
     } catch (error) {
       console.error('Error deleting file:', error);
       throw error;
