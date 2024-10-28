@@ -52,6 +52,7 @@ jobs:
             CORS_ORIGINS=https://cloud-porsche.github.io\,https://cloud-dev.ostabo.com
             FIRESTORE_EMULATOR_HOST=
             FIREBASE_STORAGE_EMULATOR_HOST=
+            FIREBASE_STORAGE_BUCKET=cloud-porsche
           flags: |-
             --allow-unauthenticated
       - name: Print the URL
