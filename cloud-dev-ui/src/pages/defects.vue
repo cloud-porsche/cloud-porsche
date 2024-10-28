@@ -34,7 +34,6 @@
         <v-img
           v-if="item.signedImage?.length > 0"
           :src="item.signedImage"
-          max-width="10"
           aspect-ratio="1"
           contain
           @click="inspectedImage = { open: true, src: item.signedImage }"
@@ -130,6 +129,7 @@
           :src="inspectedImage.src"
           contain
           max-height="100%"
+          min-height="300"
           rounded
           @click="inspectedImage = { open: false, src: undefined }"
         >
