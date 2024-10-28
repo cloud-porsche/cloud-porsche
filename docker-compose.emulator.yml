@@ -36,6 +36,7 @@ services:
       - PORT=8080
       - CORS_ORIGIN=localhost
       - FIRESTORE_EMULATOR_HOST=firebase-emulator:8081
+      - FIREBASE_STORAGE_EMULATOR_HOST=firebase-emulator:9199
       - FIREBASE_OVERWRITE_CREDENTIALS=true
     env_file:
       - ./cloud-dev-property-management/.env

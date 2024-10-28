@@ -33,6 +33,7 @@ services:
       - PORT=8080
       - CORS_ORIGIN=localhost
       - FIRESTORE_EMULATOR_HOST=
+      - FIREBASE_STORAGE_EMULATOR_HOST=
       - FIREBASE_OVERWRITE_CREDENTIALS=true
     env_file:
       - ./cloud-dev-property-management/.env
