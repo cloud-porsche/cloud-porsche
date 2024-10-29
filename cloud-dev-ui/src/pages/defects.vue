@@ -352,10 +352,18 @@ function handleUpdateList(search: String, filter: String) {
   loading.value = true;
   get(`/v1/defects/search?search=${search}&filter=${filter}`)
     .json()
-    .then((data) => {
-      defects.value = data as SignedDefect[];
+    .then(async (data) => {
+      defects.value = await Promise.all(
+        (data as SignedDefect[]).map(async (defect) => {
+          // Fetch the image URL and assign it to the defect object
+          defect.signedImage = await fetchImage(defect.image); // Replace with actual image filename as needed
+          return defect;
+        }),
+      );
       loading.value = false;
-    });
+      error.value = false;
+    })
+    .catch(errHandler);
 }
 
 function deleteDefect(id: string | number) {

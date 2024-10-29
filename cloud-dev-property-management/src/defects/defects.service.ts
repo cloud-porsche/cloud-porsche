@@ -9,7 +9,6 @@ import { ObjectStorageService } from 'src/object_storage/object_storage.service'
 export class DefectsService {
   defectRepository: BaseFirestoreRepository<Defect> = getRepository(Defect);
   objectStorageService: ObjectStorageService;
-  
 
   constructor() {
     this.defectRepository = getRepository(Defect);
@@ -25,7 +24,11 @@ export class DefectsService {
   }
 
   async findFiltered(search: string, filter: keyof Defect) {
-    return await this.defectRepository.whereEqualTo(filter, search).find();
+    if (!search || !filter) return this.findAll();
+    return await this.defectRepository
+      .whereGreaterOrEqualThan(filter, search)
+      .whereLessOrEqualThan(filter, search + '\uf8ff')
+      .find();
   }
 
   async findOne(id: string) {
