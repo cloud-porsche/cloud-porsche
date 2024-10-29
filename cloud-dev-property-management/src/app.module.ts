@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DefectsModule } from './defects/defects.module';
-import { ObjectStorageModule } from './object_storage/object-storage.module';
 import { ConfigModule } from '@nestjs/config';
+import { ObjectStorageModule } from './object-storage/object-storage.module';
 
 @Module({
   imports: [

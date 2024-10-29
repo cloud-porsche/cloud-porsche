@@ -3,7 +3,7 @@ import { CreateDefectDto } from './dto/create-defect.dto';
 import { UpdateDefectDto } from './dto/update-defect.dto';
 import { Defect } from './entities/defect.entity';
 import { BaseFirestoreRepository, getRepository } from 'fireorm';
-import { ObjectStorageService } from 'src/object_storage/object-storage.service';
+import { ObjectStorageService } from '../object-storage/object-storage.service';
 
 @Injectable()
 export class DefectsService {
