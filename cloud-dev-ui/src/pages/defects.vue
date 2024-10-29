@@ -34,6 +34,7 @@
         <v-img
           v-if="item.signedImage?.length > 0"
           :src="item.signedImage"
+          class="cursor-pointer"
           aspect-ratio="1"
           contain
           @click="inspectedImage = { open: true, src: item.signedImage }"
@@ -77,26 +78,31 @@
                 <v-img
                   v-if="item.signedImage?.length > 0"
                   :src="item.signedImage"
+                  class="cursor-pointer"
                   contain
+                  position="left"
                   max-height="300"
                   @click="
                     inspectedImage = { open: true, src: item.signedImage }
                   "
                 >
                   <template v-slot:error>
-                    <div class="d-flex align-center justify-center fill-height">
+                    <div class="d-flex align-center justify-start fill-height">
                       <v-icon
                         color="error"
+                        size="50"
                         icon="mdi-image-broken-variant"
+                        v-tooltip="'Corrupted or missing Image'"
                       ></v-icon>
                     </div>
                   </template>
                   <template v-slot:placeholder>
-                    <div class="d-flex align-center justify-center fill-height">
+                    <div class="d-flex align-center justify-start fill-height">
                       <v-progress-circular indeterminate></v-progress-circular>
                     </div>
                   </template>
                 </v-img>
+                <i v-else>No image.</i>
               </div>
               <div v-else-if="column.value === 'actions'">
                 <v-btn
@@ -110,7 +116,7 @@
                   prepend-icon="mdi-delete"
                   color="error"
                   @click="initiateDeletion(item)"
-                  variant="tonal"
+                  variant="flat"
                   >Delete
                 </v-btn>
               </div>
@@ -134,8 +140,15 @@
           @click="inspectedImage = { open: false, src: undefined }"
         >
           <template v-slot:error>
-            <div class="d-flex align-center justify-center fill-height">
-              <v-icon color="error" icon="mdi-image-broken-variant"></v-icon>
+            <div
+              class="d-flex flex-column align-center justify-center fill-height"
+            >
+              <v-icon
+                color="error"
+                size="100"
+                icon="mdi-image-broken-variant"
+              ></v-icon>
+              <i class="pa-2 text-red-lighten-3">Corrupted or missing Image.</i>
             </div>
           </template>
           <template v-slot:placeholder>
@@ -159,10 +172,17 @@
     <v-card>
       <v-card-title>Confirm Delete</v-card-title>
       <v-card-subtitle>Defect name: {{ toDelete!.name }}</v-card-subtitle>
-      <v-card-text> Are you sure you want to delete this defect?</v-card-text>
+      <v-card-text>Are you sure you want to delete this defect?</v-card-text>
       <v-card-actions>
         <v-btn variant="text" @click="confirmDialog = false">Cancel</v-btn>
-        <v-btn color="error" @click="deleteDefect(toDelete!.id)">Delete</v-btn>
+        <v-btn
+          color="error"
+          variant="flat"
+          @click="deleteDefect(toDelete!.id)"
+          autofocus
+        >
+          Delete
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -210,12 +230,14 @@ const headers = [
     value: "name",
     sortable: true,
     maxWidth: "100px",
+    nowrap: true,
   },
   {
     title: "Location",
     value: "location",
     sortable: true,
     maxWidth: "100px",
+    nowrap: true,
   },
   {
     title: "Description Short",
