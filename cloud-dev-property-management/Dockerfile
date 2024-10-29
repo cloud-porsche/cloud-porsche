@@ -16,6 +16,7 @@ RUN pnpm run build
 
 FROM node:20-alpine
 
+ENV TZ=${TZ:-Europe/Berlin}
 ENV NODE_ENV=production
 
 EXPOSE ${PORT:-3000}

@@ -21,6 +21,7 @@ services:
       context: .
       dockerfile: ./cloud-dev-property-management/Dockerfile
     environment:
+      - TZ=${TZ:-Europe/Berlin}
       - PORT=${PORT:-8080}
       - CORS_ORIGIN=${CORS_ORIGIN}
       - CORS_ORIGINS=${CORS_ORIGINS}
