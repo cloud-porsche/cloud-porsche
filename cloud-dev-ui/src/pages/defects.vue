@@ -373,7 +373,7 @@ function patchDefect(
   oldId?: string,
 ) {
   loading.value = true;
-  if (image && defect.image) {
+  if (image && defect.image && oldId !== defect.image) {
     const newFile = new File([image], defect.image, { type: image.type });
 
     const formData = new FormData();

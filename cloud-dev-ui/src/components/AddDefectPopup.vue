@@ -148,7 +148,9 @@ function saveDefect() {
     descriptionLong: longDescription.value,
     reportedDate: toGmt0(defectDate.value),
     image: imageFile.value
-      ? crypto.randomUUID() + "." + imageFile.value?.name.split(".").pop()
+      ? imageFile.value.name === props.defect.image
+        ? props.defect.image
+        : crypto.randomUUID() + "." + imageFile.value?.name.split(".").pop()
       : "",
   };
 
