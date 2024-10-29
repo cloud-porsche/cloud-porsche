@@ -66,6 +66,7 @@
             <v-col cols="12">
               <v-file-input
                 label="Upload Image"
+                :rules="fileRules"
                 v-model="imageFile"
                 accept="image/*"
                 prepend-icon="mdi-image"
@@ -139,6 +140,19 @@ function validateForm() {
     saveDefect();
   }
 }
+
+const fileRules = [
+  (v: File[]) =>
+    !v ||
+    !v.length ||
+    v[0].size < 2000000 ||
+    "File size should be less than 2MB",
+  (v: File[]) =>
+    !v ||
+    !v.length ||
+    v[0].type.startsWith("image/") ||
+    "File must be an image",
+];
 
 function saveDefect() {
   const newDefect: Partial<IDefect> = {

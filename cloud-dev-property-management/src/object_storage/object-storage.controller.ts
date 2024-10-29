@@ -2,15 +2,28 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   Patch,
   Post,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ObjectStorageService } from './object_storage.service';
+import { ObjectStorageService } from './object-storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+
+const uploadedFilePipe = new ParseFilePipeBuilder()
+  .addFileTypeValidator({
+    fileType: 'image/*',
+  })
+  .addMaxSizeValidator({
+    maxSize: 2000000,
+  })
+  .build({
+    errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+  });
 
 @Controller('storage')
 export class ObjectStorageController {
@@ -31,7 +44,10 @@ export class ObjectStorageController {
       },
     },
   })
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFile(
+    @UploadedFile(uploadedFilePipe)
+    file: Express.Multer.File,
+  ) {
     return await this.objectStorageService.uploadFile(file);
   }
 
@@ -63,7 +79,8 @@ export class ObjectStorageController {
   })
   async updateFile(
     @Param('file') fileName: string,
-    @UploadedFile() newFile: Express.Multer.File,
+    @UploadedFile(uploadedFilePipe)
+    newFile: Express.Multer.File,
   ) {
     return await this.objectStorageService.updateFile(fileName, newFile);
   }

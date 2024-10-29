@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ObjectStorageService } from './object_storage.service';
-import { ObjectStorageController } from './object_storage.controller';
+import { ObjectStorageService } from './object-storage.service';
+import { ObjectStorageController } from './object-storage.controller';
 
 @Module({
   imports: [],
