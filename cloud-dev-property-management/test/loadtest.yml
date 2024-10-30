@@ -1,0 +1,14 @@
+execution:
+  - concurrency: 1000
+    ramp-up: 20s
+    hold-for: 40s
+    scenario: cloud-staging-defects
+
+scenarios:
+  cloud-staging-defects:
+    requests:
+      - https://property-management-staging-750687370557.europe-west4.run.app/v1/defects
+
+reporting:
+  - console
+  - final-stats
