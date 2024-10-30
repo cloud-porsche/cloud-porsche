@@ -40,9 +40,9 @@ jobs:
         run: pnpm build  # Adjust the build command if necessary (e.g., pnpm run build)
         env:
           VITE_BASE_URL: cloud-porsche
-          VITE_PROPERTY_MANAGEMENT_API_URL: https://property-management-c4okt5o2kq-ez.a.run.app
+          VITE_PROPERTY_MANAGEMENT_API_URL: https://property-management-prod-750687370557.europe-west4.run.app
           VITE_PROPERTY_MANAGEMENT_API_OPTIONS:
-            https://cloud-porsche-backend-319164640160.europe-west1.run.app,https://cloud-property-management.ostabo.com,https://property-management-c4okt5o2kq-ez.a.run.app
+            https://property-management-prod-750687370557.europe-west4.run.app,https://property-management-staging-750687370557.europe-west4.run.app,https://cloud-property-management.ostabo.com
       # Step 6: Upload the build output as an artifact
       - name: Upload static files as artifact
         id: deployment
