@@ -54,6 +54,7 @@ jobs:
             FIRESTORE_EMULATOR_HOST=
             FIREBASE_STORAGE_EMULATOR_HOST=
             FIREBASE_STORAGE_BUCKET=cloud-porsche
+            FIRESTORE_DB=${{ github.ref_name == 'master' && 'prod' || 'staging' }}
           flags: |-
             --max-instances=5
             --allow-unauthenticated

@@ -32,6 +32,7 @@ services:
       - FIREBASE_OVERWRITE_CREDENTIALS=${FIREBASE_OVERWRITE_CREDENTIALS:-true}
       - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
       - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIRESTORE_DB=${FIRESTORE_DB:-staging}
     restart: unless-stopped
     networks:
       - cloud-porsche

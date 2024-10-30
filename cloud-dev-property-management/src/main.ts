@@ -28,7 +28,9 @@ async function bootstrap() {
     projectId: process.env.FIREBASE_PROJECT_ID,
   });
 
-  initialize(admin.firestore());
+  const firestore = admin.firestore();
+  firestore.settings({ databaseId: process.env.FIRESTORE_DB });
+  initialize(firestore);
 
   const app = await NestFactory.create(AppModule);
   app.enableCors({
