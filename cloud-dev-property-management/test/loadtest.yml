@@ -1,13 +1,27 @@
+modules:
+  local:
+    sequential: true
+
 execution:
-  - concurrency: 1000
-    ramp-up: 20s
-    hold-for: 40s
+  - concurrency: 10
+    scenario: cloud-staging-defects
+    hold-for: 20s
+  - concurrency: 10
+    hold-for: 20s
+    scenario: cloud-staging-defects
+  - concurrency: 500
+    hold-for: 20s
+    scenario: cloud-staging-defects
+  - concurrency: 10
+    hold-for: 20s
     scenario: cloud-staging-defects
 
 scenarios:
   cloud-staging-defects:
     requests:
       - https://property-management-staging-750687370557.europe-west4.run.app/v1/defects
+    caching: false
+    method: GET
 
 reporting:
   - console
