@@ -19,9 +19,21 @@
           required
           outlined
           type="password"
+          @keyup.enter="signIn"
         ></v-text-field>
         <v-btn @click="signIn" color="primary" width="100%">Confirm</v-btn>
       </v-form>
+      <v-card-text class="w-100 text-center text-grey">
+        No Account yet? Register
+        <a class="register-link text-accent" @click="openRegister">here</a>
+        <br /><br /><small
+          >Forgot your Password?<br />
+          Enter your email and click
+          <a class="register-link text-accent" @click="resetPassword"
+            >Reset Password</a
+          ></small
+        >
+      </v-card-text>
       <v-divider class="ma-4"></v-divider>
       <v-btn-group
         class="d-flex justify-center align-center"
@@ -56,19 +68,35 @@
       @click="appStore.toggleTheme()"
     />
 
-    <v-alert v-if="error" type="error" class="position-absolute bottom-0 ma-5"
+    <v-alert
+      v-if="error"
+      closable
+      type="error"
+      class="position-absolute bottom-0 ma-5 slide-y-transition"
       >{{ error }}
     </v-alert>
+
+    <v-alert
+      v-if="successMessage"
+      closable
+      type="success"
+      class="position-absolute bottom-0 ma-5 slide-y-transition"
+      >{{ successMessage }}
+    </v-alert>
   </v-card>
+
+  <v-bottom-sheet v-model="registerSheet" fullscreen retain-focus :scrim="true">
+    <Register @back="registerSheet = false" />
+  </v-bottom-sheet>
 </template>
 
 <script lang="ts" setup>
 import { useFirebaseAuth } from "vuefire";
 import {
   AuthProvider,
-  getRedirectResult,
   GithubAuthProvider,
   GoogleAuthProvider,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
 } from "firebase/auth";
@@ -100,6 +128,9 @@ const allowGithub = import.meta.env.VITE_DISABLE_OAUTH_GITHUB !== "true";
 const githubProvider = new GithubAuthProvider();
 
 const error = ref(null);
+const successMessage = ref(null);
+
+const registerSheet = ref(false);
 
 function signIn() {
   error.value = null;
@@ -111,13 +142,6 @@ function signIn() {
   );
 }
 
-onMounted(() => {
-  getRedirectResult(auth!).catch((reason) => {
-    console.error("Failed redirect result", reason);
-    error.value = reason;
-  });
-});
-
 function signinPopup(provider: AuthProvider) {
   error.value = null;
   signInWithPopup(auth!, provider).catch((reason) => {
@@ -125,8 +149,27 @@ function signinPopup(provider: AuthProvider) {
     error.value = reason;
   });
 }
+
+function openRegister() {
+  registerSheet.value = true;
+}
+
+function resetPassword() {
+  error.value = null;
+  sendPasswordResetEmail(auth!, email.value)
+    .catch((reason) => {
+      console.error("Failed reset", reason);
+      error.value = reason;
+    })
+    .finally(() => {
+      successMessage.value = "Password reset email sent.";
+    });
+}
 </script>
 
 <style scoped>
-/* Optional: Add styles as needed */
+.register-link {
+  cursor: pointer;
+  text-decoration: underline;
+}
 </style>

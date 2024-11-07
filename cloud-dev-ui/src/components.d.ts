@@ -10,6 +10,7 @@ declare module 'vue' {
     AddDefectPopup: typeof import('./components/AddDefectPopup.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     Login: typeof import('./components/Login.vue')['default']
+    Register: typeof import('./components/Register.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchFilter: typeof import('./components/SearchFilter.vue')['default']

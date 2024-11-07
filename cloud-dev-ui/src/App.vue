@@ -45,7 +45,6 @@
             title="Profile"
             value="profile"
             prepend-icon="mdi-account-circle"
-            v-tooltip="'Profile Page'"
             :active="router.currentRoute.value.path === '/profile'"
           >
           </v-list-item>
@@ -84,8 +83,9 @@
 import router from "@/router";
 import { useDisplay } from "vuetify";
 import { useAppStore } from "@/stores/app";
-import { useCurrentUser } from "vuefire";
+import { useCurrentUser, useFirebaseAuth } from "vuefire";
 import Login from "@/components/Login.vue";
+import { connectAuthEmulator } from "firebase/auth";
 
 const { mobile } = useDisplay();
 
@@ -95,6 +95,12 @@ const appStore = useAppStore();
 const isDark = computed(() => appStore.isDark);
 
 const user = useCurrentUser();
+
+const auth = useFirebaseAuth();
+
+if (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN && auth) {
+  connectAuthEmulator(auth, import.meta.env.VITE_FIREBASE_AUTH_DOMAIN);
+}
 </script>
 
 <style lang="scss">
