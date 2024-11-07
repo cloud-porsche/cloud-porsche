@@ -17,6 +17,13 @@
         v-tooltip="'Toggle Theme'"
         @click="appStore.toggleTheme()"
       />
+      <v-btn
+        :icon="user ? 'mdi-account-circle' : 'mdi-account'"
+        :text="user?.displayName ?? 'Login'"
+        slim
+        v-tooltip="user ? 'Profile' : 'Login'"
+        @click="router.push(user ? '/profile' : '/login')"
+      />
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawerOpen">
@@ -55,6 +62,18 @@
     </v-main>
 
     <AppFooter />
+
+    <v-bottom-sheet
+      :model-value="!user"
+      fullscreen
+      :close-on-content-click="false"
+      :close-on-back="false"
+      persistent
+      retain-focus
+      :scrim="true"
+    >
+      <Login />
+    </v-bottom-sheet>
   </v-app>
 </template>
 
@@ -62,6 +81,8 @@
 import router from "@/router";
 import { useDisplay } from "vuetify";
 import { useAppStore } from "@/stores/app";
+import { useCurrentUser } from "vuefire";
+import Login from "@/components/Login.vue";
 
 const { mobile } = useDisplay();
 
@@ -69,6 +90,8 @@ const drawerOpen = ref(true);
 
 const appStore = useAppStore();
 const isDark = computed(() => appStore.isDark);
+
+const user = useCurrentUser();
 </script>
 
 <style lang="scss">

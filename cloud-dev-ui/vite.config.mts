@@ -75,6 +75,7 @@ export default ({ mode }) => {
       rollupOptions: {
         cache: false,
       },
+      chunkSizeWarningLimit: 1024,
       commonjsOptions: {
         include: [/types/, /@cloud-porsche/, /node_modules/],
       },

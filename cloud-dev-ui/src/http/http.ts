@@ -2,6 +2,7 @@
 
 import { HttpError } from "@/http/http-error";
 import { useAppStore } from "@/stores/app";
+import { useCurrentUser } from "vuefire";
 
 /**
  * `Promise<`[`Response`](https://fetch.spec.whatwg.org/#response)`>` with added methods from [`Body`](https://fetch.spec.whatwg.org/#body-mixin).
@@ -112,11 +113,12 @@ function request<T extends BodyInit>(
   async function _fetch() {
     // Have to wait for headers to be modified inside extendResponsePromiseWithBodyMethods
     await Promise.resolve();
+    const token = await useCurrentUser().value?.getIdToken(true);
 
     const req = new Request(input, {
       ...defaults.init,
       ...init,
-      headers,
+      headers: new Headers({ ...headers, authorization: token }),
       method,
       body,
     });
