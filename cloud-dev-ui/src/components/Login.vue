@@ -30,6 +30,7 @@
         divided
       >
         <v-btn
+          v-if="allowGoogle"
           class="pa-2"
           icon="mdi-google"
           @click="signinPopup(googleProvider)"
@@ -37,6 +38,7 @@
         >
         </v-btn>
         <v-btn
+          v-if="allowGithub"
           class="pa-2"
           icon="mdi-github"
           @click="signinPopup(githubProvider)"
@@ -92,7 +94,9 @@ const emailRules = [
 const email = ref("");
 const password = ref("");
 
+const allowGoogle = import.meta.env.VITE_DISABLE_OAUTH_GOOGLE !== "true";
 const googleProvider = new GoogleAuthProvider();
+const allowGithub = import.meta.env.VITE_DISABLE_OAUTH_GITHUB !== "true";
 const githubProvider = new GithubAuthProvider();
 
 const error = ref(null);

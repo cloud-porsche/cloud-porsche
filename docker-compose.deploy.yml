@@ -12,6 +12,8 @@ services:
       args:
         - VITE_PROPERTY_MANAGEMENT_API_URL=${VITE_PROPERTY_MANAGEMENT_API_URL}
         - VITE_PROPERTY_MANAGEMENT_API_OPTIONS=${VITE_PROPERTY_MANAGEMENT_API_OPTIONS}
+        - VITE_DISABLE_OAUTH_GITHUB=${VITE_DISABLE_OAUTH_GITHUB}
+        - VITE_DISABLE_OAUTH_GOOGLE=${VITE_DISABLE_OAUTH_GOOGLE}
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80" ]

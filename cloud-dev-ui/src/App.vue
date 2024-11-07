@@ -17,13 +17,6 @@
         v-tooltip="'Toggle Theme'"
         @click="appStore.toggleTheme()"
       />
-      <v-btn
-        :icon="user ? 'mdi-account-circle' : 'mdi-account'"
-        :text="user?.displayName ?? 'Login'"
-        slim
-        v-tooltip="user ? 'Profile' : 'Login'"
-        @click="router.push(user ? '/profile' : '/login')"
-      />
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawerOpen">
@@ -46,6 +39,16 @@
       </v-list>
       <template v-slot:append>
         <v-list nav>
+          <v-list-item
+            v-if="user"
+            to="/profile"
+            title="Profile"
+            value="profile"
+            prepend-icon="mdi-account-circle"
+            v-tooltip="'Profile Page'"
+            :active="router.currentRoute.value.path === '/profile'"
+          >
+          </v-list-item>
           <v-list-item
             prepend-icon="mdi-cog"
             to="/settings"

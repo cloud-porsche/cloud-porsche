@@ -7,10 +7,13 @@
     <v-spacer />
     <v-btn
       class="me-4"
-      icon="mdi-logout"
+      variant="tonal"
+      append-icon="mdi-logout"
+      color="error"
       @click="signOut(auth!)"
-      v-tooltip="'Sign Out'"
-    />
+      text="Sign Out"
+    >
+    </v-btn>
   </v-toolbar>
   <v-responsive v-if="user">
     <v-card>
