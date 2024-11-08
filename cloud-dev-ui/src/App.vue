@@ -98,8 +98,9 @@ const user = useCurrentUser();
 
 const auth = useFirebaseAuth();
 
-if (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN && auth) {
-  connectAuthEmulator(auth, import.meta.env.VITE_FIREBASE_AUTH_DOMAIN);
+const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
+if (authDomain && auth && authDomain.includes("localhost")) {
+  connectAuthEmulator(auth, authDomain);
 }
 </script>
 

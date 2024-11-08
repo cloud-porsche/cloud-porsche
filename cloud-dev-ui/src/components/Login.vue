@@ -80,13 +80,18 @@
       v-if="successMessage"
       closable
       type="success"
-      class="position-absolute bottom-0 ma-5 slide-y-transition"
+      class="position-absolute bottom-0 ma-5"
       >{{ successMessage }}
     </v-alert>
   </v-card>
 
   <v-bottom-sheet v-model="registerSheet" fullscreen retain-focus :scrim="true">
-    <Register @back="registerSheet = false" @verificationSend="successMessage='Verification Email sent to your email adress.'" />
+    <Register
+      @back="registerSheet = false"
+      @verificationSend="
+        successMessage = 'Verification Email sent to your email adress.'
+      "
+    />
   </v-bottom-sheet>
 </template>
 
@@ -138,7 +143,8 @@ function signIn() {
     .then((userCredential) => {
       const user = userCredential.user;
       if (!user.emailVerified) {
-        error.value = "Email not verified. Please check your inbox to verify your email before logging in.";
+        error.value =
+          "Email not verified. Please check your inbox to verify your email before logging in.";
       } else {
         successMessage.value = "Successfully logged in!";
       }
