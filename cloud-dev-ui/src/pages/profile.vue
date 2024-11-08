@@ -1,68 +1,115 @@
 <template>
-  <v-container v-if="user" class="pt-4">
+  <v-container v-if="user" class="d-flex justify-center align-center">
     <!-- Profile Card -->
-    <v-card class="mt-4">
+    <v-card class="pa-4" width="fit-content" min-width="50%">
       <!-- Profile Picture Section -->
       <v-card-item class="d-flex justify-center">
-        <v-avatar size="150" class="mt-4">
-          <!-- Check if userPhoto exists, otherwise show user icon -->
-          <v-img 
-            v-if="userPhoto"
-            :src="userPhoto"
-            alt="User Photo"
+        <label for="pb-upload">
+          <v-avatar
+            id="pb"
+            class="rounded-circle bg-primary"
+            size="120"
+            text="User Photo"
+            rounded
+            border
           >
-            <template v-slot:error>
-              <div class="d-flex align-center justify-center fill-height">
-                <v-icon color="error" icon="mdi-image-broken-variant"></v-icon>
-              </div>
-            </template>
-            <template v-slot:placeholder>
-              <div class="d-flex align-center justify-center fill-height">
-                <v-progress-circular
-                  size="24"
-                  indeterminate
-                ></v-progress-circular>
-              </div>
-            </template>
-          </v-img>
-          <!-- Placeholder icon if no userPhoto -->
-          <v-icon v-else color="primary" background-color="secondary" size="40">mdi-account</v-icon>
-        </v-avatar>
+            <!-- Check if userPhoto exists, otherwise show user icon -->
+            <v-img v-if="userPhoto" :src="userPhoto" alt="User Photo" cover>
+              <template v-slot:error>
+                <div class="d-flex align-center justify-center fill-height">
+                  <v-icon
+                    color="error"
+                    icon="mdi-image-broken-variant"
+                  ></v-icon>
+                </div>
+              </template>
+              <template v-slot:placeholder>
+                <div class="d-flex align-center justify-center fill-height">
+                  <v-progress-circular
+                    size="24"
+                    indeterminate
+                  ></v-progress-circular>
+                </div>
+              </template>
+            </v-img>
+            <!-- Placeholder icon if no userPhoto -->
+            <v-icon v-else class="opacity-80" color="background" size="80"
+              >mdi-account
+            </v-icon>
+          </v-avatar>
+        </label>
+
+        <v-file-input
+          id="pb-upload"
+          class="d-none"
+          v-model="editData.photo"
+          accept="image/*"
+          prepend-icon="mdi-camera"
+          max-width="400"
+          @update:modelValue="saveChanges"
+        ></v-file-input>
       </v-card-item>
 
-      <!-- Profile Details Section -->
+      <v-divider class="ma-4"></v-divider>
+
       <v-card-item>
-        <v-row justify="space-between">
-          <v-col align="right">Display Name</v-col>
-          <v-col>{{ user?.displayName ?? "Anonymous" }}</v-col>
-        </v-row>
+        <!-- Profile Details Section -->
+        <div class="card-grid">
+          <span class="text-end">Display Name:</span>
+          <span class="d-flex align-center"
+            >{{ user?.displayName ?? "Anonymous" }}
+            <v-btn
+              class="ms-2"
+              color="primary"
+              @click="openEditDialog"
+              size="x-small"
+              icon="mdi-pencil"
+              variant="tonal"
+            >
+            </v-btn>
+          </span>
+          <span class="text-end">Email:</span>
+          <span>{{ user?.email ?? "No Email" }}</span>
+        </div>
       </v-card-item>
-         
-      <v-card-item>
-        <v-row justify="space-between">
-          <v-col align="right">Emailadress</v-col>
-          <v-col>{{ user?.email ?? "No Email" }}</v-col>
-        </v-row>
-      </v-card-item>
+
+      <v-divider class="ma-4"></v-divider>
 
       <!-- Profile Actions Section -->
       <v-card-actions>
-        <v-btn color="error" @click="signOut(auth!)" class="me-4" variant="tonal" append-icon="mdi-logout">Log Out</v-btn>
-        <v-spacer/>
-        <v-btn color="primary" @click="openEditDialog" class="me-4" variant="tonal" append-icon="mdi-pencil">Edit</v-btn>
+        <v-row>
+          <v-col class="text-end">
+            <v-btn color="warn" variant="tonal" @click="resetPassword"
+              >Reset Password
+            </v-btn>
+          </v-col>
+          <v-col>
+            <v-btn
+              color="error"
+              @click="signOut(auth!)"
+              variant="tonal"
+              append-icon="mdi-logout"
+              >Log Out
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-card-actions>
-    
+    </v-card>
+
     <v-alert
       v-if="successMessage"
       closable
       type="success"
-      class="position-absolute top-0 ma-5 slide-y-transition"
-    >{{ successMessage }}
+      class="position-absolute bottom-0 ma-16"
+      >{{ successMessage }}
     </v-alert>
-    </v-card>
 
     <!-- Edit Dialog -->
-    <v-dialog v-model="editDialog" max-width="400">
+    <v-dialog
+      v-model="editDialog"
+      max-width="400"
+      @afterLeave="closeEditDialog"
+    >
       <v-card>
         <v-card-title>Edit Profile</v-card-title>
         <v-card-text>
@@ -70,23 +117,23 @@
             <v-text-field
               label="Display Name"
               v-model="editData.displayName"
-              :rules="[v => !!v || 'Display name is required']"
+              :rules="[(v) => !!v || 'Display name is required']"
               required
             ></v-text-field>
-            <v-file-input
-              label="Profile Photo"
-              v-model="editData.photo"
-              accept="image/*"
-              prepend-icon="mdi-camera"
-              max-width="400"
-            ></v-file-input>
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" text="true" @onclick="resetPassword">Reset Password</v-btn>
           <v-spacer />
-          <v-btn color="error" text="true" @click="closeEditDialog">Cancel</v-btn>
-          <v-btn color="primary" text="true" :disabled="!formValid" @click="saveChanges">Save</v-btn>
+          <v-btn color="error" text="true" @click="closeEditDialog"
+            >Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            text="true"
+            :disabled="!formValid"
+            @click="saveChanges"
+            >Save
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -94,10 +141,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { signOut, updateProfile, sendPasswordResetEmail } from "firebase/auth";
+import { ref } from "vue";
+import { sendPasswordResetEmail, signOut, updateProfile } from "firebase/auth";
 import { useCurrentUser, useFirebaseAuth } from "vuefire";
-import { get, post } from "@/http/http";
+import { del, get, post } from "@/http/http";
 
 const auth = useFirebaseAuth();
 const user = useCurrentUser();
@@ -110,16 +157,28 @@ const editData = ref({
 const formValid = ref(false);
 const userPhoto = ref(null);
 
+onMounted(async () => {
+  if (user.value?.photoURL) {
+    userPhoto.value = await fetchImage(user.value.photoURL);
+  }
+});
+watch(user, async (newUser) => {
+  if (newUser) {
+    userPhoto.value = newUser.photoURL
+      ? await fetchImage(newUser.photoURL)
+      : null;
+  }
+});
+
 const successMessage = ref("");
 
 const openEditDialog = () => {
-  editData.value.displayName = user.value?.displayName ?? "";
-  editData.value.photo = null;
   editDialog.value = true;
 };
 
 const closeEditDialog = () => {
   editDialog.value = false;
+  editData.value.displayName = user.value?.displayName ?? "";
 };
 
 const saveChanges = async () => {
@@ -127,15 +186,18 @@ const saveChanges = async () => {
     if (user.value && auth) {
       let fileName = "";
       if (editData.value.photo) {
-        fileName = user.value.uid + "." + editData.value.photo.name.split('.').pop();
-        const newFile = new File([editData.value.photo], fileName, { type: editData.value.photo.type });
-        console.log("Uploading photo:", newFile);
+        fileName =
+          user.value.uid + "." + editData.value.photo.name.split(".").pop();
+        const newFile = new File([editData.value.photo], fileName, {
+          type: editData.value.photo.type,
+        });
         await uploadPhoto(newFile);
+        if (userPhoto.value) await del("/v1/storage/" + user.value.photoURL);
       }
       // Update profile in Firebase
       await updateProfile(user.value, {
         displayName: editData.value.displayName,
-        photoURL: fileName !== "" ? fileName : user.value.photoURL
+        photoURL: fileName !== "" ? fileName : user.value.photoURL,
       });
       if (fileName) userPhoto.value = await fetchImage(fileName);
     }
@@ -145,12 +207,6 @@ const saveChanges = async () => {
     console.error("Failed to update profile:", error);
   }
 };
-
-onMounted(async () => {
-  if (user.value?.photoURL) {
-    userPhoto.value = await fetchImage(user.value.photoURL);
-  }
-});
 
 async function fetchImage(fileName: string) {
   if (!fileName) return "";
@@ -175,16 +231,58 @@ const uploadPhoto = async (file: File) => {
   }
 };
 
-const resetPassword = () => {
+function resetPassword() {
   if (user.value?.email) {
     sendPasswordResetEmail(auth!, user.value.email)
       .then(() => {
-        ("Password reset email sent!");
+        successMessage.value = "Password reset email sent!";
       })
       .catch((error) => {
         console.error("Error sending reset email:", error);
       });
   }
-  successMessage.value = "Password reset email sent!";
-};
+}
 </script>
+
+<style lang="scss">
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  align-items: center;
+}
+
+#pb {
+  cursor: pointer;
+
+  &:hover {
+    &::after {
+      content: "Change Photo";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      width: 100%;
+      height: 100%;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      animation: fade-in 0.25s linear;
+
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+</style>
