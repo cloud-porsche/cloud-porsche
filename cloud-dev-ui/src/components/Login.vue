@@ -86,7 +86,7 @@
   </v-card>
 
   <v-bottom-sheet v-model="registerSheet" fullscreen retain-focus :scrim="true">
-    <Register @back="registerSheet = false" />
+    <Register @back="registerSheet = false" @verificationSend="successMessage='Verification Email sent to your email adress.'" />
   </v-bottom-sheet>
 </template>
 
@@ -127,19 +127,26 @@ const googleProvider = new GoogleAuthProvider();
 const allowGithub = import.meta.env.VITE_DISABLE_OAUTH_GITHUB !== "true";
 const githubProvider = new GithubAuthProvider();
 
-const error = ref(null);
-const successMessage = ref(null);
+const error = ref<string | null>(null);
+const successMessage = ref("");
 
 const registerSheet = ref(false);
 
 function signIn() {
   error.value = null;
-  signInWithEmailAndPassword(auth!, email.value, password.value).catch(
-    (reason) => {
-      console.error("Failed sign", reason);
+  signInWithEmailAndPassword(auth!, email.value, password.value)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      if (!user.emailVerified) {
+        error.value = "Email not verified. Please check your inbox to verify your email before logging in.";
+      } else {
+        successMessage.value = "Successfully logged in!";
+      }
+    })
+    .catch((reason) => {
+      console.error("Failed sign-in", reason);
       error.value = reason;
-    },
-  );
+    });
 }
 
 function signinPopup(provider: AuthProvider) {

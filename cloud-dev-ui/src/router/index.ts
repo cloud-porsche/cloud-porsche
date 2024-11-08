@@ -15,17 +15,18 @@ const router = createRouter({
   routes,
 });
 
-// redirect to login page if the user is not logged in
+// Redirect to login page if the user is not logged in or their email is not verified
 router.beforeEach(async (to) => {
   const currentUser = await getCurrentUser();
-  // if the user is not logged in, redirect to the login page
-  if (!currentUser && to.path !== "/profile") {
+
+  const isLoggedIn = !!currentUser;
+  const isEmailVerified = currentUser?.emailVerified;
+
+  if ((!isLoggedIn || !isEmailVerified) && to.path !== "/profile") {
     return {
       path: "/profile",
       query: {
-        // we keep the current path in the query so we can
-        // redirect to it after login with
-        // `router.push(route.query.redirect || '/')`
+        // Store the intended path to redirect after successful login and verification
         redirect: to.fullPath,
       },
     };

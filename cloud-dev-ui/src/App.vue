@@ -66,7 +66,7 @@
     <AppFooter />
 
     <v-bottom-sheet
-      :model-value="!user"
+      :model-value="!user || !user.emailVerified"
       fullscreen
       :close-on-content-click="false"
       :close-on-back="false"

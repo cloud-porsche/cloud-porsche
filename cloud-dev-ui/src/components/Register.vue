@@ -52,14 +52,14 @@
 </template>
 
 <script lang="ts" setup>
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { useFirebaseAuth } from "vuefire";
 import { useAppStore } from "@/stores/app";
 
 const appStore = useAppStore();
 const isDark = computed(() => appStore.isDark);
 
-const emit = defineEmits(["back"]);
+const emit = defineEmits(["back", "verificationSend"]);
 
 const auth = useFirebaseAuth();
 
@@ -88,15 +88,21 @@ const passwordRules = [
 const email = ref("");
 const password = ref("");
 
-const error = ref(null);
+const error = ref<string | null>(null);
 
-function register() {
+async function register() {
   error.value = null;
-  createUserWithEmailAndPassword(auth!, email.value, password.value).catch(
-    (err) => {
-      error.value = err.message;
-    },
-  );
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth!, email.value, password.value);
+    const user = userCredential.user;
+
+    // Send a verification email
+    await sendEmailVerification(user);
+    emit("verificationSend");
+    emit("back");
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : "An unknown error occurred.";
+  }
 }
 </script>
 
