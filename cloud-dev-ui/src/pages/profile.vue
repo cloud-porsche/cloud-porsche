@@ -1,24 +1,10 @@
 <template>
   <v-container v-if="user" class="pt-4">
-    <!-- Toolbar -->
-    <v-toolbar>
-      <v-toolbar-title>Profile</v-toolbar-title>
-      <v-spacer />
-      <v-btn
-        variant="tonal"
-        append-icon="mdi-logout"
-        color="error"
-        @click="signOut(auth!)"
-        text="Sign Out"
-      >
-        Sign Out
-      </v-btn>
-    </v-toolbar>
-
     <!-- Profile Card -->
     <v-card class="mt-4">
-      <v-card-item class="d-flex align-center">
-        <v-avatar size="100" class="me-4">
+      <!-- Profile Picture Section -->
+      <v-card-item class="d-flex justify-center">
+        <v-avatar size="150" class="mt-4">
           <!-- Check if userPhoto exists, otherwise show user icon -->
           <v-img 
             v-if="userPhoto"
@@ -40,15 +26,31 @@
             </template>
           </v-img>
           <!-- Placeholder icon if no userPhoto -->
-          <v-icon v-else color="primary">mdi-account</v-icon>
+          <v-icon v-else color="primary" background-color="secondary" size="40">mdi-account</v-icon>
         </v-avatar>
-        <div>
-          <v-card-title>{{ user?.displayName ?? "Anonymous" }}</v-card-title>
-          <v-card-subtitle>{{ user?.email ?? "No Email" }}</v-card-subtitle>
-        </div>
-        <v-spacer />
-        <v-btn color="primary" @click="openEditDialog">Edit</v-btn>
       </v-card-item>
+
+      <!-- Profile Details Section -->
+      <v-card-item>
+        <v-row justify="space-between">
+          <v-col align="right">Display Name</v-col>
+          <v-col>{{ user?.displayName ?? "Anonymous" }}</v-col>
+        </v-row>
+      </v-card-item>
+         
+      <v-card-item>
+        <v-row justify="space-between">
+          <v-col align="right">Emailadress</v-col>
+          <v-col>{{ user?.email ?? "No Email" }}</v-col>
+        </v-row>
+      </v-card-item>
+
+      <!-- Profile Actions Section -->
+      <v-card-actions>
+        <v-btn color="error" @click="signOut(auth!)" class="me-4" variant="tonal" append-icon="mdi-logout">Log Out</v-btn>
+        <v-spacer/>
+        <v-btn color="primary" @click="openEditDialog" class="me-4" variant="tonal" append-icon="mdi-pencil">Edit</v-btn>
+      </v-card-actions>
     </v-card>
 
     <!-- Edit Dialog -->
@@ -70,6 +72,10 @@
               prepend-icon="mdi-camera"
               max-width="400"
             ></v-file-input>
+            <!-- Reset Password Button -->
+            <v-btn color="secondary" @click="resetPassword" class="mt-3" small>
+              Reset Password
+            </v-btn>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -84,7 +90,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { signOut, updateProfile } from "firebase/auth";
+import { signOut, updateProfile, sendPasswordResetEmail } from "firebase/auth";
 import { useCurrentUser, useFirebaseAuth } from "vuefire";
 import { get, post } from "@/http/http";
 
@@ -97,11 +103,11 @@ const editData = ref({
   photo: null as File | null,
 });
 const formValid = ref(false);
-const userPhoto = ref(null); // Default photo placeholder
+const userPhoto = ref(null);
 
 const openEditDialog = () => {
   editData.value.displayName = user.value?.displayName ?? "";
-  editData.value.photo = user.value?.photoURL ? new File([], user.value.photoURL) : null;
+  editData.value.photo = null;
   editDialog.value = true;
 };
 
@@ -160,6 +166,16 @@ const uploadPhoto = async (file: File) => {
     console.error("Failed to upload photo:", error);
   }
 };
-</script>
 
-<style scoped></style>
+const resetPassword = () => {
+  if (user.value?.email) {
+    sendPasswordResetEmail(auth!, user.value.email)
+      .then(() => {
+        ("Password reset email sent!");
+      })
+      .catch((error) => {
+        console.error("Error sending reset email:", error);
+      });
+  }
+};
+</script>
