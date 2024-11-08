@@ -51,6 +51,14 @@
         <v-spacer/>
         <v-btn color="primary" @click="openEditDialog" class="me-4" variant="tonal" append-icon="mdi-pencil">Edit</v-btn>
       </v-card-actions>
+    
+    <v-alert
+      v-if="successMessage"
+      closable
+      type="success"
+      class="position-absolute top-0 ma-5 slide-y-transition"
+    >{{ successMessage }}
+    </v-alert>
     </v-card>
 
     <!-- Edit Dialog -->
@@ -72,13 +80,10 @@
               prepend-icon="mdi-camera"
               max-width="400"
             ></v-file-input>
-            <!-- Reset Password Button -->
-            <v-btn color="secondary" @click="resetPassword" class="mt-3" small>
-              Reset Password
-            </v-btn>
           </v-form>
         </v-card-text>
         <v-card-actions>
+          <v-btn color="primary" text="true" @onclick="resetPassword">Reset Password</v-btn>
           <v-spacer />
           <v-btn color="error" text="true" @click="closeEditDialog">Cancel</v-btn>
           <v-btn color="primary" text="true" :disabled="!formValid" @click="saveChanges">Save</v-btn>
@@ -104,6 +109,8 @@ const editData = ref({
 });
 const formValid = ref(false);
 const userPhoto = ref(null);
+
+const successMessage = ref("");
 
 const openEditDialog = () => {
   editData.value.displayName = user.value?.displayName ?? "";
@@ -133,6 +140,7 @@ const saveChanges = async () => {
       if (fileName) userPhoto.value = await fetchImage(fileName);
     }
     editDialog.value = false;
+    successMessage.value = "Profile updated!";
   } catch (error) {
     console.error("Failed to update profile:", error);
   }
@@ -177,5 +185,6 @@ const resetPassword = () => {
         console.error("Error sending reset email:", error);
       });
   }
+  successMessage.value = "Password reset email sent!";
 };
 </script>
