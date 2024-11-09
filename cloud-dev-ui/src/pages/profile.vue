@@ -185,14 +185,20 @@ const saveChanges = async () => {
   try {
     if (user.value && auth) {
       let fileName = "";
+      let newFileType = "";
       if (editData.value.photo) {
+        newFileType += editData.value.photo.name.split(".").pop();
         fileName =
-          user.value.uid + "." + editData.value.photo.name.split(".").pop();
+          user.value.uid + "." + newFileType;
         const newFile = new File([editData.value.photo], fileName, {
           type: editData.value.photo.type,
         });
         await uploadPhoto(newFile);
-        if (userPhoto.value) await del("/v1/storage/" + user.value.photoURL);
+        if (userPhoto.value && (user.value.photoURL?.split(".").pop() != newFileType)) {
+          console.log(user.value.photoURL?.split(".").pop());
+          console.log(newFileType);
+          await del("/v1/storage/" + user.value.photoURL);
+        }
       }
       // Update profile in Firebase
       await updateProfile(user.value, {
