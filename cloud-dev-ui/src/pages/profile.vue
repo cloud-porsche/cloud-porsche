@@ -156,6 +156,7 @@ import { sendPasswordResetEmail, signOut, updateProfile } from "firebase/auth";
 import { useCurrentUser, useFirebaseAuth } from "vuefire";
 import { del, get, post } from "@/http/http";
 import { useAppStore } from "@/stores/app";
+import router from "@/router";
 
 const appStore = useAppStore();
 const auth = useFirebaseAuth();
@@ -179,6 +180,9 @@ watch(user, async (newUser) => {
     userPhoto.value = newUser.photoURL
       ? await fetchImage(newUser.photoURL)
       : null;
+
+    const redirectRoute = router.currentRoute.value.query.redirect;
+    if (redirectRoute) router.push({ path: redirectRoute as string });
   }
 });
 

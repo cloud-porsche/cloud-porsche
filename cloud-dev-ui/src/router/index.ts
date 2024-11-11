@@ -9,6 +9,7 @@ import { createRouter } from "vue-router/auto";
 import { routes } from "vue-router/auto-routes";
 import { createWebHashHistory } from "vue-router";
 import { getCurrentUser } from "vuefire";
+import { verifiedIfPassword } from "@/plugins/verify-user";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -20,9 +21,11 @@ router.beforeEach(async (to) => {
   const currentUser = await getCurrentUser();
 
   const isLoggedIn = !!currentUser;
-  const isEmailVerified = currentUser?.emailVerified;
 
-  if ((!isLoggedIn || !isEmailVerified) && to.path !== "/profile") {
+  if (
+    (!isLoggedIn || verifiedIfPassword(currentUser)) &&
+    to.path !== "/profile"
+  ) {
     return {
       path: "/profile",
       query: {
