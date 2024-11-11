@@ -211,7 +211,8 @@ const saveChanges = async () => {
         await uploadPhoto(newFile);
         if (
           userPhoto.value &&
-          user.value.photoURL?.split(".").pop() != newFileType
+          user.value.photoURL?.split(".").pop() != newFileType &&
+          !user.value.photoURL?.startsWith("http")
         ) {
           await del("/v1/storage/" + user.value.photoURL);
         }
