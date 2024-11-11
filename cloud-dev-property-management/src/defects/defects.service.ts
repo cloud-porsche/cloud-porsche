@@ -38,6 +38,7 @@ export class DefectsService {
   async update(id: string, updateDefectDto: UpdateDefectDto) {
     return await this.defectRepository.update({
       id: id,
+      lastModified: new Date(),
       ...updateDefectDto,
     } as Defect);
   }

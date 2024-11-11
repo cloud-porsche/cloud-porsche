@@ -14,4 +14,5 @@ export interface IDefect {
   reportedDate: Date;
   status: DefectState;
   image: string;
+  lastModified: Date;
 }

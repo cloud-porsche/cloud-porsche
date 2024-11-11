@@ -11,6 +11,7 @@ export class Defect implements IDefect {
   reportedDate: Date;
   status: DefectState = DefectState.OPEN;
   image: string;
+  lastModified: Date = new Date();
 
   constructor(obj?: Partial<Defect>) {
     Object.assign(this, obj);
