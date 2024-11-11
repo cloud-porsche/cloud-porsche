@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { DefectsService } from './defects.service';
 import { CreateDefectDto } from './dto/create-defect.dto';
-import { UpdateDefectDto } from './dto/update-defect.dto';
 import { Defect } from './entities/defect.entity';
+import { UpdateDefectDto } from './dto/update-defect.dto';
 
 @Controller('defects')
 export class DefectsController {
@@ -43,7 +43,8 @@ export class DefectsController {
   @Patch(':id')
   async update(
     @Param('id') id: string,
-    @Body() updateDefectDto: UpdateDefectDto,
+    @Body()
+    updateDefectDto: UpdateDefectDto,
   ) {
     return await this.defectsService.update(id, updateDefectDto);
   }

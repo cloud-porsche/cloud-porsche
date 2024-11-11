@@ -13,12 +13,13 @@ export class ObjectStorageService {
     this.logger.debug(
       `Cloud Storage initialized at: ${this.storage.bucket().name}`,
     );
+    this.bucket = process.env.FIREBASE_STORAGE_BUCKET;
   }
 
   async uploadFile(file: Express.Multer.File) {
     const bucket = this.storage.bucket(this.bucket);
-    const blob = bucket.file(file.originalname);
-    const blobStream = blob.createWriteStream();
+    const fileRef = bucket.file(file.originalname);
+    const blobStream = fileRef.createWriteStream();
 
     return new Promise((resolve, reject) => {
       blobStream.on('error', (err) => {
@@ -26,7 +27,7 @@ export class ObjectStorageService {
       });
 
       blobStream.on('finish', () => {
-        const publicUrl = `https://storage.googleapis.com/${this.bucket}/${blob.name}`;
+        const publicUrl = `https://storage.googleapis.com/${this.bucket}/${fileRef.name}`;
         resolve(publicUrl);
       });
 
@@ -71,7 +72,13 @@ export class ObjectStorageService {
   }
 
   async updateFile(file: string, newFile: Express.Multer.File) {
-    await this.deleteFile(file);
+    try {
+      await this.deleteFile(file);
+    } catch (error) {
+      this.logger.debug(
+        `Assuming File doesn't exist: ${file}, uploading new File anyway`,
+      );
+    }
     return await this.uploadFile(newFile);
   }
 }

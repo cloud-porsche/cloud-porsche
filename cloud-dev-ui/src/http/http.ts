@@ -115,10 +115,11 @@ function request<T extends BodyInit>(
     await Promise.resolve();
     const token = await useCurrentUser().value?.getIdToken(true);
 
+    if (token) headers.set("authorization", token);
     const req = new Request(input, {
       ...defaults.init,
       ...init,
-      headers: new Headers({ ...headers, authorization: token }),
+      headers,
       method,
       body,
     });
