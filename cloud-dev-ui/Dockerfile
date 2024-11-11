@@ -2,7 +2,7 @@ FROM node:20-alpine AS builder
 
 ARG VITE_FIREBASE_API_KEY
 
-ARG VITE_FIREBASE_AUTH_DOMAIN=https://cloud-porsche.firebaseapp.com
+ARG VITE_FIREBASE_AUTH_DOMAIN=cloud-porsche.firebaseapp.com
 
 ARG VITE_PROPERTY_MANAGEMENT_API_URL=http://localhost:8080
 ARG VITE_PROPERTY_MANAGEMENT_API_OPTIONS

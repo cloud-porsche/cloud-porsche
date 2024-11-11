@@ -45,7 +45,7 @@
           v-if="allowGoogle"
           class="pa-2"
           icon="mdi-google"
-          @click="signinPopup(googleProvider)"
+          @click="signInPopup(googleProvider)"
           v-tooltip:bottom="'Sign in with Google'"
         >
         </v-btn>
@@ -53,7 +53,7 @@
           v-if="allowGithub"
           class="pa-2"
           icon="mdi-github"
-          @click="signinPopup(githubProvider)"
+          @click="signInPopup(githubProvider)"
           v-tooltip:bottom="'Sign in with Github'"
         >
         </v-btn>
@@ -155,7 +155,7 @@ function signIn() {
     });
 }
 
-function signinPopup(provider: AuthProvider) {
+function signInPopup(provider: AuthProvider) {
   error.value = null;
   signInWithPopup(auth!, provider).catch((reason) => {
     console.error("Failed sign", reason);

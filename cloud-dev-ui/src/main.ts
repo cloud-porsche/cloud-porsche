@@ -15,7 +15,10 @@ import { createApp } from "vue";
 import vuetify from "@/plugins/vuetify";
 import { VueFire, VueFireAuthWithDependencies } from "vuefire";
 import { initializeApp } from "firebase/app";
-import { browserLocalPersistence } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+} from "firebase/auth";
 
 const app = createApp(App);
 
@@ -33,6 +36,7 @@ app.use(VueFire, {
     VueFireAuthWithDependencies({
       dependencies: {
         persistence: [browserLocalPersistence],
+        popupRedirectResolver: browserPopupRedirectResolver,
       },
     }),
   ],
