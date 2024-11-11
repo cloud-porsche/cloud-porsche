@@ -13,8 +13,9 @@ import App from "./App.vue";
 // Composables
 import { createApp } from "vue";
 import vuetify from "@/plugins/vuetify";
-import { VueFire, VueFireAuth } from "vuefire";
+import { VueFire, VueFireAuthWithDependencies } from "vuefire";
 import { initializeApp } from "firebase/app";
+import { browserLocalPersistence } from "firebase/auth";
 
 const app = createApp(App);
 
@@ -28,7 +29,13 @@ app.use(VueFire, {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   }),
-  modules: [VueFireAuth()],
+  modules: [
+    VueFireAuthWithDependencies({
+      dependencies: {
+        persistence: [browserLocalPersistence],
+      },
+    }),
+  ],
 });
 
 app.mount("#app");

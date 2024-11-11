@@ -12,10 +12,16 @@ export const useAppStore = defineStore("app", {
         import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL ??
         "",
     },
+    auth: {
+      loading: true,
+    },
   }),
   getters: {
     isDark(state) {
       return state.theme.dark;
+    },
+    authLoading(state) {
+      return state.auth.loading;
     },
   },
   actions: {
@@ -26,6 +32,9 @@ export const useAppStore = defineStore("app", {
     changePropertyManagementApiURL(url: string) {
       this.api.propertyManagement = url;
       localStorage.setItem("propertyManagement", url);
+    },
+    setAuthLoading(loading: boolean) {
+      this.auth.loading = loading;
     },
   },
 });

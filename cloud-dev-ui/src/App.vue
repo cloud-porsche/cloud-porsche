@@ -66,7 +66,7 @@
     <AppFooter />
 
     <v-bottom-sheet
-      :model-value="!user || !user.emailVerified"
+      :model-value="!appStore.authLoading && (!user || !user.emailVerified)"
       fullscreen
       :close-on-content-click="false"
       :close-on-back="false"
@@ -97,6 +97,8 @@ const isDark = computed(() => appStore.isDark);
 const user = useCurrentUser();
 
 const auth = useFirebaseAuth();
+
+auth?.authStateReady().then(() => appStore.setAuthLoading(false));
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
 if (authDomain && auth && authDomain.includes("localhost")) {

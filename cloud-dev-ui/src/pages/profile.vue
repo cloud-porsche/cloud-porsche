@@ -1,7 +1,17 @@
 <template>
-  <v-container v-if="user" class="d-flex justify-center align-center">
+  <v-progress-linear
+    v-if="appStore.authLoading"
+    indeterminate
+    color="primary"
+  />
+  <v-container v-else-if="user" class="d-flex justify-center align-center">
     <!-- Profile Card -->
-    <v-card class="pa-4" width="fit-content" min-width="50%">
+    <v-card
+      class="pa-4"
+      width="fit-content"
+      min-width="50%"
+      :loading="appStore.authLoading"
+    >
       <!-- Profile Picture Section -->
       <v-card-item class="d-flex justify-center">
         <label for="pb-upload">
@@ -145,7 +155,9 @@ import { ref } from "vue";
 import { sendPasswordResetEmail, signOut, updateProfile } from "firebase/auth";
 import { useCurrentUser, useFirebaseAuth } from "vuefire";
 import { del, get, post } from "@/http/http";
+import { useAppStore } from "@/stores/app";
 
+const appStore = useAppStore();
 const auth = useFirebaseAuth();
 const user = useCurrentUser();
 

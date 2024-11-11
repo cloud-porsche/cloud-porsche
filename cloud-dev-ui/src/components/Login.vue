@@ -1,6 +1,6 @@
 <template>
   <v-card width="100%" height="100%" class="d-flex justify-center align-center">
-    <v-card class="pa-4">
+    <v-card class="pa-4" :loading="appStore.authLoading">
       <v-card-title>Authentication</v-card-title>
       <v-card-subtitle class="pb-8">
         You need to be authenticated to access this page.
