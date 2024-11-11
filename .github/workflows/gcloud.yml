@@ -58,6 +58,5 @@ jobs:
             FIREBASE_STORAGE_BUCKET=cloud-porsche-${{ github.ref_name == 'master' && 'prod' || 'staging' }}
           flags: |-
             --max-instances=5
-            --allow-unauthenticated
       - name: Print the URL
         run: echo "${{ steps.deploy.outputs.url }}"
