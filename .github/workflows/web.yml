@@ -39,6 +39,7 @@ jobs:
         working-directory: ./cloud-dev-ui  # Change working directory to ./cloud-dev-ui
         run: pnpm build  # Adjust the build command if necessary (e.g., pnpm run build)
         env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_BASE_URL: cloud-porsche
           VITE_PROPERTY_MANAGEMENT_API_URL: https://property-management-prod-750687370557.europe-west4.run.app
           VITE_PROPERTY_MANAGEMENT_API_OPTIONS:
