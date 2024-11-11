@@ -67,6 +67,7 @@
               <v-file-input
                 label="Upload Image"
                 :rules="fileRules"
+                validate-on="eager"
                 v-model="imageFile"
                 accept="image/*"
                 prepend-icon="mdi-image"
@@ -114,7 +115,7 @@ watch(defectSubscription, () => {
     : new Date();
   status.value = props.defect.status;
   imageFile.value = props.defect.image
-    ? new File([], props.defect.image)
+    ? new File([], props.defect.image, { type: "image/png" })
     : undefined;
 });
 
@@ -126,7 +127,9 @@ const defectDate = ref<Date>(
   props.defect.reportedDate ? new Date(props.defect.reportedDate) : new Date(),
 );
 const imageFile = ref<File | undefined>(
-  props.defect.image ? new File([], props.defect.image) : undefined,
+  props.defect.image
+    ? new File([], props.defect.image, { type: "image/png" })
+    : undefined,
 );
 const status = ref<DefectState | undefined>(props.defect.status);
 const valid = ref(false);
