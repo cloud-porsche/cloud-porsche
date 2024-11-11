@@ -54,7 +54,7 @@
           class="pa-2"
           icon="mdi-github"
           @click="signInPopup(githubProvider)"
-          v-tooltip:bottom="'Sign in with Github'"
+          v-tooltip:bottom="'Sign in with GitHub'"
         >
         </v-btn>
       </v-btn-group>

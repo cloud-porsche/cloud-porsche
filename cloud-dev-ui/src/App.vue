@@ -66,7 +66,9 @@
     <AppFooter />
 
     <v-bottom-sheet
-      :model-value="!appStore.authLoading && (!user || !user.emailVerified)"
+      :model-value="
+        !appStore.authLoading && (!user || verifiedIfPassword(user))
+      "
       fullscreen
       :close-on-content-click="false"
       :close-on-back="false"
@@ -85,7 +87,7 @@ import { useDisplay } from "vuetify";
 import { useAppStore } from "@/stores/app";
 import { useCurrentUser, useFirebaseAuth } from "vuefire";
 import Login from "@/components/Login.vue";
-import { connectAuthEmulator } from "firebase/auth";
+import { connectAuthEmulator, User } from "firebase/auth";
 
 const { mobile } = useDisplay();
 
@@ -103,6 +105,14 @@ auth?.authStateReady().then(() => appStore.setAuthLoading(false));
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
 if (authDomain && auth && authDomain.includes("localhost")) {
   connectAuthEmulator(auth, authDomain);
+}
+
+function verifiedIfPassword(user: User | null): boolean {
+  return (
+    user !== null &&
+    !user.emailVerified &&
+    !!user.providerData.find((p) => p.providerId === "password")
+  );
 }
 </script>
 

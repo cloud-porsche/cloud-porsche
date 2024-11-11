@@ -228,6 +228,7 @@ const saveChanges = async () => {
 
 async function fetchImage(fileName: string) {
   if (!fileName) return "";
+  if (fileName.startsWith("http")) return fileName;
   try {
     const response = await get(`/v1/storage/${fileName}`);
     if (!response.ok) throw new Error("Failed to fetch signed URL");
