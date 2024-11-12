@@ -66,7 +66,17 @@
         <!-- Profile Details Section -->
         <div class="card-grid">
           <span class="text-end">Display Name:</span>
-          <span class="d-flex align-center"
+          <span
+            class="d-flex align-center"
+            v-tooltip:bottom="
+              user?.displayName
+                ? {
+                    text: user?.displayName,
+                    openOnClick: true,
+                    persistent: false,
+                  }
+                : undefined
+            "
             >{{ user?.displayName ?? "Anonymous" }}
             <v-btn
               class="ms-2"
@@ -79,7 +89,18 @@
             </v-btn>
           </span>
           <span class="text-end">Email:</span>
-          <span>{{ user?.email ?? "No Email" }}</span>
+          <span
+            v-tooltip:bottom="
+              user?.email
+                ? {
+                    text: user?.email,
+                    openOnClick: true,
+                    persistent: false,
+                  }
+                : undefined
+            "
+            >{{ user?.email ?? "No Email" }}</span
+          >
         </div>
       </v-card-item>
 
@@ -275,6 +296,12 @@ function resetPassword() {
   gap: 1rem;
 
   align-items: center;
+
+  & span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+  }
 }
 
 #pb {
