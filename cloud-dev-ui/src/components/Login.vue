@@ -170,12 +170,12 @@ function openRegister() {
 function resetPassword() {
   error.value = null;
   sendPasswordResetEmail(auth!, email.value)
+    .then(() => {
+      successMessage.value = "Password reset email sent.";
+    })
     .catch((reason) => {
       console.error("Failed reset", reason);
-      error.value = reason;
-    })
-    .finally(() => {
-      successMessage.value = "Password reset email sent.";
+      error.value = "Please enter a valid email address.";
     });
 }
 </script>
