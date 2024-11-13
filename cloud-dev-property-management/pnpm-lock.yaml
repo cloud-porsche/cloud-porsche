@@ -43,7 +43,7 @@ importers:
         version: 7.8.1
     devDependencies:
       '@cloud-porsche/types':
-        specifier: ^1.1.0
+        specifier: link:../cloud-dev-types
         version: link:../cloud-dev-types
       '@nestjs/cli':
         specifier: ^10.0.0
