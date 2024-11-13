@@ -5,14 +5,32 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "directory": "cloud-dev-types",
+    "url": "https://github.com/cloud-porsche/cloud-porsche"
+  },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "semver": "semantic-release -t cloud-dev-types-${version}",
+    "semver-dry": "semantic-release -t cloud-dev-types-${version} --dry-run --no-ci --plugins @semantic-release/commit-analyzer,@semantic-release/release-notes-generator"
   },
   "files": [
     "dist"
   ],
   "devDependencies": {
     "@types/node": "^20.14.10",
+    "semantic-release": "^24.2.0",
     "typescript": "^5.1.3"
+  },
+  "release": {
+    "branches": [
+      "develop"
+    ],
+    "options": {
+      "commitPaths": [
+        "cloud-dev-types"
+      ]
+    }
   }
 }
