@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/cloud-porsche/cloud-porsche/compare/cloud-dev-types_1.1.5...cloud-dev-types_1.1.6) (2024-11-13)
+
+
+### Bug Fixes
+
+* semver/release v5 ([45284a6](https://github.com/cloud-porsche/cloud-porsche/commit/45284a685dd536dc03ad4a57b17b51abf0771fdf))
+
 ## [1.1.5](https://github.com/cloud-porsche/cloud-porsche/compare/cloud-dev-types_1.1.4...cloud-dev-types_1.1.5) (2024-11-13)
 
 
