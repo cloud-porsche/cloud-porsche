@@ -9,6 +9,7 @@ import Vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 // Utilities
 import { defineConfig, loadEnv } from "vite";
 import { fileURLToPath, URL } from "node:url";
+import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default ({ mode }) => {
@@ -55,6 +56,38 @@ export default ({ mode }) => {
               styles: "wght@100;300;400;500;700;900",
             },
           ],
+        },
+      }),
+      VitePWA({
+        registerType: "autoUpdate",
+        manifest: {
+          name: "Cloud Porsche",
+          short_name: "Cloud",
+          lang: "en",
+          start_url: process.env.VITE_BASE_URL ?? "/",
+          icons: [
+            {
+              src: "/favicon.svg",
+              sizes: "1000x1000",
+              type: "image/svg",
+              purpose: "any",
+            },
+            {
+              src: "/web-app-manifest-192x192.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "any",
+            },
+            {
+              src: "/web-app-manifest-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable",
+            },
+          ],
+          theme_color: "#ffffff",
+          background_color: "#ffffff",
+          display: "standalone",
         },
       }),
     ],
