@@ -60,26 +60,30 @@ export default ({ mode }) => {
       }),
       VitePWA({
         registerType: "autoUpdate",
+        devOptions: {
+          enabled: true,
+        },
         manifest: {
           name: "Cloud Porsche",
           short_name: "Cloud",
           lang: "en",
           start_url: process.env.VITE_BASE_URL ?? "/",
+          description: "HTWG Cloud SaaS Project of Group 'Porsche'",
           icons: [
             {
-              src: "/favicon.svg",
+              src: "favicon.svg",
               sizes: "1000x1000",
               type: "image/svg",
               purpose: "any",
             },
             {
-              src: "/web-app-manifest-192x192.png",
+              src: "web-app-manifest-192x192.png",
               sizes: "192x192",
               type: "image/png",
               purpose: "any",
             },
             {
-              src: "/web-app-manifest-512x512.png",
+              src: "web-app-manifest-512x512.png",
               sizes: "512x512",
               type: "image/png",
               purpose: "maskable",

@@ -41,7 +41,7 @@ jobs:
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_BASE_URL: cloud-porsche
+          VITE_BASE_URL: /cloud-porsche/
           VITE_PROPERTY_MANAGEMENT_API_URL: https://property-management-prod-750687370557.europe-west4.run.app
           VITE_PROPERTY_MANAGEMENT_API_OPTIONS:
             https://property-management-prod-750687370557.europe-west4.run.app,https://property-management-staging-750687370557.europe-west4.run.app,https://cloud-property-management.ostabo.com
