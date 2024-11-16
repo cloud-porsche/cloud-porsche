@@ -29,6 +29,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/schedule": "^4.1.1",
     "@nestjs/swagger": "^7.4.2",
     "dotenv": "^16.4.5",
     "firebase-admin": "^12.6.0",

@@ -10,14 +10,22 @@ import { DefectsModule } from './defects/defects.module';
 import { ConfigModule } from '@nestjs/config';
 import { ObjectStorageModule } from './object-storage/object-storage.module';
 import { AuthMiddleware } from './auth/auth.middleware';
+import { ParkingPropertiesModule } from './parking-properties/parking-properties.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ParkingModule } from './parking/parking.module';
+import { SimulationModule } from './parking/simulation/simulation.module';
 
 @Module({
   imports: [
     DefectsModule,
     ObjectStorageModule,
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       envFilePath: ['.env', '.env.production', '.env.development'],
     }),
+    ParkingPropertiesModule,
+    ParkingModule,
+    SimulationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
