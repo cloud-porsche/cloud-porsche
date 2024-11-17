@@ -21,10 +21,14 @@ export class ParkingProperty implements IParkingProperty {
   constructor(obj?: Partial<ParkingProperty>) {
     Object.assign(this, obj);
     if (obj?.parkingSpots) {
-      this.parkingSpots = obj.parkingSpots.map((spot) => new ParkingSpot(spot));
+      this.parkingSpots = obj.parkingSpots.map((spot) => {
+        return { ...new ParkingSpot(spot) };
+      });
     }
     if (obj?.customers) {
-      this.customers = obj.customers.map((c) => new Customer(c));
+      this.customers = obj.customers.map((c) => {
+        return { ...new Customer(c) };
+      });
     }
   }
 }

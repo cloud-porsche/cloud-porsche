@@ -13,9 +13,8 @@ export class ParkingService {
   async enter(parkingPropertyId: string, newCustomer: Customer) {
     const parkingProperty =
       await this.parkingPropertiesService.findOne(parkingPropertyId);
-    const currentCustomers = parkingProperty.customers;
-    if (currentCustomers.length >= parkingProperty.parkingSpots.length)
-      throw new Error('All Spots occupied - Entering should be prohibited');
+    if (!parkingProperty) throw new Error('Parking Property not found');
+    const currentCustomers = parkingProperty.customers ?? [];
     return this.parkingPropertiesService.update(parkingPropertyId, {
       customers: [...currentCustomers, newCustomer],
     });
@@ -24,7 +23,8 @@ export class ParkingService {
   async leave(parkingPropertyId: string, customer: Customer) {
     const parkingProperty =
       await this.parkingPropertiesService.findOne(parkingPropertyId);
-    const currentCustomers = parkingProperty.customers;
+    if (!parkingProperty) throw new Error('Parking Property not found');
+    const currentCustomers = parkingProperty.customers ?? [];
     const spot = parkingProperty.parkingSpots.find(
       (s) => s.customer?.id === customer.id,
     );

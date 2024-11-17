@@ -5,6 +5,7 @@ import { ParkingPropertiesService } from '../../parking-properties/parking-prope
 import { SimulationParkingProperty } from './entities/parking-property.entity';
 import { ConfigModule } from '@nestjs/config';
 import { ParkingService } from '../parking.service';
+import { ParkingProperty } from '../../parking-properties/entities/parking-property.entity';
 
 @Module({
   controllers: [SimulationController],
@@ -13,10 +14,16 @@ import { ParkingService } from '../parking.service';
     {
       useFactory: () => {
         return new ParkingService(
-          new ParkingPropertiesService(SimulationParkingProperty), // FIXME: Now we cannot access the actual parking property ids
+          new ParkingPropertiesService(SimulationParkingProperty),
         );
       },
       provide: ParkingService,
+    },
+    {
+      useFactory: () => {
+        return new ParkingPropertiesService(ParkingProperty);
+      },
+      provide: ParkingPropertiesService,
     },
   ],
   imports: [ConfigModule],

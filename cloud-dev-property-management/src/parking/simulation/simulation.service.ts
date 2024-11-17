@@ -3,6 +3,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { ParkingService } from '../parking.service';
 import { ConfigService } from '@nestjs/config';
 import { ParkingSpotState } from '@cloud-porsche/types';
+import { ParkingPropertiesService } from '../../parking-properties/parking-properties.service';
 
 export enum SimulationState {
   ENTERING,
@@ -20,13 +21,23 @@ export class SimulationService {
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly parkingService: ParkingService,
+    private readonly parkingPropertyService: ParkingPropertiesService,
   ) {}
 
-  startSimulation(propertyId: string, simulationState?: SimulationState) {
+  async startSimulation(propertyId: string, simulationState?: SimulationState) {
     if (this.simulationIds.has(propertyId)) {
       this.logger.error('Simulation already running');
       return;
     }
+    // copy real data over to simulation
+    const existingProperty =
+      await this.parkingPropertyService.findOne(propertyId);
+    const previousSimData =
+      this.parkingService.parkingPropertiesService.findOne(propertyId);
+    if (previousSimData)
+      await this.parkingService.parkingPropertiesService.remove(propertyId);
+    await this.parkingService.parkingPropertiesService.create(existingProperty);
+
     this.simulationIds.set(
       propertyId,
       simulationState ?? SimulationState.ENTERING,
@@ -38,13 +49,16 @@ export class SimulationService {
         SIMULATION_INTERVAL,
       ),
     );
-    this.logger.log('Simulation started');
+    this.logger.log('Simulation started for: ' + propertyId);
   }
 
-  stopSimulation(propertyId: string) {
+  async stopSimulation(propertyId: string) {
+    // delete simulation data
+    await this.parkingService.parkingPropertiesService.remove(propertyId);
+
     this.simulationIds.delete(propertyId);
     this.schedulerRegistry.deleteInterval('simulation');
-    this.logger.log('Simulation stopped');
+    this.logger.log('Simulation stopped for: ' + propertyId);
   }
 
   getSimulationStatus(propertyId: string) {
@@ -62,13 +76,13 @@ export class SimulationService {
       this.logger.error('Simulation not allowed in production');
       return;
     }
-    this.logger.log('Running simulation');
+    this.logger.log('Running simulation for: ' + propertyId);
     const state = this.simulationIds.get(propertyId);
 
     if (state === SimulationState.ENTERING) {
       const id = crypto.randomUUID();
-      await this.parkingService.enter(id, {
-        id: propertyId,
+      await this.parkingService.enter(propertyId, {
+        id: id,
         licensePlate: 'SIMULATION',
       });
 
@@ -81,7 +95,7 @@ export class SimulationService {
           (s) => s.state === ParkingSpotState.FREE,
         );
         if (!spot) {
-          this.logger.error(
+          this.logger.warn(
             'No free spots available - changing state to EXITING',
           );
           this.changeSimulationState(propertyId, SimulationState.EXITING);
@@ -99,9 +113,7 @@ export class SimulationService {
         (s) => s.state === ParkingSpotState.OCCUPIED,
       );
       if (!spot) {
-        this.logger.error(
-          'No occupied spots left - changing state to ENTERING',
-        );
+        this.logger.warn('No occupied spots left - changing state to ENTERING');
         this.changeSimulationState(propertyId, SimulationState.ENTERING);
         return;
       }
