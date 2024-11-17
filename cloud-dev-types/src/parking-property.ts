@@ -28,9 +28,17 @@ export class ParkingSpot {
   lastStateChange: Date = new Date();
   electricCharging: boolean = false;
   customer: Customer | null = null;
+
+  constructor(obj?: Partial<ParkingSpot>) {
+    Object.assign(this, obj);
+  }
 }
 
 export class Customer {
   id: string;
   licensePlate: string;
+
+  constructor(obj?: Partial<Customer>) {
+    Object.assign(this, obj);
+  }
 }

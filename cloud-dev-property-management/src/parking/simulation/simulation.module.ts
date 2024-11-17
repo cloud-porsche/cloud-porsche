@@ -13,7 +13,7 @@ import { ParkingService } from '../parking.service';
     {
       useFactory: () => {
         return new ParkingService(
-          new ParkingPropertiesService(SimulationParkingProperty),
+          new ParkingPropertiesService(SimulationParkingProperty), // FIXME: Now we cannot access the actual parking property ids
         );
       },
       provide: ParkingService,
