@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AddDefectPopup: typeof import('./components/AddDefectPopup.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
+    CounterCard: typeof import('./components/CounterCard.vue')['default']
     Login: typeof import('./components/Login.vue')['default']
     Register: typeof import('./components/Register.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

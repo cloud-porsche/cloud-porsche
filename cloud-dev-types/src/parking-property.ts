@@ -1,3 +1,5 @@
+import * as crypto from "node:crypto";
+
 export enum ParkingSpotState {
   FREE,
   OCCUPIED,
@@ -23,7 +25,7 @@ export interface IParkingProperty {
 }
 
 export class ParkingSpot {
-  id: string;
+  id: string = crypto.randomUUID();
   state: ParkingSpotState = ParkingSpotState.FREE;
   lastStateChange: Date = new Date();
   electricCharging: boolean = false;
@@ -35,7 +37,7 @@ export class ParkingSpot {
 }
 
 export class Customer {
-  id: string;
+  id: string = crypto.randomUUID();
   licensePlate: string;
 
   constructor(obj?: Partial<Customer>) {

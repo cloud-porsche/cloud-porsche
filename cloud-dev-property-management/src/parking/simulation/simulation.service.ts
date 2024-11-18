@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ParkingService } from '../parking.service';
 import { ConfigService } from '@nestjs/config';
@@ -20,8 +20,10 @@ export class SimulationService {
   constructor(
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
+    @Inject('SIMULATION_PARKING_SERVICE')
     private readonly parkingService: ParkingService,
-    private readonly parkingPropertyService: ParkingPropertiesService,
+    @Inject('DEFAULT_PARKING_PROPERTIES_SERVICE')
+    public readonly parkingPropertyService: ParkingPropertiesService,
   ) {}
 
   async startSimulation(propertyId: string, simulationState?: SimulationState) {
@@ -87,6 +89,7 @@ export class SimulationService {
       });
 
       setTimeout(async () => {
+        if (this.getSimulationStatus(propertyId) === false) return;
         const parkingProperty =
           await this.parkingService.parkingPropertiesService.findOne(
             propertyId,
@@ -120,6 +123,7 @@ export class SimulationService {
       await this.parkingService.freeSpot(propertyId, spot.id);
 
       setTimeout(async () => {
+        if (this.getSimulationStatus(propertyId) === false) return;
         const id = spot.customer.id;
         await this.parkingService.leave(propertyId, {
           id,

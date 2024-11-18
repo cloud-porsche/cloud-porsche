@@ -14,38 +14,68 @@
       </span>
     </h1>
     <v-card>
-      <v-card-title>Properties</v-card-title>
-      <v-card-text>
-        <v-list>
-          <v-list-item
-            v-for="property in propertyStore.properties"
-            :key="property.id"
-            :to="'/property/' + property.id"
-            :title="property.name ?? property.id"
-            :value="property.id"
-            :active="
-              router.currentRoute.value.path === '/property/' + property.id
-            "
-          />
-        </v-list>
-        <div
-          class="d-flex w-100 h-100 align-center justify-center"
-          v-if="propertyStore.properties.length <= 0"
+      <v-card-title>Your Properties:</v-card-title>
+      <div id="property-panel-container">
+        <v-card
+          v-for="property in propertyStore.properties"
+          :key="property.id"
+          :to="'/property/' + property.id"
+          :value="property.id"
+          rounded
+          :style="{
+            backgroundColor: getStateColor(property),
+            color: 'white',
+          }"
+          class="pa-4 d-flex flex-column justify-between align-center"
         >
-          No Property present.
-        </div>
-      </v-card-text>
+          <b>{{ property.name }}</b>
+          <small>{{ property.location }}</small>
+          <v-chip
+            >{{
+              property.parkingSpots.filter(
+                (s) => s.state === ParkingSpotState.OCCUPIED,
+              ).length
+            }}
+            / {{ property.parkingSpots.length }}
+          </v-chip>
+        </v-card>
+      </div>
+      <div
+        class="d-flex w-100 h-100 align-center justify-center"
+        v-if="propertyStore.properties.length <= 0"
+      >
+        No Property present.
+      </div>
     </v-card>
   </v-responsive>
 </template>
 
 <script lang="ts" setup>
 import { usePropertyStore } from "@/stores/properties";
-import router from "@/router";
+import { IParkingProperty, ParkingSpotState } from "@cloud-porsche/types";
 
 const propertyStore = usePropertyStore();
+
+function getStateColor(property: IParkingProperty) {
+  if (property.parkingSpots.length <= 0) {
+    return "grey";
+  }
+  const occupied = property.parkingSpots.filter(
+    (s) => s.state === ParkingSpotState.OCCUPIED,
+  ).length;
+  if (occupied === property.parkingSpots.length) {
+    return "red";
+  }
+  return "green";
+}
 </script>
 
-<style scoped>
-/* Optional: Add styles as needed */
+<style scoped lang="scss">
+#property-panel-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+
+  padding: 1em;
+}
 </style>

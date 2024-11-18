@@ -8,6 +8,7 @@ import { ParkingService } from '../parking.service';
 import { ParkingProperty } from '../../parking-properties/entities/parking-property.entity';
 
 @Module({
+  exports: [SimulationService],
   controllers: [SimulationController],
   providers: [
     SimulationService,
@@ -17,13 +18,13 @@ import { ParkingProperty } from '../../parking-properties/entities/parking-prope
           new ParkingPropertiesService(SimulationParkingProperty),
         );
       },
-      provide: ParkingService,
+      provide: 'SIMULATION_PARKING_SERVICE',
     },
     {
       useFactory: () => {
         return new ParkingPropertiesService(ParkingProperty);
       },
-      provide: ParkingPropertiesService,
+      provide: 'DEFAULT_PARKING_PROPERTIES_SERVICE',
     },
   ],
   imports: [ConfigModule],
