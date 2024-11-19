@@ -200,6 +200,7 @@
           class="pa-2"
           validate-on="eager"
           v-model="valid"
+          ref="layer-form"
           @submit.prevent="validateForm"
         >
           <v-row v-for="layer in newLayers" :key="layer.floor">
@@ -246,6 +247,7 @@
                 required
                 variant="outlined"
                 :rules="[required, mustMatchTotalSpots]"
+                validate-on="eager"
                 :min="1"
                 :max="newParkingSpots.length"
               ></v-number-input>
@@ -286,7 +288,7 @@
         </v-form>
       </template>
       <template v-slot:item.4>
-        <v-card>
+        <v-card :loading="newLoading">
           <v-card-title>Confirm</v-card-title>
           <v-divider></v-divider>
           <v-card-text>
@@ -407,7 +409,7 @@ const mobile = useDisplay().mobile;
 const propertyStore = usePropertyStore();
 const required = (v: string | undefined) => !!v || "This field is required.";
 const mustMatchTotalSpots = (_: number | undefined) =>
-  newLayers.value.reduce((acc, l) => acc + l.spotCount, 0) ===
+  newLayers.reduce((acc, l) => acc + l.spotCount, 0) ===
     newParkingSpots.value.length ||
   "Total spots must match the sum of all layers. (Total: " +
     newParkingSpots.value.length +
@@ -458,7 +460,14 @@ let newProperty = reactive<
 const spotGenerationPattern = ref("${index}");
 const toGenerate = ref(100);
 const newParkingSpots = ref<ParkingSpot[]>([]);
-const newLayers = ref<ParkingSpotLayers[]>([]);
+let newLayers = reactive<ParkingSpotLayers[]>([]);
+
+const formRef = useTemplateRef("layer-form");
+watch(newLayers, () => {
+  if (formRef.value) {
+    formRef.value.validate();
+  }
+});
 
 function nextOrGenerate(next: () => void) {
   if (step.value === 2) {
@@ -486,12 +495,15 @@ function generateParkingSpots() {
   );
 }
 
+const newLoading = ref(false);
+
 async function saveNewProperty() {
+  newLoading.value = true;
   const finalProperty: Omit<IParkingProperty, "id" | "customers"> = {
     ...newProperty,
     parkingSpots: newParkingSpots.value,
     lastModified: new Date(),
-    visualLayers: newLayers.value,
+    visualLayers: newLayers,
   };
 
   await propertyStore.addProperty(finalProperty);
@@ -501,7 +513,9 @@ async function saveNewProperty() {
   spotGenerationPattern.value = "${index}";
   toGenerate.value = 100;
   newParkingSpots.value = [];
-  newLayers.value = [];
+  newLayers = [];
+  step.value = 1;
+  newLoading.value = false;
 }
 
 function getStateColor(property: IParkingProperty) {

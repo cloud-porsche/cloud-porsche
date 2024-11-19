@@ -85,20 +85,30 @@
         </v-card-item>
       </v-card>
       <v-card class="full-grid-row">
-        <v-card-title>{{ property.name }}</v-card-title>
+        <v-card-title class="d-flex align-center"
+          >{{ property.name }}
+          <v-spacer></v-spacer>
+          <v-pagination
+            v-if="currentLayer"
+            v-model="page"
+            :length="property.visualLayers.length"
+            variant="outlined"
+            density="compact"
+          ></v-pagination>
+        </v-card-title>
         <div
           id="spot-container"
           v-if="property.parkingSpots.length > 0"
           :style="
-            property.visualLayers?.length > 0
+            currentLayer
               ? {
-                  gridTemplateColumns: `repeat(${property.visualLayers[0].columns}, 1fr)`,
+                  gridTemplateColumns: `repeat(${currentLayer.columns}, 1fr)`,
                 }
               : {}
           "
         >
           <ParkingSpotComponent
-            v-for="spot in property.parkingSpots"
+            v-for="spot in layeredParkingSpots"
             :key="spot.id"
             :spot="spot"
           ></ParkingSpotComponent>
@@ -121,7 +131,7 @@ import ParkingSpotComponent from "@/components/ParkingSpotComponent.vue";
 const propertyStore = usePropertyStore();
 const route = useRoute();
 const id = computed(() => (route.params as any)["id"]);
-onMounted(() => propertyStore.fetchSimulationStatus(id.value));
+onMounted(async () => await propertyStore.fetchSimulationStatus(id.value));
 
 const simulationState = computed(() =>
   propertyStore.simulationActive.includes(id.value),
@@ -129,6 +139,24 @@ const simulationState = computed(() =>
 const property = computed(() =>
   propertyStore.properties.find((property) => property.id === id.value),
 );
+
+const page = ref(1);
+const currentLayer = computed(
+  () => property.value?.visualLayers?.[page.value - 1],
+);
+const layeredParkingSpots = computed(() => {
+  if (!currentLayer.value || !property.value?.visualLayers)
+    return property.value?.parkingSpots ?? [];
+  const allLayers = property.value.visualLayers ?? [];
+  const ind = currentLayer.value.floor;
+  const amount = currentLayer.value.spotCount;
+
+  let layerIndex = 0;
+  for (let i = 0; i < ind; i++) {
+    layerIndex += allLayers[i].spotCount;
+  }
+  return property.value.parkingSpots.slice(layerIndex, layerIndex + amount);
+});
 
 const totalSpots = computed(() => property.value?.parkingSpots.length ?? 0);
 const freeSpots = computed(
