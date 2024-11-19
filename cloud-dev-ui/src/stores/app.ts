@@ -1,21 +1,43 @@
 // Utilities
 import { defineStore } from "pinia";
+import { io } from "socket.io-client";
+import { usePropertyStore } from "@/stores/properties";
 
 export const useAppStore = defineStore("app", {
-  state: () => ({
-    theme: {
-      dark: initDark(),
-    },
-    api: {
-      propertyManagement:
-        localStorage.getItem("propertyManagement") ??
-        import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL ??
-        "",
-    },
-    auth: {
-      loading: true,
-    },
-  }),
+  state: () => {
+    const url =
+      localStorage.getItem("propertyManagement") ??
+      import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL ??
+      "";
+
+    const socket = io(url);
+    socket.on("connect", function () {
+      console.log("WS Connected");
+    });
+    socket.on("disconnect", function () {
+      console.log("WS Disconnected");
+    });
+    socket.on("pong", function () {
+      setTimeout(() => {
+        socket.emit("ping");
+      }, 10000);
+    });
+    socket.on("parking-properties", function (data) {
+      if (data && data.length > 0) usePropertyStore().setProperties(data);
+    });
+    return {
+      theme: {
+        dark: initDark(),
+      },
+      api: {
+        propertyManagement: url,
+        ws: socket,
+      },
+      auth: {
+        loading: true,
+      },
+    };
+  },
   getters: {
     isDark(state) {
       return state.theme.dark;

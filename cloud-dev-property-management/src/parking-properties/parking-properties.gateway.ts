@@ -27,15 +27,28 @@ export class ParkingPropertiesGateway
   @WebSocketServer() io: Server;
 
   constructor(
-    parkingPropertyService: ParkingPropertiesService,
+    private readonly parkingPropertyService: ParkingPropertiesService,
     @Inject('SIMULATION_PARKING_PROPERTIES_SERVICE')
-    simParkingPropertyService: ParkingPropertiesService,
+    private readonly simParkingPropertyService: ParkingPropertiesService,
   ) {
-    simParkingPropertyService.addListener(this);
     parkingPropertyService.addListener(this);
+    simParkingPropertyService.addListener(this);
   }
 
-  changedParkingProperty(parkingProperties: ParkingProperty[]): void {
+  // TODO: improve performance
+  async changedParkingProperty(
+    sender: ParkingPropertiesService,
+    parkingProperties: ParkingProperty[],
+  ) {
+    if (sender === this.simParkingPropertyService) {
+      parkingProperties = [
+        ...parkingProperties,
+        ...(await this.parkingPropertyService.findAll()).filter(
+          (property) =>
+            parkingProperties.find((p) => p.id === property.id) === undefined,
+        ),
+      ];
+    }
     this.logger.debug('Parking property changed - Sending to clients');
     this.io.emit('parking-properties', parkingProperties);
   }

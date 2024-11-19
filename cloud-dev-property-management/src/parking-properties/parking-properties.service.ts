@@ -10,7 +10,10 @@ import { CreateParkingPropertyDto } from './dto/create-parking-property.dto';
 import { Customer, ParkingSpot } from '@cloud-porsche/types';
 
 export interface ParkingPropertySubscriber {
-  changedParkingProperty(parkingProperty: ParkingProperty[]): void;
+  changedParkingProperty(
+    sender: ParkingPropertiesService,
+    parkingProperty: ParkingProperty[],
+  ): Promise<void>;
 }
 
 @Injectable()
@@ -29,7 +32,7 @@ export class ParkingPropertiesService {
 
   private async notify() {
     for (const listener of this.listeners) {
-      listener.changedParkingProperty(await this.findAll());
+      await listener.changedParkingProperty(this, await this.findAll());
     }
   }
 
