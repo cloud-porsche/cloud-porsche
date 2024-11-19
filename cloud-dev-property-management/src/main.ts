@@ -5,6 +5,7 @@ import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as admin from 'firebase-admin';
 import { initialize } from 'fireorm';
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   require('dotenv').config();
@@ -44,6 +45,9 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
+
+  app.use(json({ limit: '15mb' }));
+  app.use(urlencoded({ extended: true, limit: '15mb' }));
 
   const config = new DocumentBuilder()
     .setTitle('Cloud Porsche Property Management API')
