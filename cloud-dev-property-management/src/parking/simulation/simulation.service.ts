@@ -22,7 +22,6 @@ export class SimulationService {
     private readonly schedulerRegistry: SchedulerRegistry,
     @Inject('SIMULATION_PARKING_SERVICE')
     private readonly parkingService: ParkingService,
-    @Inject('DEFAULT_PARKING_PROPERTIES_SERVICE')
     public readonly parkingPropertyService: ParkingPropertiesService,
   ) {}
 

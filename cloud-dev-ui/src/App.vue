@@ -116,6 +116,7 @@ import Login from "@/components/Login.vue";
 import { connectAuthEmulator } from "firebase/auth";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { usePropertyStore } from "@/stores/properties";
+import { io } from "socket.io-client";
 
 const { mobile } = useDisplay();
 
@@ -140,6 +141,24 @@ const propertyStore = usePropertyStore();
 
 onMounted(() => {
   propertyStore.fetchProperties();
+});
+
+const socket = io(import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL);
+
+socket.on("connect", function () {
+  console.log("WS Connected");
+});
+socket.on("disconnect", function () {
+  console.log("WS Disconnected");
+});
+socket.on("pong", function () {
+  setTimeout(() => {
+    socket.emit("ping");
+  }, 10000);
+});
+socket.on("parking-properties", function (data) {
+  console.log("Received parking properties", data);
+  if (data && data.length > 0) propertyStore.setProperties(data);
 });
 </script>
 

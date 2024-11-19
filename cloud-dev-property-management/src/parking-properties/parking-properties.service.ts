@@ -9,12 +9,28 @@ import { ParkingProperty } from './entities/parking-property.entity';
 import { CreateParkingPropertyDto } from './dto/create-parking-property.dto';
 import { Customer, ParkingSpot } from '@cloud-porsche/types';
 
+export interface ParkingPropertySubscriber {
+  changedParkingProperty(parkingProperty: ParkingProperty[]): void;
+}
+
 @Injectable()
 export class ParkingPropertiesService {
+  private listeners = [];
+
   parkingPropertyRepository: BaseFirestoreRepository<ParkingProperty>;
 
   constructor(repositoryClass: EntityConstructorOrPath<ParkingProperty>) {
     this.parkingPropertyRepository = getRepository(repositoryClass);
+  }
+
+  addListener(listener: any) {
+    this.listeners.push(listener);
+  }
+
+  private async notify() {
+    for (const listener of this.listeners) {
+      listener.changedParkingProperty(await this.findAll());
+    }
   }
 
   async create(createDefectDto: CreateParkingPropertyDto) {
@@ -26,9 +42,10 @@ export class ParkingPropertiesService {
       this.fillInCustomerDefaults(
         createDefectDto as Pick<ParkingProperty, 'customers'>,
       );
-    return await this.parkingPropertyRepository.create(
-      new ParkingProperty(createDefectDto),
-    );
+    const newProperty = new ParkingProperty(createDefectDto);
+    const res = await this.parkingPropertyRepository.create(newProperty);
+    await this.notify();
+    return res;
   }
 
   async findAll() {
@@ -53,11 +70,15 @@ export class ParkingPropertiesService {
       lastModified: new Date(),
       ...updateParkingPropertyDto,
     } as ParkingProperty;
-    return await this.parkingPropertyRepository.update(toUpdate);
+    const res = await this.parkingPropertyRepository.update(toUpdate);
+    await this.notify();
+    return res;
   }
 
   async remove(id: string) {
-    return await this.parkingPropertyRepository.delete(id);
+    const res = await this.parkingPropertyRepository.delete(id);
+    await this.notify();
+    return res;
   }
 
   private fillInSpotDefaults(

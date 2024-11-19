@@ -13,7 +13,6 @@ import { AuthMiddleware } from './auth/auth.middleware';
 import { ParkingPropertiesModule } from './parking-properties/parking-properties.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ParkingModule } from './parking/parking.module';
-import { SimulationModule } from './parking/simulation/simulation.module';
 
 @Module({
   imports: [
@@ -25,7 +24,6 @@ import { SimulationModule } from './parking/simulation/simulation.module';
     }),
     ParkingPropertiesModule,
     ParkingModule,
-    SimulationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

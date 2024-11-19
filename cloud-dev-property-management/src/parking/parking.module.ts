@@ -1,19 +1,28 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ParkingController } from './parking.controller';
 import { ParkingService } from './parking.service';
+import { ParkingPropertiesModule } from '../parking-properties/parking-properties.module';
+import { SimulationService } from './simulation/simulation.service';
 import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
-import { ParkingProperty } from '../parking-properties/entities/parking-property.entity';
+import { SimulationController } from './simulation/simulation.controller';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  controllers: [ParkingController],
+  exports: [SimulationService],
+  controllers: [ParkingController, SimulationController],
   providers: [
     ParkingService,
+    SimulationService,
     {
-      useFactory: () => {
-        return new ParkingPropertiesService(ParkingProperty);
+      useFactory: (p: ParkingPropertiesService) => {
+        return new ParkingService(p);
       },
-      provide: ParkingPropertiesService,
+      inject: [
+        { token: 'SIMULATION_PARKING_PROPERTIES_SERVICE', optional: false },
+      ],
+      provide: 'SIMULATION_PARKING_SERVICE',
     },
   ],
+  imports: [forwardRef(() => ParkingPropertiesModule), ConfigModule],
 })
 export class ParkingModule {}
