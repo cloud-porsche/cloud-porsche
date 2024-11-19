@@ -1,15 +1,19 @@
 <template>
   <v-card
     :color="getStateColor(spot.state)"
-    @click="disableDialog ? openDialog(spot) : undefined"
+    @click="disableDialog ? undefined : openDialog(spot)"
     :disabled="spot.placeholder"
     border
     flat
-    width="1em"
-    v-tooltip:bottom="explanation?.length! > 0 ? explanation : undefined"
     :class="spot.placeholder ? 'disabled-spot' : ''"
     class="spot d-flex align-center justify-center"
   >
+    <v-tooltip
+      v-if="explanation"
+      activator="parent"
+      :text="explanation"
+      location="bottom"
+    ></v-tooltip>
     <i v-if="spot.electricCharging" class="mdi mdi-flash text-yellow"></i
   ></v-card>
 
