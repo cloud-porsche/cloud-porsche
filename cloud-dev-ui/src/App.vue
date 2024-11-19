@@ -159,4 +159,21 @@ onMounted(() => {
 div:has(.scroll-bar-thin) {
   scrollbar-width: thin;
 }
+
+// needed for the property page
+#spot-container {
+  max-height: 68svh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  width: 100%;
+
+  //display: flex;
+  //flex-wrap: wrap;
+  gap: 0.4em;
+
+  display: grid;
+  grid-template-columns: repeat(25, 1fr);
+
+  padding: 1em;
+}
 </style>

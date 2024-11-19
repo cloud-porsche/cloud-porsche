@@ -4,6 +4,7 @@ import {
   IParkingProperty,
   ParkingPropertyType,
   ParkingSpot,
+  ParkingSpotLayers,
 } from '@cloud-porsche/types';
 
 @Collection()
@@ -17,6 +18,7 @@ export class ParkingProperty implements IParkingProperty {
   lastModified: Date = new Date();
   parkingSpots: ParkingSpot[] = [];
   customers: Customer[] = [];
+  visualLayers: ParkingSpotLayers[];
 
   constructor(obj?: Partial<ParkingProperty>) {
     Object.assign(this, obj);

@@ -1,7 +1,7 @@
 // Utilities
 import { defineStore } from "pinia";
 import { IParkingProperty } from "@cloud-porsche/types";
-import { get, post } from "@/http/http";
+import { del, get, post, postJSON } from "@/http/http";
 
 interface PropertyStoreState {
   properties: IParkingProperty[];
@@ -51,6 +51,34 @@ export const usePropertyStore = defineStore("properties", {
     },
     setProperties(properties: IParkingProperty[]) {
       this.$state.properties = properties;
+    },
+    async addProperty(property: Omit<IParkingProperty, "id" | "customers">) {
+      this.$state.loading = true;
+      try {
+        await postJSON("/v1/parking-properties", property);
+      } catch (error) {
+        this.$state.loading = false;
+        this.$state.error = error;
+      } finally {
+        this.$state.loading = false;
+        this.$state.error = null;
+        await this.fetchProperties();
+      }
+    },
+    async deleteProperty(propertyId: string) {
+      this.$state.loading = true;
+      try {
+        await del(`/v1/parking-properties/${propertyId}`);
+        this.$state.properties = this.$state.properties.filter(
+          (property) => property.id !== propertyId,
+        );
+      } catch (error) {
+        this.$state.loading = false;
+        this.$state.error = error;
+      } finally {
+        this.$state.loading = false;
+        this.$state.error = null;
+      }
     },
     async setSimulationActive(propertyId: string) {
       this.$state.loading = true;

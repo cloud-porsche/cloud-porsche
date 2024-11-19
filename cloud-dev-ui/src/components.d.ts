@@ -11,6 +11,8 @@ declare module 'vue' {
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     CounterCard: typeof import('./components/CounterCard.vue')['default']
     Login: typeof import('./components/Login.vue')['default']
+    ParkingSpot: typeof import('./components/ParkingSpot.vue')['default']
+    ParkingSpotComponent: typeof import('./components/ParkingSpotComponent.vue')['default']
     Register: typeof import('./components/Register.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

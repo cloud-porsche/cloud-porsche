@@ -8,4 +8,5 @@ export class CreateParkingPropertyDto extends PickType(ParkingProperty, [
   'pricePerHour',
   'parkingType',
   'parkingSpots',
+  'visualLayers',
 ] as const) {}

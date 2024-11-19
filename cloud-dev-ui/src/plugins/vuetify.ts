@@ -16,6 +16,7 @@ import { VDateInput } from "vuetify/labs/VDateInput";
 // Vuetify icons (optional)
 import { aliases, mdi } from "vuetify/iconsets/mdi";
 import { md1, md2, md3 } from "vuetify/blueprints";
+import { VNumberInput } from "vuetify/labs/components";
 
 export enum MaterialVersion {
   NONE = "Default Vuetify",
@@ -75,6 +76,7 @@ const vuetify = createVuetify({
   },
   components: {
     VDateInput,
+    VNumberInput,
   },
 });
 

@@ -5,8 +5,7 @@
     class="d-flex align-center pa-1 pl-4 pr-4"
   >
     <span
-      ><b>Id: {{ property.id ?? "Unknown" }}</b
-      >{{ property.name ? " - " + property?.name : "" }}</span
+      ><b>Id: {{ property.id ?? "Unknown" }}</b></span
     >
     <v-btn
       class="ml-4"
@@ -66,44 +65,43 @@
         colors="none"
       ></CounterCard>
       <v-card class="legend">
-        <v-card-title>Legend</v-card-title>
+        <v-card-title class="d-flex ga-2 align-center"
+          >Legend
+          <v-icon
+            size="sm"
+            v-tooltip:top="'Hover to see what each spot represents'"
+            >mdi-information-outline
+          </v-icon>
+        </v-card-title>
         <v-card-item>
           <span class="d-flex align-center justify-space-evenly">
-            <v-card
+            <ParkingSpotComponent
               v-for="spot in exampleSpots"
               :key="spot.id"
-              :color="getStateColor(spot.state)"
-              @click="openDialog(spot)"
-              border
-              flat
-              width="1em"
-              v-tooltip:bottom="spot.explanation"
-              class="spot d-flex align-center justify-center"
-            >
-              <i
-                v-if="spot.electricCharging"
-                class="mdi mdi-flash text-yellow"
-              ></i></v-card
-          ></span>
+              :spot="spot"
+              :explanation="spot.explanation"
+            ></ParkingSpotComponent>
+          </span>
         </v-card-item>
       </v-card>
       <v-card class="full-grid-row">
         <v-card-title>{{ property.name }}</v-card-title>
-        <div id="spot-container" v-if="property.parkingSpots.length > 0">
-          <v-card
+        <div
+          id="spot-container"
+          v-if="property.parkingSpots.length > 0"
+          :style="
+            property.visualLayers?.length > 0
+              ? {
+                  gridTemplateColumns: `repeat(${property.visualLayers[0].columns}, 1fr)`,
+                }
+              : {}
+          "
+        >
+          <ParkingSpotComponent
             v-for="spot in property.parkingSpots"
             :key="spot.id"
-            border
-            flat
-            :color="getStateColor(spot.state)"
-            @click="openDialog(spot)"
-            class="spot d-flex align-center justify-center"
-          >
-            <i
-              v-if="spot.electricCharging"
-              class="mdi mdi-flash text-yellow"
-            ></i>
-          </v-card>
+            :spot="spot"
+          ></ParkingSpotComponent>
         </div>
         <v-card-text v-else class="pa-4">
           <i>No parking spots yet.</i>
@@ -111,34 +109,6 @@
       </v-card>
     </main>
   </v-responsive>
-
-  <v-dialog v-model="inspectDialog" max-width="50%" max-height="80%">
-    <v-card rounded class="overflow-hidden">
-      <v-card-title>
-        <span class="d-flex text-center align-center"
-          >Parking Spot
-          <v-spacer />
-          <v-btn icon @click="closeDialog()">
-            <v-icon>mdi-close</v-icon>
-          </v-btn></span
-        >
-      </v-card-title>
-      <v-divider></v-divider>
-      <v-card-text>
-        <v-data-table
-          v-if="selectedSpot"
-          :items="Object.entries(selectedSpot)"
-          density="compact"
-          hide-default-header
-          hide-default-footer
-        >
-        </v-data-table>
-        <v-row v-else>
-          <v-col> No parking spot selected.</v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -146,9 +116,7 @@ import { usePropertyStore } from "@/stores/properties";
 import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
 import { useRoute } from "vue-router";
 import CounterCard from "@/components/CounterCard.vue";
-
-const inspectDialog = ref(false);
-const selectedSpot = ref<ParkingSpot>();
+import ParkingSpotComponent from "@/components/ParkingSpotComponent.vue";
 
 const propertyStore = usePropertyStore();
 const route = useRoute();
@@ -190,31 +158,6 @@ const outOfOrderSpots = computed(
 
 const customers = computed(() => property.value?.customers ?? []);
 
-function getStateColor(state: ParkingSpotState) {
-  switch (state) {
-    case ParkingSpotState.FREE:
-      return undefined;
-    case ParkingSpotState.OCCUPIED:
-      return "green";
-    case ParkingSpotState.RESERVED:
-      return "yellow";
-    case ParkingSpotState.OUT_OF_ORDER:
-      return "red";
-    default:
-      return "black";
-  }
-}
-
-function openDialog(spot: ParkingSpot) {
-  inspectDialog.value = true;
-  selectedSpot.value = spot;
-}
-
-function closeDialog() {
-  inspectDialog.value = false;
-  setTimeout(() => (selectedSpot.value = undefined), 200);
-}
-
 const exampleSpots: (ParkingSpot & { explanation: string })[] = [
   {
     id: "Electric",
@@ -222,6 +165,7 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
     electricCharging: true,
     lastStateChange: new Date(),
     customer: null,
+    placeholder: false,
     explanation: "Electric charging spot",
   },
   {
@@ -230,6 +174,7 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
     electricCharging: false,
     lastStateChange: new Date(),
     customer: null,
+    placeholder: false,
     explanation: "Free spot",
   },
   {
@@ -238,6 +183,7 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
     electricCharging: false,
     lastStateChange: new Date(),
     customer: null,
+    placeholder: false,
     explanation: "Occupied spot",
   },
   {
@@ -246,6 +192,7 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
     electricCharging: false,
     lastStateChange: new Date(),
     customer: null,
+    placeholder: false,
     explanation: "Reserved spot",
   },
   {
@@ -254,6 +201,7 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
     electricCharging: false,
     lastStateChange: new Date(),
     customer: null,
+    placeholder: false,
     explanation: "Spot out of order",
   },
 ];
@@ -272,30 +220,6 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
 
   & .legend {
     grid-column: 6 / -1;
-  }
-}
-
-#spot-container {
-  max-height: 68svh;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  width: 100%;
-
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4em;
-
-  padding: 1em;
-}
-
-.spot {
-  aspect-ratio: 1 / 1.5;
-  min-width: 2em;
-  max-width: 5em;
-  transition: scale 0.2s linear;
-
-  &:hover {
-    scale: 1.02;
   }
 }
 </style>
