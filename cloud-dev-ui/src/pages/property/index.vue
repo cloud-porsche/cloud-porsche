@@ -287,6 +287,7 @@
           </v-row>
         </v-form>
       </template>
+
       <template v-slot:item.4>
         <v-card :loading="newLoading">
           <v-card-title>Confirm</v-card-title>

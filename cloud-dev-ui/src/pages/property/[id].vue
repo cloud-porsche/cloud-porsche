@@ -1,124 +1,136 @@
 <template>
-  <v-toolbar
-    v-if="property"
-    density="compact"
-    class="d-flex align-center pa-1 pl-4 pr-4"
-  >
-    <span
-      ><b>Id: {{ property.id ?? "Unknown" }}</b></span
+  <div ref="fullscreen">
+    <v-toolbar
+      v-if="property"
+      density="compact"
+      class="d-flex align-center pa-1 pl-4 pr-4"
     >
-    <v-btn
-      class="ml-4"
-      density="comfortable"
-      :icon="'mdi-sync'"
-      v-tooltip="'Refresh'"
-      @click="
-        propertyStore.fetchProperty(property.id);
-        propertyStore.fetchSimulationStatus(property.id);
-      "
-    />
-    <v-spacer></v-spacer>
-    <v-btn
-      density="comfortable"
-      :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
-      text="Simulation"
-      @click="
-        simulationState
-          ? propertyStore.setSimulationInactive(property.id)
-          : propertyStore.setSimulationActive(property.id)
-      "
-    />
-  </v-toolbar>
-  <v-progress-linear
-    :indeterminate="propertyStore.loading"
-    :color="propertyStore.error ? 'error' : undefined"
-  ></v-progress-linear>
-  <v-responsive v-if="property">
-    <main class="property-main">
-      <CounterCard
-        name="FREE"
-        :current="freeSpots.length"
-        :total="totalSpots"
-        colors="invert"
-      ></CounterCard>
-      <CounterCard
-        name="OCCUPIED"
-        :current="occupiedSpots.length"
-        :total="totalSpots"
-        colors="default"
-      ></CounterCard>
-      <CounterCard
-        name="RESERVED"
-        :current="reservedSpots.length"
-        :total="totalSpots"
-        colors="none"
-      ></CounterCard>
-      <CounterCard
-        name="OUT OF ORDER"
-        :current="outOfOrderSpots.length"
-        colors="none"
-      ></CounterCard>
-      <CounterCard
-        name="CUSTOMERS"
-        v-tooltip:bottom="'Count of total daily customers'"
-        :current="customers.length"
-        colors="none"
-      ></CounterCard>
-      <v-card class="legend">
-        <v-card-title class="d-flex ga-2 align-center"
-          >Legend
-          <v-icon
-            size="sm"
-            v-tooltip:top="'Hover to see what each spot represents'"
-            >mdi-information-outline
-          </v-icon>
-        </v-card-title>
-        <v-card-item>
-          <span class="d-flex align-center justify-space-evenly">
+      <span class="pa-2 pr-8"
+        ><b>Id: {{ property.id ?? "Unknown" }}</b></span
+      >
+      <v-divider vertical inset></v-divider>
+      <v-btn
+        class="ml-4"
+        density="comfortable"
+        :icon="'mdi-sync'"
+        v-tooltip="'Refresh'"
+        @click="
+          propertyStore.fetchProperty(property.id);
+          propertyStore.fetchSimulationStatus(property.id);
+        "
+      />
+      <v-btn
+        class="ml-4 mr-4"
+        :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+        @click="toggle"
+        v-tooltip="'Toggle Fullscreen Spot View'"
+        density="comfortable"
+      >
+      </v-btn>
+      <v-divider vertical inset></v-divider>
+      <v-spacer></v-spacer>
+      <v-btn
+        density="comfortable"
+        :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
+        text="Simulation"
+        @click="
+          simulationState
+            ? propertyStore.setSimulationInactive(property.id)
+            : propertyStore.setSimulationActive(property.id)
+        "
+      />
+    </v-toolbar>
+    <v-progress-linear
+      :indeterminate="propertyStore.loading"
+      :color="propertyStore.error ? 'error' : undefined"
+    ></v-progress-linear>
+    <v-responsive v-if="property">
+      <div class="property-main">
+        <CounterCard
+          name="FREE"
+          :current="freeSpots.length"
+          :total="totalSpots"
+          colors="invert"
+        ></CounterCard>
+        <CounterCard
+          name="OCCUPIED"
+          :current="occupiedSpots.length"
+          :total="totalSpots"
+          colors="default"
+        ></CounterCard>
+        <CounterCard
+          name="RESERVED"
+          :current="reservedSpots.length"
+          :total="totalSpots"
+          colors="none"
+        ></CounterCard>
+        <CounterCard
+          name="OUT OF ORDER"
+          :current="outOfOrderSpots.length"
+          colors="none"
+        ></CounterCard>
+        <CounterCard
+          name="CUSTOMERS"
+          v-tooltip:bottom="'Count of total daily customers'"
+          :current="customers.length"
+          colors="none"
+        ></CounterCard>
+        <v-card class="legend">
+          <v-card-title class="d-flex ga-2 align-center"
+            >Legend
+            <v-icon
+              size="sm"
+              v-tooltip:top="'Hover to see what each spot represents'"
+              >mdi-information-outline
+            </v-icon>
+          </v-card-title>
+          <v-card-item>
+            <span class="d-flex align-center justify-space-evenly">
+              <ParkingSpotComponent
+                v-for="spot in exampleSpots"
+                :key="spot.id"
+                :spot="spot"
+                :explanation="spot.explanation"
+              ></ParkingSpotComponent>
+            </span>
+          </v-card-item>
+        </v-card>
+        <v-card class="full-grid-row">
+          <v-card-title class="d-flex align-center"
+            >{{ property.name }}
+            <v-spacer></v-spacer>
+            <v-pagination
+              v-if="currentLayer"
+              v-model="page"
+              :length="property.visualLayers.length"
+              variant="outlined"
+              density="compact"
+            ></v-pagination>
+          </v-card-title>
+          <div
+            id="spot-container"
+            v-if="property.parkingSpots.length > 0"
+            :style="
+              currentLayer
+                ? {
+                    gridTemplateColumns: `repeat(${currentLayer.columns}, 1fr)`,
+                  }
+                : {}
+            "
+          >
             <ParkingSpotComponent
-              v-for="spot in exampleSpots"
+              v-for="spot in layeredParkingSpots"
               :key="spot.id"
               :spot="spot"
-              :explanation="spot.explanation"
             ></ParkingSpotComponent>
-          </span>
-        </v-card-item>
-      </v-card>
-      <v-card class="full-grid-row">
-        <v-card-title class="d-flex align-center"
-          >{{ property.name }}
-          <v-spacer></v-spacer>
-          <v-pagination
-            v-if="currentLayer"
-            v-model="page"
-            :length="property.visualLayers.length"
-            variant="outlined"
-            density="compact"
-          ></v-pagination>
-        </v-card-title>
-        <div
-          id="spot-container"
-          v-if="property.parkingSpots.length > 0"
-          :style="
-            currentLayer
-              ? {
-                  gridTemplateColumns: `repeat(${currentLayer.columns}, 1fr)`,
-                }
-              : {}
-          "
-        >
-          <ParkingSpotComponent
-            v-for="spot in layeredParkingSpots"
-            :key="spot.id"
-            :spot="spot"
-          ></ParkingSpotComponent>
-        </div>
-        <v-card-text v-else class="pa-4">
-          <i>No parking spots yet.</i>
-        </v-card-text>
-      </v-card>
-    </main>
-  </v-responsive>
+          </div>
+          <v-card-text v-else class="pa-4">
+            <i>No parking spots yet.</i>
+          </v-card-text>
+        </v-card>
+      </div>
+    </v-responsive>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -127,6 +139,10 @@ import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
 import { useRoute } from "vue-router";
 import CounterCard from "@/components/CounterCard.vue";
 import ParkingSpotComponent from "@/components/ParkingSpotComponent.vue";
+import { useFullscreen } from "@vueuse/core";
+
+const fullscrenRef = useTemplateRef("fullscreen");
+const { isFullscreen, toggle } = useFullscreen(fullscrenRef);
 
 const propertyStore = usePropertyStore();
 const route = useRoute();
