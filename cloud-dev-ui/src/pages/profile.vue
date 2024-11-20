@@ -1,174 +1,176 @@
 <template>
-  <v-progress-linear
-    v-if="appStore.authLoading"
-    indeterminate
-    color="primary"
-  />
-  <v-container v-else-if="user" class="d-flex justify-center align-center">
-    <!-- Profile Card -->
-    <v-card
-      class="pa-4"
-      width="fit-content"
-      min-width="50%"
-      :loading="appStore.authLoading"
-    >
-      <!-- Profile Picture Section -->
-      <v-card-item class="d-flex justify-center">
-        <label for="pb-upload">
-          <v-avatar
-            id="pb"
-            class="rounded-circle bg-primary"
-            size="120"
-            text="User Photo"
-            rounded
-            border
-          >
-            <!-- Check if userPhoto exists, otherwise show user icon -->
-            <v-img v-if="userPhoto" :src="userPhoto" alt="User Photo" cover>
-              <template v-slot:error>
-                <div class="d-flex align-center justify-center fill-height">
-                  <v-icon
-                    color="error"
-                    icon="mdi-image-broken-variant"
-                  ></v-icon>
-                </div>
-              </template>
-              <template v-slot:placeholder>
-                <div class="d-flex align-center justify-center fill-height">
-                  <v-progress-circular
-                    size="24"
-                    indeterminate
-                  ></v-progress-circular>
-                </div>
-              </template>
-            </v-img>
-            <!-- Placeholder icon if no userPhoto -->
-            <v-icon v-else class="opacity-80" color="background" size="80"
-              >mdi-account
-            </v-icon>
-          </v-avatar>
-        </label>
-
-        <v-file-input
-          id="pb-upload"
-          class="d-none"
-          v-model="editData.photo"
-          accept="image/*"
-          prepend-icon="mdi-camera"
-          max-width="400"
-          @update:modelValue="saveChanges"
-        ></v-file-input>
-      </v-card-item>
-
-      <v-divider class="ma-4"></v-divider>
-
-      <v-card-item>
-        <!-- Profile Details Section -->
-        <div class="card-grid">
-          <span class="text-end">Display Name:</span>
-          <span
-            class="d-flex align-center"
-            v-tooltip:bottom="
-              user?.displayName
-                ? {
-                    text: user?.displayName,
-                    openOnClick: true,
-                    persistent: false,
-                  }
-                : undefined
-            "
-            >{{ user?.displayName ?? "Anonymous" }}
-            <v-btn
-              class="ms-2"
-              color="primary"
-              @click="openEditDialog"
-              size="x-small"
-              icon="mdi-pencil"
-              variant="tonal"
+  <div>
+    <v-progress-linear
+      v-if="appStore.authLoading"
+      indeterminate
+      color="primary"
+    />
+    <v-container v-else-if="user" class="d-flex justify-center align-center">
+      <!-- Profile Card -->
+      <v-card
+        class="pa-4"
+        width="fit-content"
+        min-width="50%"
+        :loading="appStore.authLoading"
+      >
+        <!-- Profile Picture Section -->
+        <v-card-item class="d-flex justify-center">
+          <label for="pb-upload">
+            <v-avatar
+              id="pb"
+              class="rounded-circle bg-primary"
+              size="120"
+              text="User Photo"
+              rounded
+              border
             >
-            </v-btn>
-          </span>
-          <span class="text-end">Email:</span>
-          <span
-            v-tooltip:bottom="
-              user?.email
-                ? {
-                    text: user?.email,
-                    openOnClick: true,
-                    persistent: false,
-                  }
-                : undefined
-            "
-            >{{ user?.email ?? "No Email" }}</span
-          >
-        </div>
-      </v-card-item>
+              <!-- Check if userPhoto exists, otherwise show user icon -->
+              <v-img v-if="userPhoto" :src="userPhoto" alt="User Photo" cover>
+                <template v-slot:error>
+                  <div class="d-flex align-center justify-center fill-height">
+                    <v-icon
+                      color="error"
+                      icon="mdi-image-broken-variant"
+                    ></v-icon>
+                  </div>
+                </template>
+                <template v-slot:placeholder>
+                  <div class="d-flex align-center justify-center fill-height">
+                    <v-progress-circular
+                      size="24"
+                      indeterminate
+                    ></v-progress-circular>
+                  </div>
+                </template>
+              </v-img>
+              <!-- Placeholder icon if no userPhoto -->
+              <v-icon v-else class="opacity-80" color="background" size="80"
+                >mdi-account
+              </v-icon>
+            </v-avatar>
+          </label>
 
-      <v-divider class="ma-4"></v-divider>
+          <v-file-input
+            id="pb-upload"
+            class="d-none"
+            v-model="editData.photo"
+            accept="image/*"
+            prepend-icon="mdi-camera"
+            max-width="400"
+            @update:modelValue="saveChanges"
+          ></v-file-input>
+        </v-card-item>
 
-      <!-- Profile Actions Section -->
-      <v-card-actions>
-        <v-row>
-          <v-col class="text-end">
-            <v-btn color="warn" variant="tonal" @click="resetPassword"
-              >Reset Password
-            </v-btn>
-          </v-col>
-          <v-col>
-            <v-btn
-              color="error"
-              @click="signOut(auth!)"
-              variant="tonal"
-              append-icon="mdi-logout"
-              >Log Out
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card-actions>
-    </v-card>
+        <v-divider class="ma-4"></v-divider>
 
-    <v-alert
-      v-if="successMessage"
-      closable
-      type="success"
-      class="position-absolute bottom-0 ma-16"
-      >{{ successMessage }}
-    </v-alert>
+        <v-card-item>
+          <!-- Profile Details Section -->
+          <div class="card-grid">
+            <span class="text-end">Display Name:</span>
+            <span
+              class="d-flex align-center"
+              v-tooltip:bottom="
+                user?.displayName
+                  ? {
+                      text: user?.displayName,
+                      openOnClick: true,
+                      persistent: false,
+                    }
+                  : undefined
+              "
+              >{{ user?.displayName ?? "Anonymous" }}
+              <v-btn
+                class="ms-2"
+                color="primary"
+                @click="openEditDialog"
+                size="x-small"
+                icon="mdi-pencil"
+                variant="tonal"
+              >
+              </v-btn>
+            </span>
+            <span class="text-end">Email:</span>
+            <span
+              v-tooltip:bottom="
+                user?.email
+                  ? {
+                      text: user?.email,
+                      openOnClick: true,
+                      persistent: false,
+                    }
+                  : undefined
+              "
+              >{{ user?.email ?? "No Email" }}</span
+            >
+          </div>
+        </v-card-item>
 
-    <!-- Edit Dialog -->
-    <v-dialog
-      v-model="editDialog"
-      max-width="400"
-      @afterLeave="closeEditDialog"
-    >
-      <v-card>
-        <v-card-title>Edit Profile</v-card-title>
-        <v-card-text>
-          <v-form ref="editForm" v-model="formValid">
-            <v-text-field
-              label="Display Name"
-              v-model="editData.displayName"
-              :rules="[(v) => !!v || 'Display name is required']"
-              required
-            ></v-text-field>
-          </v-form>
-        </v-card-text>
+        <v-divider class="ma-4"></v-divider>
+
+        <!-- Profile Actions Section -->
         <v-card-actions>
-          <v-spacer />
-          <v-btn color="error" text="true" @click="closeEditDialog"
-            >Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            text="true"
-            :disabled="!formValid"
-            @click="saveChanges"
-            >Save
-          </v-btn>
+          <v-row>
+            <v-col class="text-end">
+              <v-btn color="warn" variant="tonal" @click="resetPassword"
+                >Reset Password
+              </v-btn>
+            </v-col>
+            <v-col>
+              <v-btn
+                color="error"
+                @click="signOut(auth!)"
+                variant="tonal"
+                append-icon="mdi-logout"
+                >Log Out
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-card-actions>
       </v-card>
-    </v-dialog>
-  </v-container>
+
+      <v-alert
+        v-if="successMessage"
+        closable
+        type="success"
+        class="position-absolute bottom-0 ma-16"
+        >{{ successMessage }}
+      </v-alert>
+
+      <!-- Edit Dialog -->
+      <v-dialog
+        v-model="editDialog"
+        max-width="400"
+        @afterLeave="closeEditDialog"
+      >
+        <v-card>
+          <v-card-title>Edit Profile</v-card-title>
+          <v-card-text>
+            <v-form ref="editForm" v-model="formValid">
+              <v-text-field
+                label="Display Name"
+                v-model="editData.displayName"
+                :rules="[(v) => !!v || 'Display name is required']"
+                required
+              ></v-text-field>
+            </v-form>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="error" text="true" @click="closeEditDialog"
+              >Cancel
+            </v-btn>
+            <v-btn
+              color="primary"
+              text="true"
+              :disabled="!formValid"
+              @click="saveChanges"
+              >Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -191,11 +193,9 @@ const editData = ref({
 const formValid = ref(false);
 const userPhoto = ref(null);
 
-onMounted(async () => {
-  if (user.value?.photoURL) {
-    userPhoto.value = await fetchImage(user.value.photoURL);
-  }
-});
+if (user.value?.photoURL) {
+  userPhoto.value = await fetchImage(user.value.photoURL);
+}
 watch(user, async (newUser) => {
   if (newUser) {
     userPhoto.value = newUser.photoURL

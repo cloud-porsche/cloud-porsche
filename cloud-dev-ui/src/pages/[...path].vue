@@ -14,6 +14,8 @@ setInterval(() => {
   counter.value -= 1;
   if (counter.value === 0) {
     router.push("/");
+  } else if (counter.value < 0) {
+    counter.value = 0;
   }
 }, 1000);
 </script>

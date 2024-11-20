@@ -1,43 +1,49 @@
 <template>
-  <v-toolbar density="comfortable">
-    <v-tabs v-model="activeTab">
-      <v-tab v-for="tab in tabs" :key="tab.title" :value="tab.title">
-        {{ tab.title }}
-      </v-tab>
-    </v-tabs>
-  </v-toolbar>
+  <div>
+    <v-toolbar density="comfortable">
+      <v-tabs v-model="activeTab">
+        <v-tab v-for="tab in tabs" :key="tab.title" :value="tab.title">
+          {{ tab.title }}
+        </v-tab>
+      </v-tabs>
+    </v-toolbar>
 
-  <v-tabs-window v-model="activeTab">
-    <v-tabs-window-item v-for="tab in tabs" :key="tab.title" :value="tab.title">
-      <v-responsive>
-        <p class="pb-4">{{ tab.text }}</p>
-        <v-divider class="pa-2" />
-        <v-list rounded>
-          <v-list-item
-            v-if="tab.selections"
-            v-for="selection in tab.selections"
-            :key="selection.title"
-            class="pa-5"
-          >
-            <v-list-item-title>{{ selection.title }}</v-list-item-title>
-            <v-list-item-subtitle class="d-block pb-5"
-              >{{ selection.text }}
-            </v-list-item-subtitle>
-            <v-select
-              :model-value="selection.initial"
-              @update:model-value="selection.valueChange"
-              :items="selection.options"
-              outlined
+    <v-tabs-window v-model="activeTab">
+      <v-tabs-window-item
+        v-for="tab in tabs"
+        :key="tab.title"
+        :value="tab.title"
+      >
+        <v-responsive>
+          <p class="pb-4">{{ tab.text }}</p>
+          <v-divider class="pa-2" />
+          <v-list rounded>
+            <v-list-item
+              v-if="tab.selections"
+              v-for="selection in tab.selections"
+              :key="selection.title"
+              class="pa-5"
             >
-            </v-select>
-          </v-list-item>
-          <v-list-item v-else class="pa-5">
-            <v-list-item-title>No settings available.</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-responsive>
-    </v-tabs-window-item>
-  </v-tabs-window>
+              <v-list-item-title>{{ selection.title }}</v-list-item-title>
+              <v-list-item-subtitle class="d-block pb-5"
+                >{{ selection.text }}
+              </v-list-item-subtitle>
+              <v-select
+                :model-value="selection.initial"
+                @update:model-value="selection.valueChange"
+                :items="selection.options"
+                outlined
+              >
+              </v-select>
+            </v-list-item>
+            <v-list-item v-else class="pa-5">
+              <v-list-item-title>No settings available.</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-responsive>
+      </v-tabs-window-item>
+    </v-tabs-window>
+  </div>
 </template>
 
 <script setup lang="ts">

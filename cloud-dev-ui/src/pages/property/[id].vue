@@ -118,11 +118,16 @@
                 : {}
             "
           >
-            <ParkingSpotComponent
-              v-for="spot in layeredParkingSpots"
-              :key="spot.id"
-              :spot="spot"
-            ></ParkingSpotComponent>
+            <Suspense>
+              <ParkingSpotComponent
+                v-for="spot in layeredParkingSpots"
+                :key="spot.id"
+                :spot="spot"
+              ></ParkingSpotComponent>
+              <template v-slot:fallback>
+                <v-progress-circular indeterminate></v-progress-circular>
+              </template>
+            </Suspense>
           </div>
           <v-card-text v-else class="pa-4">
             <i>No parking spots yet.</i>
@@ -138,16 +143,20 @@ import { usePropertyStore } from "@/stores/properties";
 import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
 import { useRoute } from "vue-router";
 import CounterCard from "@/components/CounterCard.vue";
-import ParkingSpotComponent from "@/components/ParkingSpotComponent.vue";
 import { useFullscreen } from "@vueuse/core";
 
-const fullscrenRef = useTemplateRef("fullscreen");
-const { isFullscreen, toggle } = useFullscreen(fullscrenRef);
+const ParkingSpotComponent = defineAsyncComponent(
+  () => import("@/components/ParkingSpotComponent.vue"),
+);
+
+const fullscreenRef = useTemplateRef("fullscreen");
+const { isFullscreen, toggle } = useFullscreen(fullscreenRef);
 
 const propertyStore = usePropertyStore();
 const route = useRoute();
 const id = computed(() => (route.params as any)["id"]);
-onMounted(async () => await propertyStore.fetchSimulationStatus(id.value));
+
+await propertyStore.fetchSimulationStatus(id.value);
 
 const simulationState = computed(() =>
   propertyStore.simulationActive.includes(id.value),
@@ -265,5 +274,10 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
   & .legend {
     grid-column: 6 / -1;
   }
+}
+
+.span-full-grid {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
 }
 </style>

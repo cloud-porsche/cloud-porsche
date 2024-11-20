@@ -1,191 +1,203 @@
 <template>
-  <v-responsive>
-    <SearchFilter
-      @updateList="handleUpdateList"
-      @refresh="refetch()"
-      @add="openDialog"
-      :error="error"
-      :loading="loading"
-    />
+  <div>
+    <v-responsive>
+      <SearchFilter
+        @updateList="handleUpdateList"
+        @refresh="refetch()"
+        @add="openDialog"
+        :error="error"
+        :loading="loading"
+      />
 
-    <v-data-table
-      class="data-table rounded"
-      :mobile="mobile"
-      density="comfortable"
-      :no-data-text="error ? 'A network error occurred ⚡' : 'No defects found'"
-      :items="defects"
-      :headers="headers"
-      :items-per-page-options="[
-        { value: 5, title: '5' },
-        { value: 10, title: '10' },
-        { value: 25, title: '25' },
-        { value: -1, title: 'All' },
-      ]"
-      show-expand
-      multi-sort
-    >
-      <template v-slot:item.status="{ item }">
-        <StatusChip :defect="item" />
-      </template>
-      <template v-slot:item.reportedDate="{ item }">
-        {{ formatDate(item.reportedDate) }}
-      </template>
-      <template v-slot:item.signedImage="{ item }">
-        <v-img
-          v-if="item.signedImage?.length > 0"
-          :src="item.signedImage"
-          class="cursor-pointer"
-          aspect-ratio="1"
-          contain
-          @click="inspectedImage = { open: true, src: item.signedImage }"
-        >
-          <template v-slot:error>
-            <div class="d-flex align-center justify-center fill-height">
-              <v-icon color="error" icon="mdi-image-broken-variant"></v-icon>
-            </div>
-          </template>
-          <template v-slot:placeholder>
-            <div class="d-flex align-center justify-center fill-height">
-              <v-progress-circular
-                size="24"
-                indeterminate
-              ></v-progress-circular>
-            </div>
-          </template>
-        </v-img>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <v-btn icon="mdi-pencil" @click="editDialog(item)" variant="plain">
-        </v-btn>
-      </template>
+      <v-data-table
+        class="data-table rounded"
+        :mobile="mobile"
+        density="comfortable"
+        :no-data-text="
+          error ? 'A network error occurred ⚡' : 'No defects found'
+        "
+        :items="defects"
+        :headers="headers"
+        :items-per-page-options="[
+          { value: 5, title: '5' },
+          { value: 10, title: '10' },
+          { value: 25, title: '25' },
+          { value: -1, title: 'All' },
+        ]"
+        show-expand
+        multi-sort
+      >
+        <template v-slot:item.status="{ item }">
+          <StatusChip :defect="item" />
+        </template>
+        <template v-slot:item.reportedDate="{ item }">
+          {{ formatDate(item.reportedDate) }}
+        </template>
+        <template v-slot:item.signedImage="{ item }">
+          <v-img
+            v-if="item.signedImage?.length > 0"
+            :src="item.signedImage"
+            class="cursor-pointer"
+            aspect-ratio="1"
+            contain
+            @click="inspectedImage = { open: true, src: item.signedImage }"
+          >
+            <template v-slot:error>
+              <div class="d-flex align-center justify-center fill-height">
+                <v-icon color="error" icon="mdi-image-broken-variant"></v-icon>
+              </div>
+            </template>
+            <template v-slot:placeholder>
+              <div class="d-flex align-center justify-center fill-height">
+                <v-progress-circular
+                  size="24"
+                  indeterminate
+                ></v-progress-circular>
+              </div>
+            </template>
+          </v-img>
+        </template>
+        <template v-slot:item.actions="{ item }">
+          <v-btn icon="mdi-pencil" @click="editDialog(item)" variant="plain">
+          </v-btn>
+        </template>
 
-      <template v-slot:expanded-row="{ columns, item }">
-        <tr>
-          <td :colspan="columns.length" class="pa-5">
-            <div
-              v-for="column in columns"
-              :key="column.value as string"
-              class="expanded-defect pa-2"
-            >
-              <strong>{{ column.title }}</strong>
-              <div v-if="column.value === 'reportedDate'">
-                {{ formatDate(item.reportedDate) }}
+        <template v-slot:expanded-row="{ columns, item }">
+          <tr>
+            <td :colspan="columns.length" class="pa-5">
+              <div
+                v-for="column in columns"
+                :key="column.value as string"
+                class="expanded-defect pa-2"
+              >
+                <strong>{{ column.title }}</strong>
+                <div v-if="column.value === 'reportedDate'">
+                  {{ formatDate(item.reportedDate) }}
+                </div>
+                <div v-else-if="column.value === 'status'">
+                  <StatusChip :defect="item" />
+                </div>
+                <div v-else-if="column.value === 'signedImage'">
+                  <v-img
+                    v-if="item.signedImage?.length > 0"
+                    :src="item.signedImage"
+                    class="cursor-pointer"
+                    contain
+                    position="left"
+                    max-height="300"
+                    @click="
+                      inspectedImage = { open: true, src: item.signedImage }
+                    "
+                  >
+                    <template v-slot:error>
+                      <div
+                        class="d-flex align-center justify-start fill-height"
+                      >
+                        <v-icon
+                          color="error"
+                          size="50"
+                          icon="mdi-image-broken-variant"
+                          v-tooltip="'Corrupted or missing Image'"
+                        ></v-icon>
+                      </div>
+                    </template>
+                    <template v-slot:placeholder>
+                      <div
+                        class="d-flex align-center justify-start fill-height"
+                      >
+                        <v-progress-circular
+                          indeterminate
+                        ></v-progress-circular>
+                      </div>
+                    </template>
+                  </v-img>
+                  <i v-else>No image.</i>
+                </div>
+                <div v-else-if="column.value === 'actions'">
+                  <v-btn
+                    prepend-icon="mdi-pencil"
+                    class="me-2"
+                    @click="editDialog(item)"
+                    variant="tonal"
+                    >Edit
+                  </v-btn>
+                  <v-btn
+                    prepend-icon="mdi-delete"
+                    color="error"
+                    @click="initiateDeletion(item)"
+                    variant="flat"
+                    >Delete
+                  </v-btn>
+                </div>
+                <div v-else>{{ item[column.value as keyof SignedDefect] }}</div>
+                <v-divider v-if="column.title !== ''" class="mt-2" />
               </div>
-              <div v-else-if="column.value === 'status'">
-                <StatusChip :defect="item" />
-              </div>
-              <div v-else-if="column.value === 'signedImage'">
-                <v-img
-                  v-if="item.signedImage?.length > 0"
-                  :src="item.signedImage"
-                  class="cursor-pointer"
-                  contain
-                  position="left"
-                  max-height="300"
-                  @click="
-                    inspectedImage = { open: true, src: item.signedImage }
-                  "
-                >
-                  <template v-slot:error>
-                    <div class="d-flex align-center justify-start fill-height">
-                      <v-icon
-                        color="error"
-                        size="50"
-                        icon="mdi-image-broken-variant"
-                        v-tooltip="'Corrupted or missing Image'"
-                      ></v-icon>
-                    </div>
-                  </template>
-                  <template v-slot:placeholder>
-                    <div class="d-flex align-center justify-start fill-height">
-                      <v-progress-circular indeterminate></v-progress-circular>
-                    </div>
-                  </template>
-                </v-img>
-                <i v-else>No image.</i>
-              </div>
-              <div v-else-if="column.value === 'actions'">
-                <v-btn
-                  prepend-icon="mdi-pencil"
-                  class="me-2"
-                  @click="editDialog(item)"
-                  variant="tonal"
-                  >Edit
-                </v-btn>
-                <v-btn
-                  prepend-icon="mdi-delete"
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
+
+      <v-dialog v-model="inspectedImage.open" max-width="50%" max-height="80%">
+        <v-card rounded class="d-flex flex-row overflow-hidden">
+          <v-img
+            v-if="inspectedImage.src"
+            :src="inspectedImage.src"
+            contain
+            max-height="100%"
+            min-height="300"
+            rounded
+            @click="inspectedImage = { open: false, src: undefined }"
+          >
+            <template v-slot:error>
+              <div
+                class="d-flex flex-column align-center justify-center fill-height"
+              >
+                <v-icon
                   color="error"
-                  @click="initiateDeletion(item)"
-                  variant="flat"
-                  >Delete
-                </v-btn>
+                  size="100"
+                  icon="mdi-image-broken-variant"
+                ></v-icon>
+                <i class="pa-2 text-red-lighten-3"
+                  >Corrupted or missing Image.</i
+                >
               </div>
-              <div v-else>{{ item[column.value as keyof SignedDefect] }}</div>
-              <v-divider v-if="column.title !== ''" class="mt-2" />
-            </div>
-          </td>
-        </tr>
-      </template>
-    </v-data-table>
+            </template>
+            <template v-slot:placeholder>
+              <div class="d-flex align-center justify-center fill-height">
+                <v-progress-circular indeterminate></v-progress-circular>
+              </div>
+            </template>
+          </v-img>
+        </v-card>
+      </v-dialog>
 
-    <v-dialog v-model="inspectedImage.open" max-width="50%" max-height="80%">
-      <v-card rounded class="d-flex flex-row overflow-hidden">
-        <v-img
-          v-if="inspectedImage.src"
-          :src="inspectedImage.src"
-          contain
-          max-height="100%"
-          min-height="300"
-          rounded
-          @click="inspectedImage = { open: false, src: undefined }"
-        >
-          <template v-slot:error>
-            <div
-              class="d-flex flex-column align-center justify-center fill-height"
-            >
-              <v-icon
-                color="error"
-                size="100"
-                icon="mdi-image-broken-variant"
-              ></v-icon>
-              <i class="pa-2 text-red-lighten-3">Corrupted or missing Image.</i>
-            </div>
-          </template>
-          <template v-slot:placeholder>
-            <div class="d-flex align-center justify-center fill-height">
-              <v-progress-circular indeterminate></v-progress-circular>
-            </div>
-          </template>
-        </v-img>
+      <AddDefectPopup
+        v-model="dialog"
+        :defect="activeDefect"
+        :patch="!!activeDefect.id"
+        @save="handleSave"
+        @patch="patchDefect(activeDefect.id!, $event[0], $event[1], $event[2])"
+      />
+    </v-responsive>
+    <v-dialog v-model="confirmDialog" max-width="400">
+      <v-card>
+        <v-card-title>Confirm Delete</v-card-title>
+        <v-card-subtitle>Defect name: {{ toDelete!.name }}</v-card-subtitle>
+        <v-card-text>Are you sure you want to delete this defect?</v-card-text>
+        <v-card-actions>
+          <v-btn variant="text" @click="confirmDialog = false">Cancel</v-btn>
+          <v-btn
+            color="error"
+            variant="flat"
+            @click="deleteDefect(toDelete!.id)"
+            autofocus
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <AddDefectPopup
-      v-model="dialog"
-      :defect="activeDefect"
-      :patch="!!activeDefect.id"
-      @save="handleSave"
-      @patch="patchDefect(activeDefect.id!, $event[0], $event[1], $event[2])"
-    />
-  </v-responsive>
-  <v-dialog v-model="confirmDialog" max-width="400">
-    <v-card>
-      <v-card-title>Confirm Delete</v-card-title>
-      <v-card-subtitle>Defect name: {{ toDelete!.name }}</v-card-subtitle>
-      <v-card-text>Are you sure you want to delete this defect?</v-card-text>
-      <v-card-actions>
-        <v-btn variant="text" @click="confirmDialog = false">Cancel</v-btn>
-        <v-btn
-          color="error"
-          variant="flat"
-          @click="deleteDefect(toDelete!.id)"
-          autofocus
-        >
-          Delete
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  </div>
 </template>
 
 <script lang="ts" setup>

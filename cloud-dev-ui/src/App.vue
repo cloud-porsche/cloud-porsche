@@ -86,7 +86,24 @@
     </v-navigation-drawer>
 
     <v-main>
-      <router-view />
+      <RouterView v-slot="{ Component }">
+        <template v-if="Component">
+          <Transition mode="out-in">
+            <KeepAlive>
+              <Suspense>
+                <component :is="Component"></component>
+
+                <template #fallback>
+                  <v-progress-linear
+                    indeterminate
+                    color="primary"
+                  ></v-progress-linear>
+                </template>
+              </Suspense>
+            </KeepAlive>
+          </Transition>
+        </template>
+      </RouterView>
     </v-main>
 
     <AppFooter />
@@ -146,6 +163,19 @@ onMounted(() => {
 <style lang="scss">
 :root {
   scrollbar-width: thin;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: transform 0.5s ease;
+}
+
+.v-enter-from {
+  transform: translateY(-100%);
+}
+
+.v-leave-to {
+  transform: translateX(100%);
 }
 
 .v-responsive {
