@@ -10,6 +10,12 @@
         ></v-app-bar-nav-icon>
       </template>
       <v-spacer />
+      <v-icon
+        class="pl-6 pr-6"
+        :color="appStore.wsStatus ? 'success' : 'error'"
+        v-tooltip="appStore.wsStatus ? 'WS Connected' : 'WS Disconnected'"
+        :icon="appStore.wsStatus ? 'mdi-wifi' : 'mdi-wifi-off'"
+      ></v-icon>
 
       <v-btn
         :icon="isDark ? 'mdi-weather-night' : 'mdi-weather-sunny'"

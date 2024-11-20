@@ -19,6 +19,7 @@ import {
   browserLocalPersistence,
   browserPopupRedirectResolver,
 } from "firebase/auth";
+import { initWs } from "@/stores/ws";
 
 const app = createApp(App);
 
@@ -43,3 +44,5 @@ app.use(VueFire, {
 });
 
 app.mount("#app");
+
+initWs();
