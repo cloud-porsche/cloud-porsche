@@ -28,7 +28,7 @@
           />
         </span>
       </h1>
-      <v-card>
+      <v-card :loading="propertyStore.loading || newLoading">
         <v-card-title>Your Properties:</v-card-title>
         <div id="property-panel-container">
           <v-card
@@ -64,7 +64,7 @@
       </v-card>
     </v-responsive>
 
-    <v-dialog :model-value="newPropertyDialog" persistent>
+    <v-dialog v-model="newPropertyDialog" :persistent="step !== 1">
       <v-stepper
         v-model="step"
         :items="stepperPages"
@@ -270,8 +270,9 @@
                   <v-divider></v-divider>
                   <small
                     class="pa-2 d-flex justify-center align-center text-grey"
-                    >Click a spot to replace it with a placeholder. This way you
-                    can customize each layer to your needs.</small
+                    >Left click a spot to replace it with a placeholder. Right
+                    click to mark it as electric charger.<br />
+                    This way you can customize each layer to your needs.</small
                   ></v-col
                 >
               </v-row>
@@ -550,8 +551,11 @@ function getStateColor(property: IParkingProperty) {
   const occupied = spots.filter(
     (s) => s.state === ParkingSpotState.OCCUPIED,
   ).length;
+  if (occupied >= spots.length * 0.65) {
+    return "darkgoldenrod";
+  }
   if (occupied === spots.length) {
-    return "red";
+    return "tomato";
   }
   return "green";
 }

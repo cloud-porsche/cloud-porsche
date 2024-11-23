@@ -30,13 +30,13 @@ function getCountColor(
 ) {
   if (!total || colors === "none") return undefined;
   if (current === 0 || total === 0) {
-    return colors === "invert" ? "red" : undefined;
+    return colors === "invert" ? "tomato" : undefined;
   }
   if (current === total) {
-    return colors === "invert" ? undefined : "red";
+    return colors === "invert" ? undefined : "tomato";
   }
   if (colors === "invert" ? current >= total / 0.65 : current >= total / 1.35) {
-    return "yellow";
+    return "darkgoldenrod";
   }
   return "green";
 }
