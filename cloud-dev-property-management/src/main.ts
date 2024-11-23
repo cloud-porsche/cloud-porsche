@@ -30,7 +30,10 @@ async function bootstrap() {
   });
 
   const firestore = admin.firestore();
-  firestore.settings({ databaseId: process.env.FIRESTORE_DB });
+  firestore.settings({
+    databaseId: process.env.FIRESTORE_DB,
+    ignoreUndefinedProperties: true,
+  });
   initialize(firestore);
 
   const app = await NestFactory.create(AppModule);

@@ -2,29 +2,22 @@ import { Collection } from 'fireorm';
 import {
   Customer,
   IParkingProperty,
-  ParkingPropertyType,
-  ParkingSpot,
-  ParkingSpotLayers,
+  ParkingSpotLayer,
 } from '@cloud-porsche/types';
 
 @Collection()
-export class ParkingProperty implements IParkingProperty {
-  id: string;
-  name: string;
-  location: string;
-  description: string;
-  pricePerHour: number;
-  parkingType: ParkingPropertyType;
+export class ParkingProperty extends IParkingProperty {
+  pricePerHour: number = 1;
   lastModified: Date = new Date();
-  parkingSpots: ParkingSpot[] = [];
   customers: Customer[] = [];
-  visualLayers: ParkingSpotLayers[];
+  layers: ParkingSpotLayer[] = [];
 
-  constructor(obj?: Partial<ParkingProperty>) {
+  constructor(obj?: Partial<IParkingProperty>) {
+    super();
     Object.assign(this, obj);
-    if (obj?.parkingSpots) {
-      this.parkingSpots = obj.parkingSpots.map((spot) => {
-        return { ...new ParkingSpot(spot) };
+    if (obj?.layers) {
+      this.layers = obj.layers.map((layer) => {
+        return { ...new ParkingSpotLayer(layer) };
       });
     }
     if (obj?.customers) {

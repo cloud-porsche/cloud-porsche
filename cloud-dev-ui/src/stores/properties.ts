@@ -17,6 +17,16 @@ export const usePropertyStore = defineStore("properties", {
     loading: true,
     error: null,
   }),
+  getters: {
+    parkingSpots: (state) => (propertyId: string) => {
+      const property = state.properties.find((p) => p.id === propertyId);
+      return (
+        property?.layers
+          .flatMap((layer) => layer.parkingSpots)
+          .filter((s) => !s.placeholder) ?? []
+      );
+    },
+  },
   actions: {
     async fetchProperties() {
       this.$state.loading = true;
@@ -52,7 +62,9 @@ export const usePropertyStore = defineStore("properties", {
     setProperties(properties: IParkingProperty[]) {
       this.$state.properties = properties;
     },
-    async addProperty(property: Omit<IParkingProperty, "id" | "customers">) {
+    async addProperty(
+      property: Omit<IParkingProperty, "id" | "customers" | "parkingSpots">,
+    ) {
       this.$state.loading = true;
       try {
         await postJSON("/v1/parking-properties", property);

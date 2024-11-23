@@ -95,21 +95,20 @@
             </span>
           </v-card-item>
         </v-card>
-        <v-card class="full-grid-row">
+        <v-card class="full-grid-row" v-if="currentLayer">
           <v-card-title class="d-flex align-center"
             >{{ property.name }}
             <v-spacer></v-spacer>
             <v-pagination
-              v-if="currentLayer"
               v-model="page"
-              :length="property.visualLayers.length"
+              :length="property.layers.length"
               variant="outlined"
               density="compact"
             ></v-pagination>
           </v-card-title>
           <div
             id="spot-container"
-            v-if="property.parkingSpots.length > 0"
+            v-if="property.layers.length > 0"
             :style="
               currentLayer
                 ? {
@@ -120,7 +119,7 @@
           >
             <Suspense>
               <ParkingSpotComponent
-                v-for="spot in layeredParkingSpots"
+                v-for="spot in currentLayer.parkingSpots"
                 :key="spot.id"
                 :spot="spot"
               ></ParkingSpotComponent>
@@ -166,47 +165,29 @@ const property = computed(() =>
 );
 
 const page = ref(1);
-const currentLayer = computed(
-  () => property.value?.visualLayers?.[page.value - 1],
+const currentLayer = computed(() => property.value?.layers?.[page.value - 1]);
+
+const allSpots = computed(() =>
+  property.value?.layers
+    .flatMap((l) => l.parkingSpots)
+    .filter((spot) => !spot.placeholder),
 );
-const layeredParkingSpots = computed(() => {
-  if (!currentLayer.value || !property.value?.visualLayers)
-    return property.value?.parkingSpots ?? [];
-  const allLayers = property.value.visualLayers ?? [];
-  const ind = currentLayer.value.floor;
-  const amount = currentLayer.value.spotCount;
-
-  let layerIndex = 0;
-  for (let i = 0; i < ind; i++) {
-    layerIndex += allLayers[i].spotCount;
-  }
-  return property.value.parkingSpots.slice(layerIndex, layerIndex + amount);
-});
-
-const totalSpots = computed(() => property.value?.parkingSpots.length ?? 0);
+const totalSpots = computed(() => allSpots.value?.length ?? 0);
 const freeSpots = computed(
-  () =>
-    property.value?.parkingSpots.filter(
-      (s) => s.state === ParkingSpotState.FREE,
-    ) ?? [],
+  () => allSpots.value?.filter((s) => s.state === ParkingSpotState.FREE) ?? [],
 );
 const occupiedSpots = computed(
   () =>
-    property.value?.parkingSpots.filter(
-      (s) => s.state === ParkingSpotState.OCCUPIED,
-    ) ?? [],
+    allSpots.value?.filter((s) => s.state === ParkingSpotState.OCCUPIED) ?? [],
 );
 const reservedSpots = computed(
   () =>
-    property.value?.parkingSpots.filter(
-      (s) => s.state === ParkingSpotState.RESERVED,
-    ) ?? [],
+    allSpots.value?.filter((s) => s.state === ParkingSpotState.RESERVED) ?? [],
 );
 const outOfOrderSpots = computed(
   () =>
-    property.value?.parkingSpots.filter(
-      (s) => s.state === ParkingSpotState.OUT_OF_ORDER,
-    ) ?? [],
+    allSpots.value?.filter((s) => s.state === ParkingSpotState.OUT_OF_ORDER) ??
+    [],
 );
 
 const customers = computed(() => property.value?.customers ?? []);

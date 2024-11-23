@@ -26,7 +26,7 @@
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawerOpen">
-      <v-list nav v-model:opened="openNavigations" class="scroll-bar-thin">
+      <v-list nav v-model:opened="openNavigations">
         <v-list-item
           prepend-icon="mdi-view-dashboard"
           to="/"
@@ -167,7 +167,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
-:root {
+* {
   scrollbar-width: thin;
 }
 
@@ -190,10 +190,6 @@ onMounted(() => {
 
 .v-list-group__items a.v-list-item {
   padding-inline-start: calc(-8px + var(--indent-padding)) !important;
-}
-
-div:has(.scroll-bar-thin) {
-  scrollbar-width: thin;
 }
 
 // needed for the property page

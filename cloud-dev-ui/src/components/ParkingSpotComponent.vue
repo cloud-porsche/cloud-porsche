@@ -1,49 +1,51 @@
 <template>
-  <v-card
-    :color="getStateColor(spot.state)"
-    @click="disableDialog ? undefined : openDialog(spot)"
-    :disabled="spot.placeholder"
-    border
-    flat
-    :class="spot.placeholder ? 'disabled-spot' : ''"
-    class="spot d-flex align-center justify-center"
-  >
-    <v-tooltip
-      v-if="explanation"
-      activator="parent"
-      :text="explanation"
-      location="bottom"
-    ></v-tooltip>
-    <i v-if="spot.electricCharging" class="mdi mdi-flash text-yellow"></i
-  ></v-card>
+  <div>
+    <v-card
+      :color="getStateColor(spot.state)"
+      @click="disableDialog ? undefined : openDialog(spot)"
+      :disabled="spot.placeholder"
+      border
+      flat
+      :class="spot.placeholder ? 'disabled-spot' : ''"
+      class="spot d-flex align-center justify-center"
+    >
+      <v-tooltip
+        v-if="explanation"
+        activator="parent"
+        :text="explanation"
+        location="bottom"
+      ></v-tooltip>
+      <i v-if="spot.electricCharging" class="mdi mdi-flash text-yellow"></i
+    ></v-card>
 
-  <v-dialog v-model="inspectDialog" max-width="50%" max-height="80%">
-    <v-card rounded class="overflow-hidden">
-      <v-card-title>
-        <span class="d-flex text-center align-center"
-          >Parking Spot
-          <v-spacer />
-          <v-btn icon @click="closeDialog()">
-            <v-icon>mdi-close</v-icon>
-          </v-btn></span
-        >
-      </v-card-title>
-      <v-divider></v-divider>
-      <v-card-text>
-        <v-data-table
-          v-if="selectedSpot"
-          :items="Object.entries(selectedSpot)"
-          density="compact"
-          hide-default-header
-          hide-default-footer
-        >
-        </v-data-table>
-        <v-row v-else>
-          <v-col> No parking spot selected.</v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+    <v-dialog v-model="inspectDialog" max-width="50%" max-height="80%">
+      <v-card rounded class="overflow-hidden">
+        <v-card-title>
+          <span class="d-flex text-center align-center"
+            >Parking Spot
+            <v-spacer />
+            <v-btn icon @click="closeDialog()">
+              <v-icon>mdi-close</v-icon>
+            </v-btn></span
+          >
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text>
+          <v-data-table
+            v-if="selectedSpot"
+            :items="Object.entries(selectedSpot)"
+            density="compact"
+            hide-default-header
+            hide-default-footer
+          >
+          </v-data-table>
+          <v-row v-else>
+            <v-col> No parking spot selected.</v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">

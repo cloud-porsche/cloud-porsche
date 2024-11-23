@@ -5,6 +5,7 @@ export enum ParkingSpotState {
   OCCUPIED,
   RESERVED,
   OUT_OF_ORDER,
+  CHARGING,
 }
 
 /**
@@ -17,28 +18,39 @@ export enum ParkingPropertyType {
   TRACK_INDIVIDUAL,
 }
 
-export interface IParkingProperty {
+export abstract class IParkingProperty {
   id: string;
   name: string;
   location: string;
   description: string;
   lastModified: Date;
   pricePerHour: number;
-  parkingSpots: ParkingSpot[];
   customers: Customer[];
   parkingType: ParkingPropertyType;
-  visualLayers: ParkingSpotLayers[];
+  layers: ParkingSpotLayer[];
+
+  get parkingSpots(): ParkingSpot[] {
+    return this.layers.flatMap((layer) => layer.parkingSpots);
+  }
 }
 
-export class ParkingSpotLayers {
+export class ParkingSpotLayer {
   floor: number;
   name: string;
   description: string;
   spotCount: number;
   columns: number;
+  idPattern: string;
+  parkingSpots: ParkingSpot[];
 
-  constructor(obj?: Partial<ParkingSpot>) {
+  constructor(obj?: Partial<ParkingSpotLayer>) {
     Object.assign(this, obj);
+
+    if (obj?.parkingSpots) {
+      this.parkingSpots = obj.parkingSpots.map((spot) => {
+        return { ...new ParkingSpot(spot) };
+      });
+    }
   }
 }
 
@@ -46,9 +58,10 @@ export class ParkingSpot {
   id: string = crypto.randomUUID();
   state: ParkingSpotState = ParkingSpotState.FREE;
   lastStateChange: Date = new Date();
-  electricCharging: boolean = false;
   customer: Customer | null = null;
   placeholder: boolean = false;
+  electricCharging: boolean = false;
+  currentCharge?: number;
 
   constructor(obj?: Partial<ParkingSpot>) {
     Object.assign(this, obj);
