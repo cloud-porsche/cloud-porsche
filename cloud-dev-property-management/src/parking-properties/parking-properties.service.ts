@@ -51,12 +51,14 @@ export class ParkingPropertiesService {
   }
 
   async update(id: string, updateParkingPropertyDto: UpdateParkingPropertyDto) {
-    const toUpdate = new ParkingProperty({
+    const toUpdate = {
       id: id,
       lastModified: new Date(),
       ...updateParkingPropertyDto,
-    });
-    const res = await this.parkingPropertyRepository.update(toUpdate);
+    };
+    const res = await this.parkingPropertyRepository.update(
+      toUpdate as ParkingProperty,
+    );
     await this.notify();
     return res;
   }

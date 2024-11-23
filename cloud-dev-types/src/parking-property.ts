@@ -28,10 +28,6 @@ export abstract class IParkingProperty {
   customers: Customer[];
   parkingType: ParkingPropertyType;
   layers: ParkingSpotLayer[];
-
-  get parkingSpots(): ParkingSpot[] {
-    return this.layers.flatMap((layer) => layer.parkingSpots);
-  }
 }
 
 export class ParkingSpotLayer {

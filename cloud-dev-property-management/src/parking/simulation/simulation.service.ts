@@ -93,9 +93,9 @@ export class SimulationService {
           await this.parkingService.parkingPropertiesService.findOne(
             propertyId,
           );
-        const spot = parkingProperty.parkingSpots.find(
-          (s) => s.state === ParkingSpotState.FREE,
-        );
+        const spot = parkingProperty.layers
+          .flatMap((l) => l.parkingSpots)
+          .find((s) => s.state === ParkingSpotState.FREE);
         if (!spot) {
           this.logger.warn(
             'No free spots available - changing state to EXITING',
@@ -111,9 +111,9 @@ export class SimulationService {
     } else if (state === SimulationState.EXITING) {
       const parkingProperty =
         await this.parkingService.parkingPropertiesService.findOne(propertyId);
-      const spot = parkingProperty.parkingSpots.find(
-        (s) => s.state === ParkingSpotState.OCCUPIED,
-      );
+      const spot = parkingProperty.layers
+        .flatMap((l) => l.parkingSpots)
+        .find((s) => s.state === ParkingSpotState.OCCUPIED);
       if (!spot) {
         this.logger.warn('No occupied spots left - changing state to ENTERING');
         this.changeSimulationState(propertyId, SimulationState.ENTERING);

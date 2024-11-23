@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
 import { Customer, ParkingSpotState } from '@cloud-porsche/types';
+import { ParkingProperty } from '../parking-properties/entities/parking-property.entity';
 
 @Injectable()
 export class ParkingService {
@@ -25,9 +26,9 @@ export class ParkingService {
       await this.parkingPropertiesService.findOne(parkingPropertyId);
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
-    const spot = parkingProperty.parkingSpots.find(
-      (s) => s.customer?.id === customer.id,
-    );
+    const spot = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .find((s) => s.customer?.id === customer.id);
     if (spot) {
       this.logger.warn('Customer still has a spot occupied - setting it free');
       await this.freeSpot(parkingPropertyId, spot.id);
@@ -44,7 +45,9 @@ export class ParkingService {
   ) {
     const parkingProperty =
       await this.parkingPropertiesService.findOne(parkingPropertyId);
-    const spot = parkingProperty.parkingSpots.find((s) => s.id === spotId);
+    const spot = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .find((s) => s.id === spotId);
     if (!spot) throw new Error('Spot not found');
     if (
       [ParkingSpotState.OCCUPIED, ParkingSpotState.OUT_OF_ORDER].includes(
@@ -52,38 +55,52 @@ export class ParkingService {
       )
     )
       throw new Error('Spot already occupied or out of order');
-    return this.parkingPropertiesService.update(parkingPropertyId, {
-      parkingSpots: parkingProperty.parkingSpots.map((s) =>
-        s.id === spotId
-          ? {
-              ...s,
-              state: ParkingSpotState.OCCUPIED,
-              lastStateChange: new Date(),
-              customer,
-            }
-          : s,
+    return this.parkingPropertiesService.update(
+      parkingPropertyId,
+      this.newSpotState(
+        parkingProperty,
+        spotId,
+        ParkingSpotState.OCCUPIED,
+        customer,
       ),
-    });
+    );
   }
 
   async freeSpot(parkingPropertyId: string, spotId: string) {
     const parkingProperty =
       await this.parkingPropertiesService.findOne(parkingPropertyId);
-    const spot = parkingProperty.parkingSpots.find((s) => s.id === spotId);
+    const spot = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .find((s) => s.id === spotId);
     if (!spot) throw new Error('Spot not found');
     if (spot.state !== ParkingSpotState.OCCUPIED)
       throw new Error('Spot not occupied');
-    return this.parkingPropertiesService.update(parkingPropertyId, {
-      parkingSpots: parkingProperty.parkingSpots.map((s) =>
-        s.id === spotId
-          ? {
-              ...s,
-              state: ParkingSpotState.FREE,
-              lastStateChange: new Date(),
-              customer: null,
-            }
-          : s,
-      ),
-    });
+    return this.parkingPropertiesService.update(
+      parkingPropertyId,
+      this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
+    );
+  }
+
+  private newSpotState(
+    parkingProperty: ParkingProperty,
+    spotId: string,
+    state: ParkingSpotState,
+    customer: Customer = null,
+  ) {
+    return {
+      layers: parkingProperty.layers.map((l) => {
+        l.parkingSpots = l.parkingSpots.map((s) =>
+          s.id === spotId
+            ? {
+                ...s,
+                state: state,
+                lastStateChange: new Date(),
+                customer: customer,
+              }
+            : s,
+        );
+        return l;
+      }),
+    };
   }
 }
