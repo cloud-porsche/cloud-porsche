@@ -28,6 +28,7 @@
           />
         </span>
       </h1>
+      <v-divider class="pa-4"></v-divider>
       <v-card :loading="propertyStore.loading || newLoading">
         <v-card-title>Your Properties:</v-card-title>
         <div id="property-panel-container">
@@ -36,7 +37,6 @@
             :key="property.id"
             :to="'/property/' + property.id"
             :value="property.id"
-            rounded
             :style="{
               backgroundColor: getStateColor(property),
               color: getStateColor(property) ? 'white' : undefined,
@@ -269,10 +269,9 @@
                 <v-col>
                   <v-divider></v-divider>
                   <small
-                    class="pa-2 d-flex justify-center align-center text-grey"
-                    >Left click a spot to replace it with a placeholder. Right
-                    click to mark it as electric charger.<br />
-                    This way you can customize each layer to your needs.</small
+                    class="pa-2 d-flex justify-center align-center text-grey text-center"
+                    >Left click a spot to replace it with a placeholder.<br />
+                    Right click to mark it as electric charger.</small
                   ></v-col
                 >
               </v-row>
@@ -291,6 +290,9 @@
                         :spot="spot"
                         disable-dialog
                         @click="togglePlaceholder(layer, spot)"
+                        @contextmenu.prevent="
+                          spot.electricCharging = !spot.electricCharging
+                        "
                       ></ParkingSpotComponent>
                       <template v-slot:fallback>
                         <v-progress-circular
@@ -305,37 +307,108 @@
           </v-stepper-window-item>
           <v-stepper-window-item :value="stepperPages.length">
             <v-card :loading="newLoading">
-              <v-card-title>Confirm</v-card-title>
-              <v-divider></v-divider>
-              <v-card-text>
-                <v-row>
-                  <v-col>
-                    <v-data-table
-                      :items="[
-                        ...Object.entries(newProperty),
-                        ['Layers', newLayers.length],
-                      ]"
-                      density="compact"
-                      disable-sort
-                      hide-default-header
-                      hide-default-footer
-                      dense
-                    >
-                    </v-data-table>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col>
-                    <v-data-table
-                      :items="newLayers"
-                      hide-default-header
-                      hide-default-footer
-                      dense
-                    >
-                    </v-data-table>
-                  </v-col>
-                </v-row>
-              </v-card-text>
+              <v-row>
+                <v-col>
+                  <v-data-table
+                    :items="Object.entries(newProperty)"
+                    density="compact"
+                    disable-sort
+                    hide-default-header
+                    hide-default-footer
+                    dense
+                  >
+                    <template v-slot:top>
+                      <v-toolbar flat rounded>
+                        <v-toolbar-title>Property Details</v-toolbar-title>
+                      </v-toolbar>
+                    </template>
+                    <template v-slot:body.prepend>
+                      <tr>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                      </tr>
+                    </template>
+                    <template v-slot:body>
+                      <tr>
+                        <td>Name</td>
+                        <td>{{ newProperty.name }}</td>
+                      </tr>
+                      <tr>
+                        <td>Description</td>
+                        <td>{{ newProperty.description }}</td>
+                      </tr>
+                      <tr>
+                        <td>Location</td>
+                        <td>{{ newProperty.location }}</td>
+                      </tr>
+                      <tr>
+                        <td>Price / h</td>
+                        <td>{{ newProperty.pricePerHour }} €</td>
+                      </tr>
+                      <tr>
+                        <td>Spot counting</td>
+                        <td>
+                          {{ toParkingTypeText(newProperty.parkingType) }}
+                        </td>
+                      </tr>
+                    </template>
+                  </v-data-table>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col>
+                  <v-data-table
+                    :items="newLayers"
+                    hide-default-header
+                    hide-default-footer
+                    dense
+                  >
+                    <template v-slot:top>
+                      <v-toolbar flat rounded>
+                        <v-toolbar-title>Layers</v-toolbar-title>
+                      </v-toolbar>
+                    </template>
+                    <template v-slot:body.prepend>
+                      <tr>
+                        <th>Layer</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Columns</th>
+                        <th>Spot Count</th>
+                      </tr>
+                    </template>
+                    <template v-slot:item="{ item }">
+                      <tr>
+                        <td>{{ item.floor }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.description }}</td>
+                        <td>{{ item.columns }}</td>
+                        <td>{{ item.spotCount }}</td>
+                      </tr>
+                    </template>
+                    <template v-slot:body.append>
+                      <v-divider></v-divider>
+                      <tr>
+                        <td>
+                          {{ newLayers.length }}
+
+                          layers in total
+                        </td>
+                        <td colspan="3"></td>
+                        <td>
+                          {{
+                            newLayers.reduce(
+                              (acc, layer) => acc + layer.spotCount,
+                              0,
+                            )
+                          }}
+                          spots in total
+                        </td>
+                      </tr>
+                    </template>
+                  </v-data-table>
+                </v-col>
+              </v-row>
             </v-card>
           </v-stepper-window-item>
         </v-stepper-window>
@@ -509,6 +582,7 @@ function generateParkingSpots(length: number) {
 }
 
 function togglePlaceholder(layer: ParkingSpotLayer, spot: ParkingSpot) {
+  spot.electricCharging = false;
   if (spot.placeholder) {
     layer.parkingSpots = layer.parkingSpots.filter(
       (s) => s.placeholder || s.id !== spot.id,
