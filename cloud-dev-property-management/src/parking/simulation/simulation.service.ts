@@ -107,6 +107,11 @@ export class SimulationService {
           id,
           licensePlate: 'SIMULATION',
         });
+        if (spot.electricCharging) {
+          setTimeout(async () => {
+            await this.parkingService.chargeSpot(propertyId, spot.id);
+          }, SIMULATION_INTERVAL / 5);
+        }
       }, SIMULATION_INTERVAL / 2);
     } else if (state === SimulationState.EXITING) {
       const parkingProperty =

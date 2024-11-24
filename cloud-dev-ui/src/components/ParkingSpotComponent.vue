@@ -99,7 +99,7 @@
 import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
 import { useDateFormat } from "@vueuse/core";
 
-const props = defineProps<{
+defineProps<{
   spot: ParkingSpot;
   disableDialog?: boolean;
   explanation?: string;
@@ -117,6 +117,8 @@ function getStateColor(state: ParkingSpotState) {
       return "yellow";
     case ParkingSpotState.OUT_OF_ORDER:
       return "red";
+    case ParkingSpotState.CHARGING:
+      return "blue";
     default:
       return "black";
   }
@@ -132,6 +134,8 @@ function toStatusText(state: ParkingSpotState) {
       return "Reserved";
     case ParkingSpotState.OUT_OF_ORDER:
       return "Out of Order";
+    case ParkingSpotState.CHARGING:
+      return "Charging";
     default:
       return "Unknown";
   }

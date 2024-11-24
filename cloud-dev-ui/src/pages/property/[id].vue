@@ -65,6 +65,12 @@
           colors="none"
         ></CounterCard>
         <CounterCard
+          name="CHARGING"
+          :current="chargingSpots.length"
+          :total="electricSpots.length"
+          colors="none"
+        ></CounterCard>
+        <CounterCard
           name="OUT OF ORDER"
           :current="outOfOrderSpots.length"
           colors="none"
@@ -178,7 +184,11 @@ const freeSpots = computed(
 );
 const occupiedSpots = computed(
   () =>
-    allSpots.value?.filter((s) => s.state === ParkingSpotState.OCCUPIED) ?? [],
+    allSpots.value?.filter(
+      (s) =>
+        s.state === ParkingSpotState.OCCUPIED ||
+        s.state === ParkingSpotState.CHARGING,
+    ) ?? [],
 );
 const reservedSpots = computed(
   () =>
@@ -188,6 +198,13 @@ const outOfOrderSpots = computed(
   () =>
     allSpots.value?.filter((s) => s.state === ParkingSpotState.OUT_OF_ORDER) ??
     [],
+);
+const electricSpots = computed(
+  () => allSpots.value?.filter((s) => s.electricCharging) ?? [],
+);
+const chargingSpots = computed(
+  () =>
+    allSpots.value?.filter((s) => s.state === ParkingSpotState.CHARGING) ?? [],
 );
 
 const customers = computed(() => property.value?.customers ?? []);
@@ -201,6 +218,15 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
     customer: null,
     placeholder: false,
     explanation: "Electric charging spot",
+  },
+  {
+    id: "Charging",
+    state: ParkingSpotState.CHARGING,
+    electricCharging: true,
+    lastStateChange: new Date(),
+    customer: null,
+    placeholder: false,
+    explanation: "Electric charging spot that is currently charging",
   },
   {
     id: "Free",
@@ -244,7 +270,7 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
 <style scoped lang="scss">
 .property-main {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   grid-template-rows: auto auto;
   gap: 1em;
 
@@ -253,7 +279,7 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
   }
 
   & .legend {
-    grid-column: 6 / -1;
+    grid-column: 7 / -1;
   }
 }
 

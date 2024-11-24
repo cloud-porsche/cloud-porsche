@@ -48,7 +48,9 @@
             <v-chip
               >{{
                 parkingSpots(property.id).filter(
-                  (s) => s.state === ParkingSpotState.OCCUPIED,
+                  (s) =>
+                    s.state === ParkingSpotState.OCCUPIED ||
+                    s.state === ParkingSpotState.CHARGING,
                 ).length
               }}
               / {{ parkingSpots(property.id).length }}

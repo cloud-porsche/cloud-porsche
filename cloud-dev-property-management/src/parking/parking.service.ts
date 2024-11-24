@@ -81,6 +81,26 @@ export class ParkingService {
     );
   }
 
+  async chargeSpot(parkingPropertyId: string, spotId: string) {
+    const parkingProperty =
+      await this.parkingPropertiesService.findOne(parkingPropertyId);
+    const spot = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .find((s) => s.id === spotId);
+    if (!spot) throw new Error('Spot not found');
+    if (spot.state !== ParkingSpotState.OCCUPIED && !spot.electricCharging)
+      throw new Error('Spot already occupied or not an electric charger');
+    return this.parkingPropertiesService.update(
+      parkingPropertyId,
+      this.newSpotState(
+        parkingProperty,
+        spotId,
+        ParkingSpotState.CHARGING,
+        spot.customer,
+      ),
+    );
+  }
+
   private newSpotState(
     parkingProperty: ParkingProperty,
     spotId: string,
