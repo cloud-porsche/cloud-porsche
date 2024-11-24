@@ -625,11 +625,11 @@ function getStateColor(property: IParkingProperty) {
   const occupied = spots.filter(
     (s) => s.state === ParkingSpotState.OCCUPIED,
   ).length;
-  if (occupied >= spots.length * 0.65) {
-    return "darkgoldenrod";
-  }
   if (occupied === spots.length) {
     return "tomato";
+  }
+  if (occupied >= spots.length * 0.65) {
+    return "darkgoldenrod";
   }
   return "green";
 }

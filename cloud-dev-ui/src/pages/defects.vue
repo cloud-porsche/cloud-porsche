@@ -31,7 +31,7 @@
           <StatusChip :defect="item" />
         </template>
         <template v-slot:item.reportedDate="{ item }">
-          {{ formatDate(item.reportedDate) }}
+          {{ useDateFormat(item.reportedDate, "MM.DD.YYYY") }}
         </template>
         <template v-slot:item.signedImage="{ item }">
           <v-img
@@ -72,7 +72,7 @@
               >
                 <strong>{{ column.title }}</strong>
                 <div v-if="column.value === 'reportedDate'">
-                  {{ formatDate(item.reportedDate) }}
+                  {{ useDateFormat(item.reportedDate, "MM.DD.YYYY HH:mm") }}
                 </div>
                 <div v-else-if="column.value === 'status'">
                   <StatusChip :defect="item" />
@@ -205,6 +205,7 @@ import { del, get, patch, patchJSON, post, postJSON } from "@/http/http";
 import { IDefect } from "@cloud-porsche/types";
 import StatusChip from "@/components/StatusChip.vue";
 import { useDisplay } from "vuetify";
+import { useDateFormat } from "@vueuse/core";
 
 export type SignedDefect = IDefect & { signedImage: string };
 
@@ -446,15 +447,6 @@ function patchDefect(
       })
       .catch(errHandler);
   }
-}
-
-function formatDate(date: string | Date) {
-  const options: Intl.DateTimeFormatOptions = {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  };
-  return new Intl.DateTimeFormat("de-DE", options).format(new Date(date));
 }
 </script>
 

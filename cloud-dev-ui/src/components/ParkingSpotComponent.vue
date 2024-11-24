@@ -2,7 +2,7 @@
   <div>
     <v-card
       :color="getStateColor(spot.state)"
-      @click="disableDialog ? undefined : openDialog(spot)"
+      @click="disableDialog ? undefined : openDialog()"
       :disabled="spot.placeholder"
       border
       flat
@@ -22,7 +22,7 @@
       <v-card rounded class="overflow-hidden">
         <v-card-title>
           <span class="d-flex text-center align-center"
-            >Parking Spot
+            >Parking Spot Details
             <v-spacer />
             <v-btn icon @click="closeDialog()">
               <v-icon>mdi-close</v-icon>
@@ -32,12 +32,59 @@
         <v-divider></v-divider>
         <v-card-text>
           <v-data-table
-            v-if="selectedSpot"
-            :items="Object.entries(selectedSpot)"
+            v-if="spot"
             density="compact"
             hide-default-header
             hide-default-footer
           >
+            <template v-slot:body>
+              <tr>
+                <td>ID</td>
+                <td>{{ spot.id }}</td>
+              </tr>
+              <tr>
+                <td>State</td>
+                <td>
+                  <v-chip
+                    :color="getStateColor(spot.state)"
+                    :text="toStatusText(spot.state)"
+                    class="text-uppercase"
+                    size="small"
+                    label
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Last State Change</td>
+                <td>
+                  {{
+                    useDateFormat(spot.lastStateChange, "DD.MM.YYYY HH:mm:ss")
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td>Is electric charging spot?</td>
+                <td>
+                  <v-icon :color="spot.electricCharging ? 'green' : 'red'"
+                    >{{
+                      spot.electricCharging
+                        ? "mdi-check-circle"
+                        : "mdi-minus-circle"
+                    }}
+                  </v-icon>
+                </td>
+              </tr>
+              <tr v-if="spot.currentCharge">
+                <td>Current charge</td>
+                <td>{{ spot.currentCharge }}%</td>
+              </tr>
+              <tr v-if="spot.customer">
+                <td>Parked Car</td>
+                <td>
+                  {{ spot.customer.licensePlate }}
+                </td>
+              </tr>
+            </template>
           </v-data-table>
           <v-row v-else>
             <v-col> No parking spot selected.</v-col>
@@ -50,15 +97,15 @@
 
 <script setup lang="ts">
 import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
+import { useDateFormat } from "@vueuse/core";
 
-defineProps<{
+const props = defineProps<{
   spot: ParkingSpot;
   disableDialog?: boolean;
   explanation?: string;
 }>();
 
 const inspectDialog = ref(false);
-const selectedSpot = ref<ParkingSpot>();
 
 function getStateColor(state: ParkingSpotState) {
   switch (state) {
@@ -75,14 +122,27 @@ function getStateColor(state: ParkingSpotState) {
   }
 }
 
-function openDialog(spot: ParkingSpot) {
+function toStatusText(state: ParkingSpotState) {
+  switch (state) {
+    case ParkingSpotState.FREE:
+      return "Free";
+    case ParkingSpotState.OCCUPIED:
+      return "Occupied";
+    case ParkingSpotState.RESERVED:
+      return "Reserved";
+    case ParkingSpotState.OUT_OF_ORDER:
+      return "Out of Order";
+    default:
+      return "Unknown";
+  }
+}
+
+function openDialog() {
   inspectDialog.value = true;
-  selectedSpot.value = spot;
 }
 
 function closeDialog() {
   inspectDialog.value = false;
-  setTimeout(() => (selectedSpot.value = undefined), 200);
 }
 </script>
 
