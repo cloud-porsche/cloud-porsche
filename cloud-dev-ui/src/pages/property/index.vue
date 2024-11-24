@@ -47,11 +47,11 @@
             <small>{{ property.location }}</small>
             <v-chip
               >{{
-                usePropertyStore()
-                  .parkingSpots(property.id)
-                  .filter((s) => s.state === ParkingSpotState.OCCUPIED).length
+                parkingSpots(property.id).filter(
+                  (s) => s.state === ParkingSpotState.OCCUPIED,
+                ).length
               }}
-              / {{ usePropertyStore().parkingSpots(property.id).length }}
+              / {{ parkingSpots(property.id).length }}
             </v-chip>
           </v-card>
         </div>
@@ -485,9 +485,11 @@ import {
 } from "@cloud-porsche/types";
 import { useDisplay } from "vuetify";
 import { ref } from "vue";
+import { storeToRefs } from "pinia";
 
 const mobile = useDisplay().mobile;
 const propertyStore = usePropertyStore();
+const { parkingSpots } = storeToRefs(propertyStore);
 const required = (v: string | undefined) => !!v || "This field is required.";
 const minimumOneLayerExists = computed(() => {
   return (_: string | undefined) =>
