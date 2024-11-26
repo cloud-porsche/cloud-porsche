@@ -194,8 +194,8 @@ onMounted(() => {
 
 // needed for the property page
 #spot-container {
-  max-height: 68svh;
-  overflow-y: auto;
+  //max-height: 68svh;
+  //overflow-y: auto;
   scrollbar-width: thin;
   width: 100%;
 

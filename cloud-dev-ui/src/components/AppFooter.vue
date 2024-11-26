@@ -1,5 +1,5 @@
 <template>
-  <v-footer app height="40">
+  <v-footer app height="40" elevation="8">
     <span class="w-75 overflow-hidden d-inline-flex">
       <a
         v-for="item in items"

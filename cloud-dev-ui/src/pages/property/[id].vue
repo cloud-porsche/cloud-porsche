@@ -105,34 +105,47 @@
           <v-card-title class="d-flex align-center"
             >{{ property.name }}
             <v-spacer></v-spacer>
+            <v-switch
+              class="d-flex align-center"
+              label="Isometric"
+              flat
+              :color="isometric ? 'primary' : 'default'"
+              v-model="isometric"
+              v-tooltip="'Toggle Isometric View'"
+            ></v-switch>
+            <v-divider vertical inset class="ma-4"></v-divider>
             <v-pagination
               v-model="page"
               :length="property.layers.length"
               variant="outlined"
-              density="compact"
+              density="comfortable"
             ></v-pagination>
           </v-card-title>
-          <div
-            id="spot-container"
-            v-if="property.layers.length > 0"
-            :style="
-              currentLayer
-                ? {
-                    gridTemplateColumns: `repeat(${currentLayer.columns}, 1fr)`,
-                  }
-                : {}
-            "
-          >
-            <Suspense>
-              <ParkingSpotComponent
-                v-for="spot in currentLayer.parkingSpots"
-                :key="spot.id"
-                :spot="spot"
-              ></ParkingSpotComponent>
-              <template v-slot:fallback>
-                <v-progress-circular indeterminate></v-progress-circular>
-              </template>
-            </Suspense>
+          <v-divider></v-divider>
+          <div v-if="property.layers.length > 0">
+            <div
+              id="spot-container"
+              ref="spot-container"
+              :class="isometric ? 'isometric' : ''"
+              :style="
+                currentLayer
+                  ? {
+                      gridTemplateColumns: `repeat(${currentLayer.columns}, minmax(2em, 1fr))`,
+                    }
+                  : {}
+              "
+            >
+              <Suspense>
+                <ParkingSpotComponent
+                  v-for="spot in currentLayer.parkingSpots"
+                  :key="spot.id"
+                  :spot="spot"
+                ></ParkingSpotComponent>
+                <template v-slot:fallback>
+                  <v-progress-circular indeterminate></v-progress-circular>
+                </template>
+              </Suspense>
+            </div>
           </div>
           <v-card-text v-else class="pa-4">
             <i>No parking spots yet.</i>
@@ -156,6 +169,8 @@ const ParkingSpotComponent = defineAsyncComponent(
 
 const fullscreenRef = useTemplateRef("fullscreen");
 const { isFullscreen, toggle } = useFullscreen(fullscreenRef);
+
+const isometric = ref(false);
 
 const propertyStore = usePropertyStore();
 const route = useRoute();
@@ -286,5 +301,25 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
 .span-full-grid {
   grid-column: 1 / -1;
   grid-row: 1 / -1;
+}
+
+div:has(> .isometric) {
+  translate: 40%;
+}
+
+.isometric {
+  perspective: 200px;
+  transform-style: preserve-3d;
+  rotate: z 30deg;
+  transform: skewX(-30deg);
+
+  transform-origin: top left;
+  zoom: 80%;
+  border: 1px dashed darkgray;
+  border-radius: 4px;
+
+  width: min-content !important;
+  margin-top: 10%;
+  margin-bottom: 25%;
 }
 </style>
