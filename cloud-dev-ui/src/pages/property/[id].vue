@@ -102,17 +102,48 @@
           </v-card-item>
         </v-card>
         <v-card class="full-grid-row" v-if="currentLayer">
-          <v-card-title class="d-flex align-center"
+          <v-card-title class="d-flex align-center spot-title"
             >{{ property.name }}
             <v-spacer></v-spacer>
+            <v-slider
+              v-model="xTranslate"
+              :min="-50"
+              :max="150"
+              :step="1"
+              label="X"
+              :disabled="!isometric"
+              density="comfortable"
+              thumb-label
+              hide-details
+            ></v-slider>
+            <v-slider
+              v-model="yTranslate"
+              :min="-200"
+              :max="300"
+              :step="1"
+              label="Y"
+              :disabled="!isometric"
+              density="comfortable"
+              thumb-label
+              hide-details
+            ></v-slider>
+            <v-divider vertical inset class="ma-4"></v-divider>
             <v-switch
-              class="d-flex align-center"
               label="Isometric"
               flat
               :color="isometric ? 'primary' : 'default'"
               v-model="isometric"
               v-tooltip="'Toggle Isometric View'"
+              hide-details
             ></v-switch>
+            <v-btn
+              class="ml-2"
+              icon="mdi-backup-restore"
+              density="comfortable"
+              flat
+              v-tooltip:bottom="'Reset View Settings to defaults'"
+              @click="resetViewSettings()"
+            ></v-btn>
             <v-divider vertical inset class="ma-4"></v-divider>
             <v-pagination
               v-model="page"
@@ -122,7 +153,16 @@
             ></v-pagination>
           </v-card-title>
           <v-divider></v-divider>
-          <div v-if="property.layers.length > 0">
+          <div
+            v-if="property.layers.length > 0"
+            :style="
+              isometric
+                ? {
+                    transform: `translate3d(${xTranslate}%, ${yTranslate}px, 0)`,
+                  }
+                : {}
+            "
+          >
             <div
               id="spot-container"
               ref="spot-container"
@@ -161,7 +201,7 @@ import { usePropertyStore } from "@/stores/properties";
 import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
 import { useRoute } from "vue-router";
 import CounterCard from "@/components/CounterCard.vue";
-import { useFullscreen } from "@vueuse/core";
+import { useFullscreen, useStorage } from "@vueuse/core";
 
 const ParkingSpotComponent = defineAsyncComponent(
   () => import("@/components/ParkingSpotComponent.vue"),
@@ -170,13 +210,22 @@ const ParkingSpotComponent = defineAsyncComponent(
 const fullscreenRef = useTemplateRef("fullscreen");
 const { isFullscreen, toggle } = useFullscreen(fullscreenRef);
 
-const isometric = ref(false);
-
 const propertyStore = usePropertyStore();
 const route = useRoute();
 const id = computed(() => (route.params as any)["id"]);
 
 await propertyStore.fetchSimulationStatus(id.value);
+
+const [isoDefault, xDefault, yDefault] = [false, 40, 0];
+const isometric = useStorage("view-settings-iso", isoDefault);
+const xTranslate = useStorage("view-settings-x", xDefault);
+const yTranslate = useStorage("view-settings-y", yDefault);
+
+function resetViewSettings() {
+  isometric.value = isoDefault;
+  xTranslate.value = xDefault;
+  yTranslate.value = yDefault;
+}
 
 const simulationState = computed(() =>
   propertyStore.simulationActive.includes(id.value),
@@ -303,8 +352,9 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
   grid-row: 1 / -1;
 }
 
-div:has(> .isometric) {
-  translate: 40%;
+.spot-title {
+  position: relative;
+  z-index: 1;
 }
 
 .isometric {
@@ -321,5 +371,15 @@ div:has(> .isometric) {
   width: min-content !important;
   margin-top: 10%;
   margin-bottom: 25%;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
 </style>
