@@ -14,7 +14,8 @@
     "build": "tsc",
     "release": "pnpm run build && pnpm run semver",
     "semver": "semantic-release --no-ci",
-    "semver-dry": "semantic-release --dry-run --no-ci"
+    "semver-dry": "semantic-release --dry-run --no-ci",
+    "artifactregistry-login": "npx google-artifactregistry-auth"
   },
   "files": [
     "dist"
@@ -22,7 +23,7 @@
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.16.11",
     "semantic-release": "^24.2.0",
     "typescript": "^5.1.3"
   },
