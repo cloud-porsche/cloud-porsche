@@ -1,5 +1,9 @@
 <template>
-  <div ref="fullscreen">
+  <div
+    ref="fullscreen"
+    @mouseup="dragEnd($event)"
+    :style="dragActive ? { cursor: 'all-scroll' } : {}"
+  >
     <v-toolbar
       v-if="property"
       density="compact"
@@ -101,32 +105,17 @@
             </span>
           </v-card-item>
         </v-card>
-        <v-card class="full-grid-row" v-if="currentLayer">
+        <v-card
+          class="full-grid-row"
+          v-if="currentLayer"
+          @mousedown="dragStart($event)"
+          @mousemove="dragMove($event)"
+          @mouseup="dragEnd($event)"
+          @contextmenu.prevent
+        >
           <v-card-title class="d-flex align-center spot-title"
             >{{ property.name }}
             <v-spacer></v-spacer>
-            <v-slider
-              v-model="xTranslate"
-              :min="-50"
-              :max="150"
-              :step="1"
-              label="X"
-              :disabled="!isometric"
-              density="comfortable"
-              thumb-label
-              hide-details
-            ></v-slider>
-            <v-slider
-              v-model="yTranslate"
-              :min="-200"
-              :max="300"
-              :step="1"
-              label="Y"
-              :disabled="!isometric"
-              density="comfortable"
-              thumb-label
-              hide-details
-            ></v-slider>
             <v-divider vertical inset class="ma-4"></v-divider>
             <v-switch
               label="Isometric"
@@ -144,6 +133,41 @@
               v-tooltip:bottom="'Reset View Settings to defaults'"
               @click="resetViewSettings()"
             ></v-btn>
+            <v-divider vertical inset class="ma-4"></v-divider>
+            <v-slider
+              v-model="zoom"
+              :min="20"
+              :max="120"
+              :step="1"
+              prepend-icon="mdi-magnify-minus"
+              append-icon="mdi-magnify-plus"
+              :disabled="!isometric"
+              density="comfortable"
+              thumb-label
+              hide-details
+            ></v-slider>
+            <v-slider
+              v-model="xTranslate"
+              :min="xMin"
+              :max="xMax"
+              :step="1"
+              prepend-icon="mdi-axis-x-arrow"
+              :disabled="!isometric"
+              density="comfortable"
+              thumb-label
+              hide-details
+            ></v-slider>
+            <v-slider
+              v-model="yTranslate"
+              :min="yMin"
+              :max="yMax"
+              :step="1"
+              prepend-icon="mdi-axis-z-arrow"
+              :disabled="!isometric"
+              density="comfortable"
+              thumb-label
+              hide-details
+            ></v-slider>
             <v-divider vertical inset class="ma-4"></v-divider>
             <v-pagination
               v-model="page"
@@ -199,6 +223,7 @@
                 gridTemplateColumns: `repeat(${layer.columns}, minmax(2em, 1fr))`,
                 top: `${layer.floor * 100}px`,
                 zIndex: layer.floor,
+                zoom: `${zoom}%`,
               }"
             >
               <Suspense>
@@ -242,16 +267,20 @@ const id = computed(() => (route.params as any)["id"]);
 
 await propertyStore.fetchSimulationStatus(id.value);
 
-const [isoDefault, xDefault, yDefault] = [false, 40, 0];
+const [isoDefault, xDefault, yDefault, zoomDefault] = [false, 40, -100, 80];
 const isometric = useStorage("view-settings-iso", isoDefault);
 const xTranslate = useStorage("view-settings-x", xDefault);
 const yTranslate = useStorage("view-settings-y", yDefault);
+const zoom = useStorage("view-settings-zoom", zoomDefault);
 
 function resetViewSettings() {
   isometric.value = isoDefault;
   xTranslate.value = xDefault;
   yTranslate.value = yDefault;
+  zoom.value = zoomDefault;
 }
+
+const dragActive = ref(false);
 
 const simulationState = computed(() =>
   propertyStore.simulationActive.includes(id.value),
@@ -355,6 +384,31 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
     explanation: "Spot out of order",
   },
 ];
+
+const xMin = -100;
+const xMax = 150;
+const yMin = -1200;
+const yMax = 300;
+
+function dragStart(event: MouseEvent) {
+  if (event.button !== 2 || !isometric.value) return;
+  dragActive.value = true;
+}
+
+function dragMove(event: MouseEvent) {
+  if (!dragActive.value || !isometric.value) return;
+  xTranslate.value += event.movementX / 8;
+  yTranslate.value += event.movementY;
+
+  if (xTranslate.value < xMin) xTranslate.value = xMin;
+  if (xTranslate.value > xMax) xTranslate.value = xMax;
+  if (yTranslate.value < yMin) yTranslate.value = yMin;
+  if (yTranslate.value > yMax) yTranslate.value = yMax;
+}
+
+function dragEnd(_: MouseEvent) {
+  dragActive.value = false;
+}
 </script>
 
 <style scoped lang="scss">
