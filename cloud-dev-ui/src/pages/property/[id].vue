@@ -164,9 +164,9 @@
             "
           >
             <div
+              v-if="!isometric"
               id="spot-container"
               ref="spot-container"
-              :class="isometric ? 'isometric' : ''"
               :style="
                 currentLayer
                   ? {
@@ -178,6 +178,32 @@
               <Suspense>
                 <ParkingSpotComponent
                   v-for="spot in currentLayer.parkingSpots"
+                  :key="spot.id"
+                  :spot="spot"
+                ></ParkingSpotComponent>
+                <template v-slot:fallback>
+                  <v-progress-circular indeterminate></v-progress-circular>
+                </template>
+              </Suspense>
+            </div>
+            <div
+              v-else-if="isometric"
+              v-for="layer in property.layers"
+              id="spot-container"
+              ref="spot-container"
+              class="isometric"
+              :class="
+                layer.floor === currentLayer.floor ? 'preferred-isometric' : ''
+              "
+              :style="{
+                gridTemplateColumns: `repeat(${layer.columns}, minmax(2em, 1fr))`,
+                top: `${layer.floor * 100}px`,
+                zIndex: layer.floor,
+              }"
+            >
+              <Suspense>
+                <ParkingSpotComponent
+                  v-for="spot in layer.parkingSpots"
                   :key="spot.id"
                   :spot="spot"
                 ></ParkingSpotComponent>
@@ -354,10 +380,19 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
 
 .spot-title {
   position: relative;
-  z-index: 1;
+  z-index: 100;
+}
+
+div:has(> .isometric) {
+  height: 800px;
 }
 
 .isometric {
+  background: rgba(var(--v-theme-surface));
+  position: absolute;
+  top: 0;
+  left: 0;
+
   perspective: 200px;
   transform-style: preserve-3d;
   rotate: z 30deg;
@@ -371,15 +406,13 @@ const exampleSpots: (ParkingSpot & { explanation: string })[] = [
   width: min-content !important;
   margin-top: 10%;
   margin-bottom: 25%;
-}
 
-.v-enter-active,
-.v-leave-active {
-  transition: opacity 0.5s ease;
-}
+  &.preferred-isometric {
+    z-index: 99 !important;
+  }
 
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
+  &:not(.preferred-isometric) {
+    opacity: 0.5;
+  }
 }
 </style>
