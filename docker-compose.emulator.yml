@@ -22,7 +22,7 @@ services:
       - cloud-porsche
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
   property-management:
     image: cloud-porsche-management
     build:
@@ -42,7 +42,7 @@ services:
       - cloud-porsche
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/v1/" ]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/v1/"]
   firebase-emulator:
     image: fixl/firebase-emulator-suite
     ports:
