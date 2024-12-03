@@ -3,10 +3,31 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { VersioningType } from '@nestjs/common';
 import { json } from 'express';
+import * as admin from 'firebase-admin';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   require('dotenv').config();
+
+  admin.initializeApp({
+    credential:
+      process.env.FIREBASE_OVERWRITE_CREDENTIALS === 'true'
+        ? admin.credential.cert(
+            process.env.FIREBASE_CLIENT_EMAIL
+              ? {
+                  projectId: process.env.FIREBASE_PROJECT_ID,
+                  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                  privateKey: process.env.FIREBASE_PRIVATE_KEY.split(
+                    String.raw`\n`,
+                  ).join('\n'),
+                }
+              : require('cloud-porsche.json'),
+          )
+        : admin.credential.applicationDefault(),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+  });
 
   const app = await NestFactory.create(AppModule);
   app.enableCors({
