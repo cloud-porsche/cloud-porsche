@@ -61,7 +61,7 @@ export default ({ mode }) => {
       VitePWA({
         registerType: "autoUpdate",
         devOptions: {
-          enabled: true,
+          enabled: false,
         },
         manifest: {
           name: "Cloud Porsche",
