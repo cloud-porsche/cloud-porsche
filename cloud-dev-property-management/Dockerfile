@@ -26,6 +26,8 @@ COPY --from=builder /cloud-dev-types/ ./cloud-dev-types/
 COPY --from=builder /cloud-dev-property-management/package.json ./
 COPY --from=builder /cloud-dev-property-management/node_modules/ ./node_modules/
 COPY --from=builder /cloud-dev-property-management/dist/ ./dist/
+COPY --from=builder /cloud-dev-property-management/.env.development ./
+COPY --from=builder /cloud-dev-property-management/.env ./
 
 USER node
 CMD ["node", "dist/main.js"]
