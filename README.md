@@ -17,3 +17,25 @@ services that are part of the Cloud Porsche Management Solution.
   `cloud-dev-types` directory.
 - The context of the Dockerfiles (for each directory) needs to be set to the root  
   (e.g. `.` instead of `./cloud-dev-ui`). Check the provided IntelliJ run configurations for an example.
+
+## Kubernetes
+
+Ensure you have up-to-date images by running
+
+```
+docker compose build --no-cache
+```
+
+before deploying to Kubernetes.
+
+To deploy the solution to Kubernetes, you can use the provided `k8s` directory. This directory contains all the
+necessary files to deploy the solution to a Kubernetes cluster.
+
+Once all services + deployments are running, you can check what services are running by running
+
+```
+kubectl get all
+```
+
+and it should look something like this:
+![example-get-all](./k8s/example-get-all.png)
