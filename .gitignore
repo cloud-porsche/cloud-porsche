@@ -1,1 +1,7 @@
 .npmrc
+/k8s/property-management-env-configmap.yaml
+/tf/.terraform/
+/tf/terraform.tfstate
+/tf/terraform.tfstate.backup
+/tf/.terraform.tfstate.lock.info
+/tf/.terraform.lock.hcl
