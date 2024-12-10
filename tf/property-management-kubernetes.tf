@@ -40,13 +40,37 @@ resource "kubernetes_deployment_v1" "property-management" {
 
           liveness_probe {
             http_get {
-              host = "localhost"
-              path = "/v1/"
+              path = "/api"
               port = "8080"
             }
 
-            initial_delay_seconds = 3
+            initial_delay_seconds = 5
             period_seconds        = 3
+          }
+
+          env {
+            name  = "PORT"
+            value = "8080"
+          }
+          env {
+            name  = "CORS_ORIGINS"
+            value = "*"
+          }
+          env {
+            name  = "FIREBASE_PROJECT_ID"
+            value = "cloud-porsche"
+          }
+          env {
+            name  = "FIREBASE_STORAGE_BUCKET"
+            value = "cloud-porsche-staging"
+          }
+          env {
+            name  = "FIREBASE_OVERWRITE_CREDENTIALS"
+            value = "false"
+          }
+          env {
+            name  = "FIRESTORE_DB"
+            value = "staging"
           }
         }
 
@@ -75,7 +99,7 @@ resource "kubernetes_service_v1" "property-management" {
   metadata {
     name = "property-management-service"
     annotations = {
-      "networking.gke.io/load-balancer-type" = "Internal" # Remove to create an external loadbalancer
+      "networking.gke.io/load-balancer-type" = "External"
     }
   }
 
