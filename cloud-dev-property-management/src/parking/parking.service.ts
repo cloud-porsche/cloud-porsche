@@ -23,13 +23,6 @@ export class ParkingService {
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
 
-    await this.pubSubService.publishMessage({
-      action: 'enter',
-      parkingPropertyId,
-      customerId: newCustomer.id,
-      timestamp: new Date().toISOString(),
-    });
-
     // Update the customers in the parking property
     return this.parkingPropertiesService.update(parkingPropertyId, {
       customers: [...currentCustomers, newCustomer],
