@@ -6,6 +6,7 @@ import { SimulationService } from './simulation/simulation.service';
 import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
 import { SimulationController } from './simulation/simulation.controller';
 import { ConfigModule } from '@nestjs/config';
+import { PubSubService } from 'src/pubsub/pubsub.service';
 
 @Module({
   exports: [SimulationService],
@@ -13,9 +14,10 @@ import { ConfigModule } from '@nestjs/config';
   providers: [
     ParkingService,
     SimulationService,
+    PubSubService,
     {
-      useFactory: (p: ParkingPropertiesService) => {
-        return new ParkingService(p);
+      useFactory: (p: ParkingPropertiesService, pubsub: PubSubService) => {
+        return new ParkingService(p, pubsub);
       },
       inject: [
         { token: 'SIMULATION_PARKING_PROPERTIES_SERVICE', optional: false },

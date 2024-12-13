@@ -2,20 +2,35 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
 import { Customer, ParkingSpotState } from '@cloud-porsche/types';
 import { ParkingProperty } from '../parking-properties/entities/parking-property.entity';
+import { PubSub } from '@google-cloud/pubsub';
+import { PubSubService } from 'src/pubsub/pubsub.service';
 
 @Injectable()
 export class ParkingService {
   private readonly logger = new Logger(ParkingService.name);
+  private pubSubClient: PubSub;
+  private topicName: string;
 
   constructor(
     public readonly parkingPropertiesService: ParkingPropertiesService,
+    private readonly pubSubService: PubSubService,
   ) {}
 
+  // This method will publish the message to Pub/Sub when a customer enters
   async enter(parkingPropertyId: string, newCustomer: Customer) {
     const parkingProperty =
       await this.parkingPropertiesService.findOne(parkingPropertyId);
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
+
+    await this.pubSubService.publishMessage({
+      action: 'enter',
+      parkingPropertyId,
+      customerId: newCustomer.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Update the customers in the parking property
     return this.parkingPropertiesService.update(parkingPropertyId, {
       customers: [...currentCustomers, newCustomer],
     });
