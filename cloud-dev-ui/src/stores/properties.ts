@@ -49,7 +49,7 @@ export const usePropertyStore = defineStore("properties", {
           await get("/v1/parking-properties/" + propertyId)
         ).json();
         this.$state.properties = this.$state.properties.map((property) =>
-          property.id === propertyId ? newProperty : property,
+          property.id === propertyId ? newProperty : property
         );
       } catch (error) {
         this.$state.loading = false;
@@ -63,7 +63,7 @@ export const usePropertyStore = defineStore("properties", {
       this.$state.properties = properties;
     },
     async addProperty(
-      property: Omit<IParkingProperty, "id" | "customers" | "parkingSpots">,
+      property: Omit<IParkingProperty, "id" | "customers" | "parkingSpots">
     ) {
       this.$state.loading = true;
       try {
@@ -82,7 +82,7 @@ export const usePropertyStore = defineStore("properties", {
       try {
         await del(`/v1/parking-properties/${propertyId}`);
         this.$state.properties = this.$state.properties.filter(
-          (property) => property.id !== propertyId,
+          (property) => property.id !== propertyId
         );
       } catch (error) {
         this.$state.loading = false;
@@ -130,7 +130,7 @@ export const usePropertyStore = defineStore("properties", {
           ];
         } else if (!isRunning) {
           this.$state.simulationActive = this.$state.simulationActive.filter(
-            (id) => id !== propertyId,
+            (id) => id !== propertyId
           );
         }
       } catch (error) {
