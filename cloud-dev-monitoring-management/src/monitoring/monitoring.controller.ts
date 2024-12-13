@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { MonitoringService } from './monitoring.service';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
 
@@ -9,5 +9,11 @@ export class MonitoringController {
   @Get('test')
   test(): Promise<string> {
     return this.monitoringService.test();
+  }
+
+  @Post('initListener')
+  initListener(): void {
+    // Add your implementation here
+    this.monitoringService.listenForMessages();
   }
 }
