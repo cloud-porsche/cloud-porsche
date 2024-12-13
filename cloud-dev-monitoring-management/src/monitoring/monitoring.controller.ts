@@ -10,10 +10,4 @@ export class MonitoringController {
   test(): Promise<string> {
     return this.monitoringService.test();
   }
-
-  @Post('initListener')
-  initListener(): void {
-    // Add your implementation here
-    this.monitoringService.listenForMessages();
-  }
 }

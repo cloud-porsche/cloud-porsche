@@ -5,6 +5,7 @@ import { VersioningType } from '@nestjs/common';
 import { json } from 'express';
 import * as admin from 'firebase-admin';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { initialize } from 'fireorm';
 
 async function bootstrap() {
   require('dotenv').config();
@@ -28,6 +29,13 @@ async function bootstrap() {
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
     projectId: process.env.FIREBASE_PROJECT_ID,
   });
+
+  const firestore = admin.firestore();
+  firestore.settings({
+    databaseId: process.env.FIRESTORE_DB,
+    ignoreUndefinedProperties: true,
+  });
+  initialize(firestore);
 
   const app = await NestFactory.create(AppModule);
   app.enableCors({

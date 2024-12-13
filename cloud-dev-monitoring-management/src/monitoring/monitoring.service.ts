@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PubSub } from '@google-cloud/pubsub';
+import { ApiCall } from './entities/api-call.entity';
+import { BaseFirestoreRepository, getRepository } from 'fireorm';
 
 @Injectable()
 export class MonitoringService {
+  public apiCallRepository: BaseFirestoreRepository<ApiCall> =
+    getRepository(ApiCall);
   public pubSubClient: PubSub;
   public subscriptionName: string;
 
@@ -23,8 +27,10 @@ export class MonitoringService {
     const subscription = this.pubSubClient.subscription(this.subscriptionName);
 
     subscription.on('message', (message) => {
-      console.log(`Received message: ${message.data.toString()}`);
-      // Nachricht bestätigen (acknowledge), nachdem sie verarbeitet wurde
+      const data = JSON.parse(message.data.toString());
+      const apiCall = new ApiCall(data);
+
+      this.apiCallRepository.create(apiCall);
       message.ack();
     });
 

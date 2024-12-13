@@ -1,6 +1,7 @@
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { PubSubService } from './pubsub.service'; // Import PubSubService
+import { IApiCall } from '@cloud-porsche/types';
 
 @Injectable()
 export class LoggingMiddleware implements NestMiddleware {
@@ -17,12 +18,11 @@ export class LoggingMiddleware implements NestMiddleware {
 
     // Call the next middleware or controller handler
     res.on('finish', async () => {
-      // After the request is handled, publish the log message
+      // After the request is handled, publish the log messagee
       await this.pubSubService.publishMessage({
-        action: 'endpoint_called',
-        method,
+        method: method,
         url: originalUrl,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(),
       });
 
       this.logger.log(`Message published for ${method} ${originalUrl}`);

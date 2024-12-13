@@ -8,12 +8,9 @@ import { PubSubService } from 'src/pubsub/pubsub.service';
 @Injectable()
 export class ParkingService {
   private readonly logger = new Logger(ParkingService.name);
-  private pubSubClient: PubSub;
-  private topicName: string;
 
   constructor(
     public readonly parkingPropertiesService: ParkingPropertiesService,
-    private readonly pubSubService: PubSubService,
   ) {}
 
   // This method will publish the message to Pub/Sub when a customer enters
