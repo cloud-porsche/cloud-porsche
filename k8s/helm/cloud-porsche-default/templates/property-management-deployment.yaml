@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: property-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: property-management
+  template:
+    metadata:
+      labels:
+        name: property-management
+    spec:
+      containers:
+        - env:
+            - name: CORS_ORIGIN
+              value: {{ .Values.envs.CORS_ORIGIN }}
+            - name: FIREBASE_OVERWRITE_CREDENTIALS
+              value: {{ .Values.envs.FIREBASE_OVERWRITE_CREDENTIALS | quote }}
+            - name: FIREBASE_CLIENT_EMAIL
+              value: {{ .Values.secrets.FIREBASE_CLIENT_EMAIL }}
+            - name: FIREBASE_PRIVATE_KEY
+              value: {{ .Values.secrets.FIREBASE_PRIVATE_KEY }}
+            - name: FIREBASE_TOKEN
+              value: {{ .Values.secrets.FIREBASE_TOKEN }}
+            - name: PORT
+              value: {{ .Values.propertyManagement.port | quote }}
+          image: cloud-porsche-management
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+                - wget
+                - -qO-
+                - http://localhost:{{ .Values.propertyManagement.port }}/v1/
+          name: property-management
+          ports:
+            - containerPort: {{ .Values.propertyManagement.port }}
+              protocol: TCP
+      restartPolicy: Always

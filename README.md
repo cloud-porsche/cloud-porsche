@@ -39,3 +39,28 @@ kubectl get all
 
 and it should look something like this:
 ![example-get-all](./k8s/example-get-all.png)
+
+## Helm
+
+### Prerequisites
+
+- Helm is installed - check with `helm version`
+- You have your secrets on you either by using the `--set` flag or by using a `values-secrets.yaml` file
+
+### Usage
+
+#### Package
+
+To package the Helm chart, run
+
+```
+helm package ./k8s/helm/cloud-porsche-default 
+```
+
+#### Install
+
+To install the Helm chart, run
+
+```
+helm install cloud-porsche ./k8s/helm/cloud-porsche-default-0.1.0.tgz --values ./k8s/helm/cloud-porsche-default/values.yaml,./k8s/helm/cloud-porsche-default/values-secrets.yaml
+```

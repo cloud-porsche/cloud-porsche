@@ -5,3 +5,5 @@
 /tf/terraform.tfstate.backup
 /tf/.terraform.tfstate.lock.info
 /tf/.terraform.lock.hcl
+/k8s/helm/cloud-porsche-default/values-secrets.yaml
+/k8s/helm/cloud-porsche-default-0.1.0.tgz
