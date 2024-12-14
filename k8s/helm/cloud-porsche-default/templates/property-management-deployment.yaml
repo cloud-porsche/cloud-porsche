@@ -21,7 +21,7 @@ spec:
             - name: FIREBASE_CLIENT_EMAIL
               value: {{ .Values.secrets.FIREBASE_CLIENT_EMAIL }}
             - name: FIREBASE_PRIVATE_KEY
-              value: {{ .Values.secrets.FIREBASE_PRIVATE_KEY }}
+              value: {{ .Values.secrets.FIREBASE_PRIVATE_KEY | quote }}
             - name: FIREBASE_TOKEN
               value: {{ .Values.secrets.FIREBASE_TOKEN }}
             - name: PORT
