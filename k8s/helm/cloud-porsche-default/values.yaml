@@ -5,6 +5,9 @@
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
+images:
+  propertyManagement: cloud-porsche/property-management:latest
+
 ingress:
   sslRedirect: false
   proxyReadTimeout: 3600

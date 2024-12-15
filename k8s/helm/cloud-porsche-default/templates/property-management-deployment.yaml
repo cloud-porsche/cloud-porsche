@@ -26,7 +26,7 @@ spec:
               value: {{ .Values.secrets.FIREBASE_TOKEN }}
             - name: PORT
               value: {{ .Values.propertyManagement.port | quote }}
-          image: cloud-porsche-management
+          image: {{ .Values.images.propertyManagement }}
           imagePullPolicy: IfNotPresent
           livenessProbe:
             exec:
