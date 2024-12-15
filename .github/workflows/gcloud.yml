@@ -23,10 +23,12 @@ jobs:
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - name: Build the Docker image
         run: |
-          docker build -t europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:${{ github.ref_name == 'master' && 'stable' || 'latest' }} \
-                       -t europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:${{ github.sha }} \
+          export IMAGE_URL=europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management
+          docker build -t $IMAGE_URL:${{ github.ref_name == 'master' && 'stable' || 'latest' }} \
+                       -t $IMAGE_URL:${{ github.sha }} \
                        -f ./cloud-dev-property-management/Dockerfile .
-          docker push europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:${{ github.ref_name == 'master' && 'stable' || 'latest' }} --all-tags
+          docker push $IMAGE_URL:${{ github.sha }}
+          docker push $IMAGE_URL:${{ github.ref_name == 'master' && 'stable' || 'latest' }}
       - name: helm package
         run: |
           helm package ./k8s/helm/cloud-porsche-default
