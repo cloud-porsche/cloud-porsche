@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PubSub } from '@google-cloud/pubsub';
 import { ApiCall } from './entities/api-call.entity';
 import { BaseFirestoreRepository, getRepository } from 'fireorm';
+import { ParkingAction } from './entities/parking-action-entity';
 
 @Injectable()
 export class MonitoringService {
   public apiCallRepository: BaseFirestoreRepository<ApiCall> =
     getRepository(ApiCall);
+  public parkingActionRepository: BaseFirestoreRepository<ParkingAction> =
+    getRepository(ParkingAction);
   public pubSubClient: PubSub;
   public subscriptionName: string;
 
@@ -28,10 +31,17 @@ export class MonitoringService {
 
     subscription.on('message', (message) => {
       const data = JSON.parse(message.data.toString());
-      const apiCall = new ApiCall(data);
+      const { messageType, ...d } = data;
 
-      this.apiCallRepository.create(apiCall);
-      message.ack();
+      if (messageType == 'parking') {
+        const parkingAction = new ParkingAction(d);
+        this.parkingActionRepository.create(parkingAction);
+        message.ack();
+      } else {
+        const apiCall = new ApiCall(d);
+        this.apiCallRepository.create(apiCall);
+        message.ack();
+      }
     });
 
     subscription.on('error', (error) => {
