@@ -29,9 +29,19 @@ provider "kubernetes" {
   ]
 }
 
-# Provide time for Service cleanup
-resource "time_sleep" "wait_service_cleanup" {
-  depends_on = [google_container_cluster.default]
+resource "helm_release" "default" {
+  chart      = "cloud-porsche-default"
+  name       = "cloud-porsche-default"
+  repository = "oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/"
 
-  destroy_duration = "180s"
+  values = [
+    file("${path.module}/../k8s/helm/cloud-porsche-default/values.yaml"),
+      fileexists("${path.module}/../k8s/helm/cloud-porsche-default/values-secrets.yaml") ?
+      file("${path.module}/../k8s/helm/cloud-porsche-default/values-secrets.yaml") : null
+  ]
+
+  set {
+    name  = "images.propertyManagement"
+    value = "europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:latest"
+  }
 }
