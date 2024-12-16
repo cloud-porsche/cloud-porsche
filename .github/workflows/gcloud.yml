@@ -31,10 +31,10 @@ jobs:
           docker push $IMAGE_URL:${{ github.ref_name == 'master' && 'stable' || 'latest' }}
       - name: helm package
         run: |
-          helm package ./k8s/helm/cloud-porsche-default
+          export HELM_TARBALL=$(helm package ./k8s/helm/cloud-porsche-default | grep -oP '(?<=Successfully packaged chart and saved it to: ).*')
       - name: helm push
         run: |
-          helm push cloud-porsche-default-0.1.0.tgz oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/
+          helm push $HELM_TARBALL oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/
 
   cloud-run:
     name: Deploy to Cloud Run 🚀
