@@ -43,4 +43,4 @@ spec:
             httpGet:
               port: {{ .Values.propertyManagement.port }}
               path: /v1/
-      restartPolicy: OnFailure
+      restartPolicy: Always
