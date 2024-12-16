@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { MonitoringService } from './monitoring.service';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
 
@@ -6,8 +6,8 @@ import { ApiBody, ApiParam } from '@nestjs/swagger';
 export class MonitoringController {
   constructor(private readonly monitoringService: MonitoringService) {}
 
-  @Get('test')
-  test(): Promise<string> {
-    return this.monitoringService.test();
+  @Get('customers')
+  async getCustomerData(@Query('timeframe') timeframe: string) {
+    return this.monitoringService.getCustomerData(timeframe);
   }
 }
