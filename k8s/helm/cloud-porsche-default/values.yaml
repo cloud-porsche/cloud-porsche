@@ -15,11 +15,11 @@ ingress:
 
 resources:
   limits:
-    cpu: 50m
-    memory: 32Mi
+    cpu: 200m
+    memory: 512Mi
   requests:
-    cpu: 20m
-    memory: 8Mi
+    cpu: 50m
+    memory: 128Mi
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
