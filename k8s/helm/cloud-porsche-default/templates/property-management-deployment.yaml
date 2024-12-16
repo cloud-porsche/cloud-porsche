@@ -28,14 +28,19 @@ spec:
               value: {{ .Values.propertyManagement.port | quote }}
           image: {{ .Values.images.propertyManagement }}
           imagePullPolicy: IfNotPresent
-          livenessProbe:
-            exec:
-              command:
-                - wget
-                - -qO-
-                - http://localhost:{{ .Values.propertyManagement.port }}/v1/
           name: property-management
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
           ports:
             - containerPort: {{ .Values.propertyManagement.port }}
               protocol: TCP
-      restartPolicy: Always
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.propertyManagement.port }}
+              path: /v1/
+      restartPolicy: OnFailure
