@@ -14,6 +14,12 @@ spec:
     spec:
       containers:
         - env:
+            - name: FIREBASE_PROJECT_ID
+              value: cloud-porsche
+            - name: FIREBASE_STORAGE_BUCKET
+              value: {{ .Values.envs.FIREBASE_STORAGE_BUCKET }}
+            - name: FIRESTORE_DB
+              value: {{ .Values.envs.FIRESTORE_DB }}
             - name: CORS_ORIGIN
               value: {{ .Values.envs.CORS_ORIGIN }}
             - name: FIREBASE_OVERWRITE_CREDENTIALS

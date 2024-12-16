@@ -33,6 +33,8 @@ autoscaling:
 envs:
   FIREBASE_OVERWRITE_CREDENTIALS: true
   CORS_ORIGIN: localhost
+  FIREBASE_STORAGE_BUCKET: cloud-porsche-staging
+  FIRESTORE_DB: staging
 
 propertyManagement:
   port: 8080
