@@ -29,12 +29,12 @@ jobs:
                        -f ./cloud-dev-property-management/Dockerfile .
           docker push $IMAGE_URL:${{ github.sha }}
           docker push $IMAGE_URL:${{ github.ref_name == 'master' && 'stable' || 'latest' }}
-      - name: helm package
+      - name: Package helm tarball
         run: |
-          export HELM_TARBALL=$(helm package ./k8s/helm/cloud-porsche-default | grep -oP '(?<=Successfully packaged chart and saved it to: ).*')
-      - name: helm push
+          echo HELM_TARBALL=$(helm package ./k8s/helm/cloud-porsche-default | grep -oP '(?<=Successfully packaged chart and saved it to: ).*') >> $GITHUB_ENV
+      - name: Push helm tarball to GCR
         run: |
-          helm push $HELM_TARBALL oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/
+          helm push ${{ env.HELM_TARBALL }} oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/
 
   cloud-run:
     name: Deploy to Cloud Run 🚀
