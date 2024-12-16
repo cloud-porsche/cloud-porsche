@@ -36,3 +36,4 @@ envs:
 
 propertyManagement:
   port: 8080
+  livelinessProbe: false

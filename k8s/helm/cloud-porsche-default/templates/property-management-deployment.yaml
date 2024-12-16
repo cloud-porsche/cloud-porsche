@@ -39,8 +39,10 @@ spec:
           ports:
             - containerPort: {{ .Values.propertyManagement.port }}
               protocol: TCP
+          {{- if .Values.propertyManagement.livelinessProbe }}
           livenessProbe:
             httpGet:
               port: {{ .Values.propertyManagement.port }}
               path: /v1/
+          {{- end }}
       restartPolicy: Always
