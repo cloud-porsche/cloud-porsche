@@ -81,6 +81,7 @@ export class MonitoringService {
     const enterActions = parkingActions.filter(
       (action) => action.action === 'enter',
     );
+    console.log(enterActions);
     const dateRange = this.generateDateRange(startDate, now);
     return this.aggregateByDay(enterActions, dateRange);
   }
@@ -90,7 +91,7 @@ export class MonitoringService {
     let currentDate = startOfDay(startDate);
 
     while (currentDate <= endDate) {
-      range.push(currentDate.toString().slice(0, 10)); // Format: YYYY-MM-DD
+      range.push(currentDate.toISOString().slice(0, 10)); // Format: YYYY-MM-DD
       currentDate = addDays(currentDate, 1);
     }
 
@@ -107,13 +108,16 @@ export class MonitoringService {
 
     // Increment counts for each action
     actions.forEach((action) => {
-      const actionDate = action.timestamp.toString();
+      const actionDate = action.timestamp.toString().slice(0, 10);
+      console.log(actionDate);
+      console.log(new Date(actionDate));
 
       if (results[actionDate] !== undefined) {
+        console.log('test');
         results[actionDate] += 1;
       }
     });
 
-    return results;
+    return { data: results };
   }
 }

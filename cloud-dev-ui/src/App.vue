@@ -68,6 +68,13 @@
           value="defects"
           :active="router.currentRoute.value.path === '/defects'"
         />
+        <v-list-item
+          prepend-icon="mdi-monitor-dashboard"
+          to="/monitoring"
+          title="Monitoring"
+          value="monitoring"
+          :active="router.currentRoute.value.path === '/monitoring'"
+        />
       </v-list>
       <template v-slot:append>
         <v-list nav>
