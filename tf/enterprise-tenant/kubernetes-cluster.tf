@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.12"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.16"
+    }
+  }
+}
+
 ### Cluster Configuration
 resource "google_container_cluster" "enterprise_tenant" {
   name = "cloud-porsche-${var.tenant_id}"
