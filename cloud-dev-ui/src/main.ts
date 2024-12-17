@@ -20,12 +20,14 @@ import {
   browserPopupRedirectResolver,
 } from "firebase/auth";
 import { initWs } from "@/stores/ws";
+import VueApexCharts from "vue3-apexcharts";
 
 const app = createApp(App);
 
 registerPlugins(app);
 
 app.use(vuetify);
+app.use(VueApexCharts);
 
 app.use(VueFire, {
   firebaseApp: initializeApp({
