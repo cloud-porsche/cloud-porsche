@@ -1,0 +1,25 @@
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 750m
+    memory: 1024Mi
+
+#This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: [ ]
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+envs:
+  FIREBASE_OVERWRITE_CREDENTIALS: true
+  CORS_ORIGIN: localhost
+  FIREBASE_STORAGE_BUCKET: property-management-tenant2
+  FIRESTORE_DB: property-management-tenant2
+
+propertyManagement:
+  port: 8080
+  livelinessProbe: true

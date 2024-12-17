@@ -70,3 +70,28 @@ jobs:
             --max-instances=5
       - name: Print the URL
         run: echo "${{ steps.deploy.outputs.url }}"
+
+  terraform:
+    concurrency:
+      group: terraform
+    name: Terraform apply 🏗️
+    runs-on: ubuntu-22.04
+    needs:
+      - build-and-push-to-gcr
+    permissions:
+      id-token: 'write'
+      contents: 'read'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      - name: Terraform init
+        working-directory: ./tf
+        run: terraform init -input=false
+      - name: Terraform apply
+        working-directory: ./tf
+        run: terraform apply -input=false -compact-warnings -auto-approve
