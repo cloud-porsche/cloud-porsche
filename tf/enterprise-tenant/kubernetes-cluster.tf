@@ -38,7 +38,7 @@ resource "helm_release" "enterprise_tenant" {
   }
   set_sensitive {
     name  = "secrets.FIREBASE_PRIVATE_KEY"
-    value = google_service_account_key.tenant_service_account_key.private_key
+    value = base64decode(google_service_account_key.tenant_service_account_key.private_key).private_key
   }
   set_sensitive {
     name  = "secrets.FIREBASE_TOKEN"
