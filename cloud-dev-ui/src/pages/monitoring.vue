@@ -7,13 +7,15 @@
           v-model="selectedTimeframe"
           :items="timeframeOptions"
           label="Select Timeframe"
-          @change="fetchData"
+          @update:model-value="fetchData()"
         ></v-select>
       </v-col>
     </v-row>
 
+    {{ selectedTimeframe }}
+    <!-- Chart Container -->
     <v-row>
-      <v-col style="border: 1px solid #e0e0e0; border-radius: 4px">
+      <v-col>
         <apexchart
           type="line"
           height="300"
@@ -26,41 +28,49 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { get } from "@/http/http";
+import { useAppStore } from "@/stores/app";
 
-// Register ApexCharts globally
-const selectedTimeframe = ref("monthly");
+// Data and Store
+const selectedTimeframe = ref("yearly");
 const timeframeOptions = ["total", "yearly", "monthly", "weekly"];
 const sparklineData = ref<number[]>([]);
 const categories = ref<string[]>([]);
+const appStore = useAppStore();
+const isDark = computed(() => appStore.isDark);
 
-// Chart configuration
+// Chart Options (Reactive)
 const chartOptions = ref({
   chart: {
     id: "customer-chart",
     toolbar: { show: false },
     zoom: { enabled: false },
   },
+  theme: {
+    mode: isDark.value ? "dark" : "light",
+  },
   xaxis: {
-    categories: categories.value, // Dynamic X-axis labels
+    categories: categories.value,
     title: { text: "Timeframe" },
+    labels: {
+      show: true,
+    },
   },
   yaxis: {
     title: { text: "Number of Customers" },
     labels: {
-      formatter: (value: number) => Math.round(value), // Format Y labels
+      formatter: (value: number) => Math.round(value),
     },
   },
   stroke: {
-    curve: "smooth", // Smooth line appearance
+    curve: "smooth",
     width: 2,
   },
-  colors: ["#3F51B5"], // Line color
   grid: { show: true },
 });
 
-// Chart series data
+// Chart Series Data
 const chartSeries = ref([
   {
     name: "Customers",
@@ -68,25 +78,36 @@ const chartSeries = ref([
   },
 ]);
 
-// Fetch data from API
-async function fetchData() {
+// Watch for Theme Changes
+watch(isDark, (newVal) => {
+  chartOptions.value = {
+    ...chartOptions.value,
+    theme: { mode: newVal ? "dark" : "light" }, // Update the theme
+  };
+});
+
+// Fetch Data Function
+function fetchData() {
+  console.log("test");
   try {
-    const response = await get(
+    get(
       "http://localhost:8083/v1/monitoring/customers?timeframe=" +
         selectedTimeframe.value
-    );
-    const data = await response.json();
-    processData(data.data);
+    ).then(async (response) => {
+      const data = await response.json();
+      processData(data.data);
+    });
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 }
 
+// Process API Data
 function processData(data: Record<string, any>) {
-  categories.value = Object.keys(data); // X-axis labels
-  sparklineData.value = Object.values(data); // Y-axis data
+  categories.value = Object.keys(data);
+  sparklineData.value = Object.values(data);
 
-  // Update the chart series
+  // Update Chart Series
   chartSeries.value = [
     {
       name: "Customers",
@@ -94,7 +115,7 @@ function processData(data: Record<string, any>) {
     },
   ];
 
-  // Update chartOptions dynamically
+  // Update Chart Options
   chartOptions.value = {
     ...chartOptions.value,
     xaxis: { ...chartOptions.value.xaxis, categories: categories.value },
@@ -102,6 +123,8 @@ function processData(data: Record<string, any>) {
 
   console.log("Processed Data:", chartSeries.value);
 }
+
+// Fetch Data on Mount
 onMounted(() => {
   fetchData();
 });
