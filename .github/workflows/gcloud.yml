@@ -91,6 +91,8 @@ jobs:
         with:
           project_id: 'cloud-porsche'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
