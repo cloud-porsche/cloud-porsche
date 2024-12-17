@@ -10,8 +10,9 @@ provider "helm" {
 }
 
 module "enterprise_tenant-1" {
-  source    = "./enterprise-tenant"
-  tenant_id = "tenant1"
+  source         = "./enterprise-tenant"
+  tenant_id      = "tenant1"
+  firebase_token = var.firebase_token
   providers = {
     helm = helm.tenant1
   }
