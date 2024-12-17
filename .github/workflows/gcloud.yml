@@ -72,6 +72,8 @@ jobs:
         run: echo "${{ steps.deploy.outputs.url }}"
 
   terraform:
+    environment:
+      name: cloud-porsche-terraform
     concurrency:
       group: terraform
     name: Terraform apply 🏗️

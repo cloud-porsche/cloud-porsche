@@ -12,10 +12,11 @@ terraform {
 }
 
 resource "google_service_account" "tenant_service_account" {
-  account_id   = "${var.tenant_id}-service-account"
-  description  = "Tenant Service account"
-  display_name = "${var.tenant_id}-service-account"
-  project      = "cloud-porsche"
+  account_id                   = "${var.tenant_id}-service-account"
+  description                  = "Tenant Service account"
+  display_name                 = "${var.tenant_id}-service-account"
+  project                      = "cloud-porsche"
+  create_ignore_already_exists = true
 }
 
 resource "google_service_account_key" "tenant_service_account_key" {
@@ -25,17 +26,17 @@ resource "google_service_account_key" "tenant_service_account_key" {
 resource "google_project_iam_member" "service_account_iam_datastore" {
   project = "cloud-porsche"
   role    = "roles/datastore.owner"
-  member  = "serviceAccount:${google_service_account.tenant_service_account.account_id}"
+  member  = "serviceAccount:${google_service_account.tenant_service_account.email}"
 }
 
 resource "google_project_iam_member" "service_account_iam_storage" {
   project = "cloud-porsche"
   role    = "roles/storage.admin"
-  member  = "serviceAccount:${google_service_account.tenant_service_account.account_id}"
+  member  = "serviceAccount:${google_service_account.tenant_service_account.email}"
 }
 
 resource "google_project_iam_member" "service_account_iam_pubsub" {
   project = "cloud-porsche"
   role    = "roles/pubsub.admin"
-  member  = "serviceAccount:${google_service_account.tenant_service_account.account_id}"
+  member  = "serviceAccount:${google_service_account.tenant_service_account.email}"
 }
