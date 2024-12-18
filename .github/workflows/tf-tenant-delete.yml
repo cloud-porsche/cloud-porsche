@@ -31,25 +31,19 @@ jobs:
       - name: Terraform plan tenant destruction
         working-directory: ./tf
         id: plan
-        continue-on-error: true
         run: |
-          set +e
+          trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
           terraform plan \
               -destroy \
               -target helm.${{ inputs.tenant_id }} \
               -target module.${{ inputs.tenant_id }} \
               -input=false \
               -compact-warnings \
-              -var 'firebase_token=${{ secrets.FIREBASE_TOKEN }}' \
-              -detailed-exitcode
-          echo "exitcode=$?" >> $GITHUB_OUTPUT
-          exit "$exitcode"
-      - name: Exit on error
-        if: ${{ steps.plan.outputs.exitcode }} == 1
-        run: exit 1
+              -detailed-exitcode \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Terraform destroy tenant
         working-directory: ./tf
-        if: ${{ steps.plan.outputs.exitcode }} == 2
+        if: ${{ steps.plan.outputs.exit_code }} == 2
         run: |
           terraform destroy \
               -target helm.${{ inputs.tenant_id }} \
@@ -59,10 +53,10 @@ jobs:
               -auto-approve \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Delete tenant files
-        if: ${{ steps.plan.outputs.exitcode }} == 2
+        if: ${{ steps.plan.outputs.exit_code }} == 2
         run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/values-${{ inputs.tenant_id }}.yaml
       - name: Commit and push changes
-        if: ${{ steps.plan.outputs.exitcode }} == 2
+        if: ${{ steps.plan.outputs.exit_code }} == 2
         run: |
           git config --global user.name 'Tenant Deletion Bot'
           git config --global user.email 'tenant-bot@noreply.com'
