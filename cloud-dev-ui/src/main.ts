@@ -21,6 +21,9 @@ import {
 } from "firebase/auth";
 import { initWs } from "@/stores/ws";
 import VueApexCharts from "vue3-apexcharts";
+import HighchartsVue from "highcharts-vue";
+import Dashboards from "@highcharts/dashboards";
+import Highcharts from "highcharts";
 
 const app = createApp(App);
 
@@ -28,6 +31,10 @@ registerPlugins(app);
 
 app.use(vuetify);
 app.use(VueApexCharts);
+app.use(HighchartsVue);
+
+Dashboards.HighchartsPlugin.custom.connectHighcharts(Highcharts);
+Dashboards.PluginHandler.addPlugin(Dashboards.HighchartsPlugin);
 
 app.use(VueFire, {
   firebaseApp: initializeApp({
