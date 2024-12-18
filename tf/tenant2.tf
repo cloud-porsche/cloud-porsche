@@ -1,3 +1,12 @@
+provider "kubernetes" {
+  alias = "tenant2"
+  host  = "https://${module.enterprise_tenant-2.cluster_endpoint}"
+  token = data.google_client_config.default.access_token
+  client_certificate = base64decode(module.enterprise_tenant-2.client_certificate)
+  client_key = base64decode(module.enterprise_tenant-2.client_key)
+  cluster_ca_certificate = base64decode(module.enterprise_tenant-2.cluster_ca_certificate)
+}
+
 provider "helm" {
   alias = "tenant2"
   kubernetes {
@@ -15,5 +24,6 @@ module "enterprise_tenant-2" {
   firebase_token = var.firebase_token
   providers = {
     helm = helm.tenant2
+    kubernetes = kubernetes.tenant1
   }
 }
