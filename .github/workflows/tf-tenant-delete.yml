@@ -33,13 +33,13 @@ jobs:
         id: plan
         run: |
           terraform plan \
-              -destroy
+              -destroy \
               -target helm.${{ inputs.tenant_id }} \
               -target module.${{ inputs.tenant_id }} \
               -input=false \
               -compact-warnings \
-              -detailed-exitcode \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var 'firebase_token=${{ secrets.FIREBASE_TOKEN }}' \
+              -detailed-exitcode
       - name: Terraform destroy tenant
         working-directory: ./tf
         if: ${{ steps.plan.outputs.exitcode }} == 2
