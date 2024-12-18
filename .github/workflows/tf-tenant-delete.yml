@@ -33,6 +33,7 @@ jobs:
         id: plan
         continue-on-error: true
         run: |
+          set +e
           terraform plan \
               -destroy \
               -target helm.${{ inputs.tenant_id }} \
@@ -42,6 +43,7 @@ jobs:
               -var 'firebase_token=${{ secrets.FIREBASE_TOKEN }}' \
               -detailed-exitcode
           echo "exitcode=$?" >> $GITHUB_OUTPUT
+          exit "$exitcode"
       - name: Exit on error
         if: ${{ steps.plan.outputs.exitcode }} == 1
         run: exit 1
