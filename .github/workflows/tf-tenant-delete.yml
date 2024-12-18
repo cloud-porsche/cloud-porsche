@@ -30,8 +30,14 @@ jobs:
         run: terraform init -input=false
       - name: Terraform destroy tenant
         working-directory: ./tf
-        run: terraform destroy -target helm.${{ inputs.tenant_id }} -target module.${{ inputs.tenant_id }} \
-          -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          terraform destroy \
+              -target helm.${{ inputs.tenant_id }} \
+              -target module.${{ inputs.tenant_id }} \
+              -input=false \
+              -compact-warnings \
+              -auto-approve \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Delete tenant files
         run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/values-${{ inputs.tenant_id }}.yaml
       - name: Commit and push changes
