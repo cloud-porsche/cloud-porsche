@@ -1,9 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
 import { Customer, ParkingSpotState } from '@cloud-porsche/types';
-import { ParkingProperty } from '../parking-properties/entities/parking-property.entity';
-import { PubSub } from '@google-cloud/pubsub';
-import { PubSubService } from 'src/pubsub/pubsub.service';
 
 @Injectable()
 export class ParkingService {
