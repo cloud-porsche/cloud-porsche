@@ -74,8 +74,6 @@ jobs:
   terraform:
     environment:
       name: cloud-porsche-terraform
-    concurrency:
-      group: terraform
     name: Terraform apply 🏗️
     runs-on: ubuntu-22.04
     needs:
