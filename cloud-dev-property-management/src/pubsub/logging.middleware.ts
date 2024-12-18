@@ -10,22 +10,20 @@ export class LoggingMiddleware implements NestMiddleware {
   constructor(private readonly pubSubService: PubSubService) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
-    const { method, originalUrl, body } = req;
-    console.log(body);
+    const { method, originalUrl } = req;
 
     // Log the incoming request
     this.logger.log(`Incoming request: ${method} ${originalUrl}`);
 
     // Call the next middleware or controller handler
     res.on('finish', async () => {
-      // After the request is handled, publish the log messagee
+      // After the request is handled, publish the log message
       await this.pubSubService.publishMessage({
+        messageType: 'apiCall',
         method: method,
         url: originalUrl,
         timestamp: new Date(),
       });
-
-      this.logger.log(`Message published for ${method} ${originalUrl}`);
     });
 
     next();

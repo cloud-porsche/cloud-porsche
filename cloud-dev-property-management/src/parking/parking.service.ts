@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
 import { Customer, ParkingSpotState } from '@cloud-porsche/types';
 import { ParkingProperty } from '../parking-properties/entities/parking-property.entity';
-import { PubSub } from '@google-cloud/pubsub';
 import { PubSubService } from 'src/pubsub/pubsub.service';
 
 @Injectable()
@@ -11,6 +10,7 @@ export class ParkingService {
 
   constructor(
     public readonly parkingPropertiesService: ParkingPropertiesService,
+    public readonly pubSubService: PubSubService,
   ) {}
 
   // This method will publish the message to Pub/Sub when a customer enters
@@ -20,6 +20,14 @@ export class ParkingService {
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
 
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'enter',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: null,
+    });
     // Update the customers in the parking property
     return this.parkingPropertiesService.update(parkingPropertyId, {
       customers: [...currentCustomers, newCustomer],
@@ -38,6 +46,14 @@ export class ParkingService {
       this.logger.warn('Customer still has a spot occupied - setting it free');
       await this.freeSpot(parkingPropertyId, spot.id);
     }
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'leave',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: null,
+    });
     return this.parkingPropertiesService.update(parkingPropertyId, {
       customers: currentCustomers.filter((c) => c.id !== customer.id),
     });
@@ -53,13 +69,23 @@ export class ParkingService {
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
+    console.log(spot);
     if (!spot) throw new Error('Spot not found');
     if (
       [ParkingSpotState.OCCUPIED, ParkingSpotState.OUT_OF_ORDER].includes(
         spot.state,
       )
-    )
+    ) {
       throw new Error('Spot already occupied or out of order');
+    }
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'occupy',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: spot.id,
+    });
     return this.parkingPropertiesService.update(
       parkingPropertyId,
       this.newSpotState(
@@ -77,9 +103,18 @@ export class ParkingService {
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
+    console.log(spot);
     if (!spot) throw new Error('Spot not found');
     if (spot.state !== ParkingSpotState.OCCUPIED)
       throw new Error('Spot not occupied');
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'free',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: spot.id,
+    });
     return this.parkingPropertiesService.update(
       parkingPropertyId,
       this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
@@ -95,6 +130,14 @@ export class ParkingService {
     if (!spot) throw new Error('Spot not found');
     if (spot.state !== ParkingSpotState.OCCUPIED && !spot.electricCharging)
       throw new Error('Spot already occupied or not an electric charger');
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'occupy',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: spot.id,
+    });
     return this.parkingPropertiesService.update(
       parkingPropertyId,
       this.newSpotState(

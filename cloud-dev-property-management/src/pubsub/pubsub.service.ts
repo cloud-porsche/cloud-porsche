@@ -24,8 +24,6 @@ export class PubSubService {
       const messageId = await this.pubSubClient
         .topic(this.topicName)
         .publish(messageBuffer);
-
-      this.logger.log(`Message ${messageId} published to Pub/Sub`);
     } catch (error) {
       this.logger.error('Error publishing message to Pub/Sub', error);
     }
