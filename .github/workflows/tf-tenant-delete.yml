@@ -1,0 +1,42 @@
+name: Terraform Delete Tenant
+on:
+  workflow_dispatch:
+    inputs:
+      tenant_id:
+        type: string
+        description: 'Tenant ID'
+        required: true
+jobs:
+  tf-tenant-delete:
+    if: github.ref == 'refs/heads/develop'
+    name: Terraform delete tenant 🚮
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: 'write'
+      contents: 'read'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Configure Docker to use the gcloud command-line tool as a credential helper
+        run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - name: Terraform init
+        working-directory: ./tf
+        run: terraform init -input=false
+      - name: Terraform destroy tenant
+        working-directory: ./tf
+        run: terraform destroy -target helm.${{ inputs.tenant_id }} -target module.${{ inputs.tenant_id }} \
+          -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+      - name: Delete tenant files
+        run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/values-${{ inputs.tenant_id }}.yaml
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'Tenant Deletion Bot'
+          git config --global user.email 'tenant-bot@noreply.com'
+          git commit -am "Delete tenant ${inputs.tenant_id}"
+          git push
