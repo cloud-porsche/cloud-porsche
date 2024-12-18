@@ -28,9 +28,21 @@ jobs:
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
+      - name: Terraform plan tenant destruction
+        working-directory: ./tf
+        id: plan
+        run: |
+          terraform plan \
+              -destroy
+              -target helm.${{ inputs.tenant_id }} \
+              -target module.${{ inputs.tenant_id }} \
+              -input=false \
+              -compact-warnings \
+              -detailed-exitcode \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Terraform destroy tenant
         working-directory: ./tf
-        id: destroy
+        if: ${{ steps.plan.outputs.exitcode }} == 2
         run: |
           terraform destroy \
               -target helm.${{ inputs.tenant_id }} \
@@ -38,13 +50,12 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -detailed-exitcode \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Delete tenant files
-        if: ${{ steps.destroy.outputs.exitcode }} == 2
+        if: ${{ steps.plan.outputs.exitcode }} == 2
         run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/values-${{ inputs.tenant_id }}.yaml
       - name: Commit and push changes
-        if: ${{ steps.destroy.outputs.exitcode }} == 2
+        if: ${{ steps.plan.outputs.exitcode }} == 2
         run: |
           git config --global user.name 'Tenant Deletion Bot'
           git config --global user.email 'tenant-bot@noreply.com'
