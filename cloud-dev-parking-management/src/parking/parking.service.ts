@@ -1,13 +1,49 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { Customer, ParkingSpotState } from '@cloud-porsche/types';
+import { IParkingProperty } from '@cloud-porsche/types';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class ParkingService {
   private readonly logger = new Logger(ParkingService.name);
+  private readonly parkingPropertiesApi: string = 'http://localhost:8080/v1';
 
-  constructor(
-    public readonly parkingPropertiesService: ParkingPropertiesService,
-  ) {}
+  constructor(private readonly httpService: HttpService) {}
+
+  private async fetchParkingProperty(
+    parkingPropertyId: string,
+  ): Promise<IParkingProperty> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get<IParkingProperty>(
+          `${this.parkingPropertiesApi}/parking-properties/${parkingPropertyId}`,
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error(`Failed to fetch parking property: ${error.message}`);
+      throw new Error('Parking Property not found');
+    }
+  }
+
+  private async updateParkingProperty(
+    parkingPropertyId: string,
+    updateData: Partial<IParkingProperty>,
+  ): Promise<IParkingProperty> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.patch<IParkingProperty>(
+          `${this.parkingPropertiesApi}/parking-properties/${parkingPropertyId}`,
+          updateData,
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error(`Failed to update parking property: ${error.message}`);
+      throw new Error('Failed to update parking property');
+    }
+  }
 
   // This method will publish the message to Pub/Sub when a customer enters
   async enter(parkingPropertyId: string, newCustomer: Customer) {
