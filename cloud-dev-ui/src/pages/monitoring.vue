@@ -1,9 +1,23 @@
 <template>
-  <div
-    id="dashboard_container"
-    class="highcharts-light"
-    style="height: 100%"
-  ></div>
+  <div>
+    <!-- Filter Chips Section -->
+    <v-chip-group selected-class="text-primary">
+      <v-chip
+        v-for="filter in filters"
+        :key="filter"
+        @click="onFilterClick(filter)"
+      >
+        {{ filter }}
+      </v-chip>
+    </v-chip-group>
+
+    <!-- Dashboard Container -->
+    <div
+      id="dashboard_container"
+      class="highcharts-light"
+      style="height: 100%"
+    ></div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -13,6 +27,7 @@ import { ref, onMounted, computed, watch } from "vue";
 import { get } from "@/http/http";
 import { useAppStore } from "@/stores/app";
 
+// Highcharts Configuration
 Highcharts.setOptions({
   chart: {
     styledMode: true,
@@ -23,13 +38,17 @@ Highcharts.setOptions({
 const categories = ref<string[]>([]); // For the x-axis (timeframe)
 const lineChartData = ref<number[]>([]); // For the line chart (customers)
 const pieChartData = ref<number[]>([0, 0, 0, 0]); // Mock initial pie chart data
-
-// Labels for Pie Chart
-const pieChartLabels = ref<string[]>([]);
+const pieChartLabels = ref<string[]>([]); // Labels for Pie Chart
+const totalCustomers = ref(0); // Total Customers
+const apiCalls = ref(0);
 
 // App Store for Theme
 const appStore = useAppStore();
 const isDark = computed(() => appStore.isDark);
+
+// Filter Options
+const filters = ref(["weekly", "monthly", "yearly", "total"]);
+const selectedFilter = ref("weekly");
 
 // Fetch Data Function
 async function fetchData(timeframe: string) {
@@ -38,7 +57,6 @@ async function fetchData(timeframe: string) {
       `http://localhost:8083/v1/monitoring/data?timeframe=${timeframe}`
     );
     const data = await response.json();
-    console.log(data);
     processData(data.data);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -49,11 +67,10 @@ async function fetchData(timeframe: string) {
 function processData(data: Record<string, any>) {
   categories.value = Object.keys(data.customers);
   lineChartData.value = Object.values(data.customers);
-
-  // Example mock data for pie chart (modify based on API response if needed)
   pieChartData.value = Object.values(data.customer_distribution);
   pieChartLabels.value = Object.keys(data.customer_distribution);
-  console.log(lineChartData);
+  totalCustomers.value = data.total_customers;
+  apiCalls.value = data.api_calls;
 }
 
 // Initialize Dashboard
@@ -113,7 +130,7 @@ async function initDashBoard() {
             style: {
               "text-align": "center",
             },
-            textContent: "50.000",
+            textContent: "1.200.000",
           },
           {
             tagName: "p",
@@ -134,7 +151,7 @@ async function initDashBoard() {
             style: {
               "text-align": "center",
             },
-            textContent: "1234",
+            textContent: totalCustomers.value.toString(),
           },
         ],
       },
@@ -148,7 +165,7 @@ async function initDashBoard() {
             style: {
               "text-align": "center",
             },
-            textContent: "102.300.000",
+            textContent: apiCalls.value.toString(),
           },
         ],
       },
@@ -217,10 +234,19 @@ function setTheme(isDark?: boolean) {
   )!.className = `highcharts-${theme}`;
 }
 
+// Handle Filter Click to Fetch Data and Update Dashboard
+function onFilterClick(filter: string) {
+  selectedFilter.value = filter;
+  fetchData(filter).then(() => {
+    // After data fetch, reinitialize the dashboard with new data
+    initDashBoard();
+  });
+}
+
 // Fetch Data and Initialize Dashboard on Mount
 onMounted(async () => {
-  await fetchData("monthly"); // Default timeframe
-  initDashBoard();
+  await fetchData(selectedFilter.value); // Default timeframe
+  await initDashBoard();
   setTheme(isDark.value);
 });
 </script>

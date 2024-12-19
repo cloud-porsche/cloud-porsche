@@ -53,9 +53,49 @@ export class MonitoringService {
       `Listening for messages on subscription: ${this.subscriptionName}`,
     );
   }
+  async getAlltimeCustomers() {
+    const parkingActions = await this.parkingActionRepository.find();
+    const enterActions = parkingActions.filter(
+      (action) => action.action === 'enter',
+    );
+
+    return enterActions.length;
+  }
+
+  async getApiCalls(timeframe: string) {
+    const now = new Date();
+    let startDate: Date;
+
+    switch (timeframe) {
+      case 'total':
+        startDate = subDays(now, 365 * 3);
+        break;
+      case 'yearly':
+        startDate = subDays(now, 365);
+        break;
+      case 'monthly':
+        startDate = subDays(now, 31);
+        break;
+      case 'weekly':
+        startDate = subDays(now, 7);
+        break;
+      default:
+        throw new Error(
+          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
+        );
+    }
+
+    const apiCalls = await this.apiCallRepository.find();
+
+    const total = apiCalls.filter(
+      (apiCall) => new Date(apiCall.timestamp) >= startDate,
+    ).length;
+    return total;
+  }
 
   /**
-   * Gets the distribution of customers per property for a given timeframe
+   * Gets the distribution of customers per propert
+y for a given timeframe
    * @param timeframe timeframe to get customer data for
    */
   async getCustomerDistribution(timeframe: string) {
@@ -166,11 +206,15 @@ export class MonitoringService {
   async getAllData(timeframe: string) {
     const customers = await this.getCustomerData(timeframe);
     const customerDistribution = await this.getCustomerDistribution(timeframe);
+    const totalCustomers = await this.getAlltimeCustomers();
+    const apiCalls = await this.getApiCalls(timeframe);
 
     return {
       data: {
         customers: customers.data,
         customer_distribution: customerDistribution,
+        total_customers: totalCustomers,
+        api_calls: apiCalls,
       },
     };
   }
