@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Filter Chips Section -->
-    <v-chip-group selected-class="text-primary">
+    <!-- <v-chip-group selected-class="text-primary">
       <v-chip
         v-for="filter in filters"
         :key="filter"
@@ -9,7 +9,7 @@
       >
         {{ filter }}
       </v-chip>
-    </v-chip-group>
+    </v-chip-group> -->
 
     <!-- Dashboard Container -->
     <div
@@ -76,6 +76,12 @@ function processData(data: Record<string, any>) {
 // Initialize Dashboard
 async function initDashBoard() {
   Dashboards.board("dashboard_container", {
+    editMode: {
+      enabled: true,
+      contextMenu: {
+        enabled: true,
+      },
+    },
     gui: {
       layouts: [
         {
@@ -97,7 +103,12 @@ async function initDashBoard() {
                             id: "dashboard-col-0-row-2B",
                             layout: {
                               rows: [
-                                { cells: [{ id: "dashboard-col-0-row-2B-1" }] },
+                                {
+                                  cells: [
+                                    { id: "dashboard-col-0-row-2B-1" },
+                                    { id: "dashboard-col-0-row-2B-2" },
+                                  ],
+                                },
                                 {
                                   cells: [
                                     { id: "dashboard-col-0-row-2B-2A" },
@@ -121,25 +132,16 @@ async function initDashBoard() {
     },
     components: [
       {
-        type: "HTML",
         renderTo: "dashboard-col-0-row-2B-1",
-        title: "Expenses",
-        elements: [
-          {
-            tagName: "h1",
-            style: {
-              "text-align": "center",
-            },
-            textContent: "1.200.000",
-          },
-          {
-            tagName: "p",
-            style: {
-              "text-align": "center",
-            },
-            textContent: "USD",
-          },
-        ],
+        type: "KPI",
+        title: "Total API Calls",
+        value: apiCalls.value,
+      },
+      {
+        renderTo: "dashboard-col-0-row-2B-2",
+        type: "KPI",
+        title: "All Time Customers",
+        value: "MOCK",
       },
       {
         renderTo: "dashboard-col-0-row-2B-2A",
@@ -158,17 +160,9 @@ async function initDashBoard() {
       {
         type: "HTML",
         renderTo: "dashboard-col-0-row-2B-2B",
-        title: "API Calls",
-        elements: [
-          {
-            tagName: "h1",
-            style: {
-              "text-align": "center",
-            },
-            textContent: apiCalls.value.toString(),
-          },
-        ],
+        html: `<p>Total Customers: ${totalCustomers.value}</p>`,
       },
+
       {
         renderTo: "dashboard-col-0-row-1",
         type: "Highcharts",

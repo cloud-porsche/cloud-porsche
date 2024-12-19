@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AddDefectPopup: typeof import('./components/AddDefectPopup.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
+    CellCard: typeof import('./components/CellCard.vue')['default']
     CounterCard: typeof import('./components/CounterCard.vue')['default']
     Login: typeof import('./components/Login.vue')['default']
     ParkingSpotComponent: typeof import('./components/ParkingSpotComponent.vue')['default']
@@ -17,5 +18,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SearchFilter: typeof import('./components/SearchFilter.vue')['default']
     StatusChip: typeof import('./components/StatusChip.vue')['default']
+    VuetifyComponent: typeof import('./components/VuetifyComponent.vue')['default']
   }
 }
