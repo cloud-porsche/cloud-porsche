@@ -201,14 +201,19 @@ async function initDashBoard() {
 
 // Watch for Theme Changes
 watch(isDark, (newVal) => {
-  const theme = newVal ? "dark" : "light";
+  setTheme(newVal);
+});
+
+function setTheme(isDark?: boolean) {
+  const theme = isDark ? "dark" : "light";
   document.getElementById(
     "dashboard_container"
   )!.className = `highcharts-${theme}`;
-});
+}
 
 // Fetch Data and Initialize Dashboard on Mount
 onMounted(async () => {
+  setTheme(isDark.value);
   await fetchData("monthly"); // Default timeframe
   initDashBoard();
 });
