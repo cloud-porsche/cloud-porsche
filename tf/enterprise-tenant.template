@@ -1,0 +1,19 @@
+provider "helm" {
+  alias = ${TENANT_ID}
+  kubernetes {
+    host  = "https://${module.${TENANT_ID}.cluster_endpoint}"
+    token = data.google_client_config.default.access_token
+    client_certificate = base64decode(module.${ TENANT_ID }.client_certificate)
+    client_key = base64decode(module.${TENANT_ID}.client_key)
+    cluster_ca_certificate = base64decode(module.${TENANT_ID}.cluster_ca_certificate)
+  }
+}
+
+module "${TENANT_ID}" {
+  source         = "./enterprise-tenant"
+  tenant_id      = "${TENANT_ID}"
+  firebase_token = var.firebase_token
+  providers = {
+    helm = helm.${TENANT_ID}
+  }
+}
