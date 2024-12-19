@@ -25,12 +25,7 @@ const lineChartData = ref<number[]>([]); // For the line chart (customers)
 const pieChartData = ref<number[]>([0, 0, 0, 0]); // Mock initial pie chart data
 
 // Labels for Pie Chart
-const pieChartLabels = [
-  "New Customers",
-  "Returning Customers",
-  "Active Customers",
-  "Inactive Customers",
-];
+const pieChartLabels = ref<string[]>([]);
 
 // App Store for Theme
 const appStore = useAppStore();
@@ -40,9 +35,10 @@ const isDark = computed(() => appStore.isDark);
 async function fetchData(timeframe: string) {
   try {
     const response = await get(
-      `http://localhost:8083/v1/monitoring/customers?timeframe=${timeframe}`
+      `http://localhost:8083/v1/monitoring/data?timeframe=${timeframe}`
     );
     const data = await response.json();
+    console.log(data);
     processData(data.data);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -51,11 +47,12 @@ async function fetchData(timeframe: string) {
 
 // Process API Data
 function processData(data: Record<string, any>) {
-  categories.value = Object.keys(data);
-  lineChartData.value = Object.values(data);
+  categories.value = Object.keys(data.customers);
+  lineChartData.value = Object.values(data.customers);
 
   // Example mock data for pie chart (modify based on API response if needed)
-  pieChartData.value = [45, 25, 15, 15];
+  pieChartData.value = Object.values(data.customer_distribution);
+  pieChartLabels.value = Object.keys(data.customer_distribution);
   console.log(lineChartData);
 }
 
@@ -196,7 +193,7 @@ async function initDashBoard() {
             {
               type: "pie",
               name: "Customers",
-              data: pieChartLabels.map((label, index) => ({
+              data: pieChartLabels.value.map((label, index) => ({
                 name: label,
                 y: pieChartData.value[index],
               })),

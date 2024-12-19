@@ -54,7 +54,11 @@ export class MonitoringService {
     );
   }
 
-  async getCustomerData(timeframe: string) {
+  /**
+   * Gets the distribution of customers per property for a given timeframe
+   * @param timeframe timeframe to get customer data for
+   */
+  async getCustomerDistribution(timeframe: string) {
     const now = new Date();
 
     let startDate: Date;
@@ -79,16 +83,57 @@ export class MonitoringService {
 
     const parkingActions = await this.parkingActionRepository.find();
     const enterActions = parkingActions.filter(
+      (action) =>
+        action.action === 'enter' && new Date(action.timestamp) >= startDate,
+    );
+
+    const propertyDistribution = {};
+
+    enterActions.forEach((action) => {
+      if (!propertyDistribution[action.propertyName]) {
+        propertyDistribution[action.propertyName] = 0;
+      }
+      propertyDistribution[action.propertyName] += 1;
+    });
+
+    return propertyDistribution;
+  }
+
+  async getCustomerData(timeframe: string) {
+    const now = new Date();
+
+    let startDate: Date;
+    switch (timeframe) {
+      case 'total':
+        startDate = subDays(now, 365 * 3);
+        break;
+      case 'yearly':
+        startDate = subDays(now, 365);
+        break;
+      case 'monthly':
+        startDate = subDays(now, 31);
+        break;
+      case 'weekly':
+        startDate = subDays(now, 7);
+        break;
+      default:
+        throw new Error(
+          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
+        );
+    }
+
+    const parkingActions = await this.parkingActionRepository.find();
+    const enterActions = parkingActions.filter(
       (action) => action.action === 'enter',
     );
-    console.log(enterActions);
     const dateRange = this.generateDateRange(startDate, now);
+
     return this.aggregateByDay(enterActions, dateRange);
   }
 
   private generateDateRange(startDate: Date, endDate: Date): string[] {
     const range: string[] = [];
-    let currentDate = startOfDay(startDate);
+    let currentDate = startDate;
 
     while (currentDate <= endDate) {
       range.push(currentDate.toISOString().slice(0, 10)); // Format: YYYY-MM-DD
@@ -109,15 +154,24 @@ export class MonitoringService {
     // Increment counts for each action
     actions.forEach((action) => {
       const actionDate = action.timestamp.toString().slice(0, 10);
-      console.log(actionDate);
-      console.log(new Date(actionDate));
 
       if (results[actionDate] !== undefined) {
-        console.log('test');
         results[actionDate] += 1;
       }
     });
 
     return { data: results };
+  }
+
+  async getAllData(timeframe: string) {
+    const customers = await this.getCustomerData(timeframe);
+    const customerDistribution = await this.getCustomerDistribution(timeframe);
+
+    return {
+      data: {
+        customers: customers.data,
+        customer_distribution: customerDistribution,
+      },
+    };
   }
 }
