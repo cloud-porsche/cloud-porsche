@@ -19,23 +19,21 @@ import {
   browserLocalPersistence,
   browserPopupRedirectResolver,
 } from "firebase/auth";
-import { initWs } from "@/stores/ws";
-import VueApexCharts from "vue3-apexcharts";
 import HighchartsVue from "highcharts-vue";
 import Dashboards from "@highcharts/dashboards";
 import Highcharts from "highcharts";
+import LayoutModule from "@highcharts/dashboards/modules/layout";
 
 const app = createApp(App);
 
 registerPlugins(app);
 
 app.use(vuetify);
-app.use(VueApexCharts);
 app.use(HighchartsVue);
 
 Dashboards.HighchartsPlugin.custom.connectHighcharts(Highcharts);
 Dashboards.PluginHandler.addPlugin(Dashboards.HighchartsPlugin);
-
+LayoutModule(Dashboards);
 app.use(VueFire, {
   firebaseApp: initializeApp({
     projectId: "cloud-porsche",
