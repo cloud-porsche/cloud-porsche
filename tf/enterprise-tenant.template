@@ -1,5 +1,5 @@
 provider "helm" {
-  alias = ${TENANT_ID}
+  alias = "${TENANT_ID}"
   kubernetes {
     host  = "https://${module.${TENANT_ID}.cluster_endpoint}"
     token = data.google_client_config.default.access_token
