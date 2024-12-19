@@ -109,40 +109,49 @@ async function initDashBoard() {
       {
         type: "HTML",
         renderTo: "dashboard-col-0-row-2B-1",
+        title: "Expenses",
         elements: [
+          {
+            tagName: "h1",
+            style: {
+              "text-align": "center",
+            },
+            textContent: "50.000",
+          },
           {
             tagName: "p",
             style: {
               "text-align": "center",
             },
-            textContent: "dashboard-col-0-row-2B-1",
+            textContent: "USD",
           },
         ],
       },
       {
         renderTo: "dashboard-col-0-row-2B-2A",
         type: "HTML",
-        title: "test",
+        title: "All Time Customers",
         elements: [
           {
-            tagName: "p",
+            tagName: "h1",
             style: {
               "text-align": "center",
             },
-            textContent: "dashboard-col-0-row-2B-2A",
+            textContent: "1234",
           },
         ],
       },
       {
         type: "HTML",
         renderTo: "dashboard-col-0-row-2B-2B",
+        title: "API Calls",
         elements: [
           {
-            tagName: "p",
+            tagName: "h1",
             style: {
               "text-align": "center",
             },
-            textContent: "dashboard-col-0-row-2B-2B",
+            textContent: "102.300.000",
           },
         ],
       },
@@ -213,9 +222,9 @@ function setTheme(isDark?: boolean) {
 
 // Fetch Data and Initialize Dashboard on Mount
 onMounted(async () => {
-  setTheme(isDark.value);
   await fetchData("monthly"); // Default timeframe
   initDashBoard();
+  setTheme(isDark.value);
 });
 </script>
 
