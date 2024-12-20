@@ -39,7 +39,8 @@ const categories = ref<string[]>([]); // For the x-axis (timeframe)
 const lineChartData = ref<number[]>([]); // For the line chart (customers)
 const pieChartData = ref<number[]>([0, 0, 0, 0]); // Mock initial pie chart data
 const pieChartLabels = ref<string[]>([]); // Labels for Pie Chart
-const totalCustomers = ref(0); // Total Customers
+const customers = ref(0); // Total Customers
+const percentileCustomersChange = ref(0);
 const apiCalls = ref(0);
 const percentileApiCallsChange = ref(0);
 
@@ -70,7 +71,8 @@ function processData(data: Record<string, any>) {
   lineChartData.value = Object.values(data.customers);
   pieChartData.value = Object.values(data.customer_distribution);
   pieChartLabels.value = Object.keys(data.customer_distribution);
-  totalCustomers.value = data.total_customers;
+  customers.value = data.customer_count_change.current_period_customers;
+  percentileCustomersChange.value = data.customer_count_change.percent_change;
   apiCalls.value = data.api_calls.current_period_api_calls;
   percentileApiCallsChange.value = data.api_calls.percent_change;
 }
@@ -136,9 +138,9 @@ async function initDashBoard() {
                 };">
                   ${
                     percentileApiCallsChange.value >= 0
-                      ? `+${percentileApiCallsChange.value}%`
-                      : `${percentileApiCallsChange.value}%`
-                  }
+                      ? `+${percentileApiCallsChange.value.toFixed(2)}%`
+                      : `${percentileApiCallsChange.value.toFixed(2)}%`
+                  } vs last 
             ${selectedFilter.value}</span>
             </div>
               `,
@@ -148,9 +150,19 @@ async function initDashBoard() {
         renderTo: "col-1-row-1B",
         html: `
               <div class="custom_card">
-                <div class="custom_card-header">Expenses</div>
-                <span class="custom_card-value">1000</span>
-                <span class="custom_card-subtext" style="color: red;">-5% vs last Month</span>
+                <div class="custom_card-header">Customers ${
+                  selectedFilter.value
+                }</div>
+                <span class="custom_card-value">${customers.value}</span>
+                <span class="custom_card-subtext" style="color: ${
+                  percentileCustomersChange.value >= 0 ? "green" : "red"
+                };">
+                  ${
+                    percentileCustomersChange.value >= 0
+                      ? `+${percentileCustomersChange.value.toFixed(2)}%`
+                      : `${percentileCustomersChange.value.toFixed(2)}%`
+                  } vs last 
+            ${selectedFilter.value}</span>
             </div>
               `,
       },
@@ -158,21 +170,21 @@ async function initDashBoard() {
         type: "HTML",
         renderTo: "col-1-row-1C",
         html: `
-              <div class="custom_card">
-                <div class="custom_card-header">MOCK</div>
-                <span class="custom_card-value">696969</span>
-                <span class="custom_card-subtext">This is the description</span>
-            </div>
-              `,
+        <div class="custom_card">
+        <div class="custom_card-header">MOCK</div>
+        <span class="custom_card-value">696969</span>
+        <span class="custom_card-subtext">This is the description</span>
+        </div>
+        `,
       },
       {
         type: "HTML",
         renderTo: "col-1-row-1D",
         html: `
               <div class="custom_card">
-                <div class="custom_card-header">Total Customers</div>
-                <span class="custom_card-value">${totalCustomers.value}</span>
-                <span class="custom_card-subtext">This is the description</span>
+                <div class="custom_card-header">Expenses</div>
+                <span class="custom_card-value">1000</span>
+                <span class="custom_card-subtext" style="color: red;">-5% vs last Month</span>
             </div>
               `,
       },
