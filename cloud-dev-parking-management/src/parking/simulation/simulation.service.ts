@@ -1,9 +1,10 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ParkingService } from '../parking.service';
 import { ConfigService } from '@nestjs/config';
 import { ParkingSpotState } from '@cloud-porsche/types';
-import { ParkingPropertiesService } from '../../parking-properties/parking-properties.service';
+import { lastValueFrom } from 'rxjs';
 
 export enum SimulationState {
   ENTERING,
@@ -20,9 +21,8 @@ export class SimulationService {
   constructor(
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
-    @Inject('SIMULATION_PARKING_SERVICE')
     private readonly parkingService: ParkingService,
-    public readonly parkingPropertyService: ParkingPropertiesService,
+    private readonly httpService: HttpService,
   ) {}
 
   async startSimulation(propertyId: string, simulationState?: SimulationState) {
@@ -30,14 +30,15 @@ export class SimulationService {
       this.logger.error('Simulation already running');
       return;
     }
-    // copy real data over to simulation
-    const existingProperty =
-      await this.parkingPropertyService.findOne(propertyId);
-    const previousSimData =
-      this.parkingService.parkingPropertiesService.findOne(propertyId);
-    if (previousSimData)
-      await this.parkingService.parkingPropertiesService.remove(propertyId);
-    await this.parkingService.parkingPropertiesService.create(existingProperty);
+
+    // Kopiere echte Daten über die API
+    const existingProperty = await this.findParkingProperty(propertyId);
+
+    // Entferne vorherige Simulationsdaten (falls vorhanden)
+    await this.deleteParkingProperty(propertyId);
+
+    // Erstelle Simulationsdaten basierend auf echten Daten
+    await this.createParkingProperty(existingProperty);
 
     this.simulationIds.set(
       propertyId,
@@ -54,8 +55,8 @@ export class SimulationService {
   }
 
   async stopSimulation(propertyId: string) {
-    // delete simulation data
-    await this.parkingService.parkingPropertiesService.remove(propertyId);
+    // Lösche Simulationsdaten
+    await this.deleteParkingProperty(propertyId);
 
     this.simulationIds.delete(propertyId);
     this.schedulerRegistry.deleteInterval('simulation');
@@ -88,11 +89,8 @@ export class SimulationService {
       });
 
       setTimeout(async () => {
-        if (this.getSimulationStatus(propertyId) === false) return;
-        const parkingProperty =
-          await this.parkingService.parkingPropertiesService.findOne(
-            propertyId,
-          );
+        if (!this.getSimulationStatus(propertyId)) return;
+        const parkingProperty = await this.findParkingProperty(propertyId);
         const spot = parkingProperty.layers
           .flatMap((l) => l.parkingSpots)
           .find((s) => s.state === ParkingSpotState.FREE);
@@ -114,8 +112,7 @@ export class SimulationService {
         }
       }, SIMULATION_INTERVAL / 2);
     } else if (state === SimulationState.EXITING) {
-      const parkingProperty =
-        await this.parkingService.parkingPropertiesService.findOne(propertyId);
+      const parkingProperty = await this.findParkingProperty(propertyId);
       const spot = parkingProperty.layers
         .flatMap((l) => l.parkingSpots)
         .find((s) => s.state === ParkingSpotState.OCCUPIED);
@@ -127,7 +124,7 @@ export class SimulationService {
       await this.parkingService.freeSpot(propertyId, spot.id);
 
       setTimeout(async () => {
-        if (this.getSimulationStatus(propertyId) === false) return;
+        if (!this.getSimulationStatus(propertyId)) return;
         const id = spot.customer.id;
         await this.parkingService.leave(propertyId, {
           id,
@@ -135,5 +132,27 @@ export class SimulationService {
         });
       }, SIMULATION_INTERVAL / 2);
     }
+  }
+
+  private async findParkingProperty(propertyId: string) {
+    const response = this.httpService.get(
+      `${this.config.get('PARKING_PROPERTIES_API_URL')}/properties/${propertyId}`,
+    );
+    return lastValueFrom(response).then((res) => res.data);
+  }
+
+  private async deleteParkingProperty(propertyId: string) {
+    const response = this.httpService.delete(
+      `${this.config.get('PARKING_PROPERTIES_API_URL')}/properties/${propertyId}`,
+    );
+    return lastValueFrom(response);
+  }
+
+  private async createParkingProperty(property: any) {
+    const response = this.httpService.post(
+      `${this.config.get('PARKING_PROPERTIES_API_URL')}/properties`,
+      property,
+    );
+    return lastValueFrom(response);
   }
 }
