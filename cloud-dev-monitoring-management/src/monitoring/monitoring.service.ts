@@ -53,11 +53,11 @@ export class MonitoringService {
       case 'total':
         return subDays(now, 365 * 3);
       case 'yearly':
-        return subDays(now, 365);
+        return subDays(now, 364);
       case 'monthly':
         return subDays(now, 30);
       case 'weekly':
-        return subDays(now, 7);
+        return subDays(now, 6);
       default:
         throw new Error(
           'Invalid timeframe. Use total, yearly, monthly, or weekly.',
@@ -70,12 +70,74 @@ export class MonitoringService {
     return parkingActions.filter((action) => action.action === 'enter').length;
   }
 
-  async getApiCalls(timeframe: string): Promise<number> {
-    const startDate = this.getStartDate(timeframe);
+  async getApiCalls(timeframe: string) {
+    const now = new Date();
+
+    // Helper function to get the start date based on the timeframe
+    const getStartDate = (offset: number): Date => {
+      return subDays(now, offset);
+    };
+
+    let currentStartDate: Date;
+    let previousStartDate: Date;
+    let currentEndDate: Date = now;
+    let previousEndDate: Date;
+
+    switch (timeframe) {
+      case 'total':
+        currentStartDate = getStartDate(365 * 3);
+        previousStartDate = getStartDate(365 * 6); // 3 years ago
+        break;
+      case 'yearly':
+        currentStartDate = getStartDate(364);
+        previousStartDate = getStartDate(365 * 2); // 1 year ago
+        break;
+      case 'monthly':
+        currentStartDate = getStartDate(29);
+        previousStartDate = getStartDate(59); // 1 month ago
+        break;
+      case 'weekly':
+        currentStartDate = getStartDate(6);
+        previousStartDate = getStartDate(13); // 1 week ago
+        break;
+      default:
+        throw new Error(
+          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
+        );
+    }
+    previousEndDate = subDays(currentStartDate, 1);
+    // Fetch current and previous API calls based on the timeframes
     const apiCalls = await this.apiCallRepository.find();
-    return apiCalls.filter(
-      (apiCall) => new Date(apiCall.timestamp) >= startDate,
+
+    console.log(previousStartDate, previousEndDate);
+    console.log(currentStartDate, currentEndDate);
+
+    const currentPeriodApiCalls = apiCalls.filter(
+      (apiCall) =>
+        new Date(apiCall.timestamp) >= currentStartDate &&
+        new Date(apiCall.timestamp) <= currentEndDate,
     ).length;
+
+    let previousPeriodApiCalls = apiCalls.filter(
+      (apiCall) =>
+        new Date(apiCall.timestamp) >= previousStartDate &&
+        new Date(apiCall.timestamp) <= previousEndDate,
+    ).length;
+
+    // previousPeriodApiCalls = 1000;
+    // Calculate the percentage change
+    let percentChange = 0;
+    if (previousPeriodApiCalls !== 0) {
+      percentChange =
+        ((currentPeriodApiCalls - previousPeriodApiCalls) /
+          previousPeriodApiCalls) *
+        100;
+    }
+    return {
+      current_period_api_calls: currentPeriodApiCalls,
+      previous_period_api_calls: previousPeriodApiCalls,
+      percent_change: percentChange,
+    };
   }
 
   async getCustomerDistribution(

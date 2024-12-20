@@ -41,6 +41,7 @@ const pieChartData = ref<number[]>([0, 0, 0, 0]); // Mock initial pie chart data
 const pieChartLabels = ref<string[]>([]); // Labels for Pie Chart
 const totalCustomers = ref(0); // Total Customers
 const apiCalls = ref(0);
+const percentileApiCallsChange = ref(0);
 
 // App Store for Theme
 const appStore = useAppStore();
@@ -70,7 +71,8 @@ function processData(data: Record<string, any>) {
   pieChartData.value = Object.values(data.customer_distribution);
   pieChartLabels.value = Object.keys(data.customer_distribution);
   totalCustomers.value = data.total_customers;
-  apiCalls.value = data.api_calls;
+  apiCalls.value = data.api_calls.current_period_api_calls;
+  percentileApiCallsChange.value = data.api_calls.percent_change;
 }
 
 // Initialize Dashboard
@@ -125,9 +127,19 @@ async function initDashBoard() {
         renderTo: "col-1-row-1A",
         html: `
               <div class="custom_card">
-                <div class="custom_card-header">Total API Calls</div>
+                <div class="custom_card-header">API Calls ${
+                  selectedFilter.value
+                }</div>
                 <span class="custom_card-value">${apiCalls.value}</span>
-                <span class="custom_card-subtext">+10% vs last Month</span>
+                <span class="custom_card-subtext" style="color: ${
+                  percentileApiCallsChange.value >= 0 ? "green" : "red"
+                };">
+                  ${
+                    percentileApiCallsChange.value >= 0
+                      ? `+${percentileApiCallsChange.value}%`
+                      : `${percentileApiCallsChange.value}%`
+                  }
+            ${selectedFilter.value}</span>
             </div>
               `,
       },
@@ -138,7 +150,7 @@ async function initDashBoard() {
               <div class="custom_card">
                 <div class="custom_card-header">Expenses</div>
                 <span class="custom_card-value">1000</span>
-                <span class="custom_card-subtext" style="color": red>-5% vs last Month</span>
+                <span class="custom_card-subtext" style="color: red;">-5% vs last Month</span>
             </div>
               `,
       },
@@ -216,7 +228,6 @@ async function initDashBoard() {
     ],
   });
 }
-
 // Watch for Theme Changes
 watch(isDark, (newVal) => {
   setTheme(newVal);
