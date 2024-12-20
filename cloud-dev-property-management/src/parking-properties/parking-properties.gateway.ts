@@ -33,11 +33,11 @@ export class ParkingPropertiesGateway
 
   constructor(
     private readonly parkingPropertyService: ParkingPropertiesService,
-    @Inject('SIMULATION_PARKING_PROPERTIES_SERVICE')
-    private readonly simParkingPropertyService: ParkingPropertiesService,
+    //@Inject('SIMULATION_PARKING_PROPERTIES_SERVICE')
+    //private readonly simParkingPropertyService: ParkingPropertiesService,
   ) {
     parkingPropertyService.addListener(this);
-    simParkingPropertyService.addListener(this);
+    //simParkingPropertyService.addListener(this);
   }
 
   // TODO: improve performance
@@ -45,15 +45,15 @@ export class ParkingPropertiesGateway
     sender: ParkingPropertiesService,
     parkingProperties: ParkingProperty[],
   ) {
-    if (sender === this.simParkingPropertyService) {
-      parkingProperties = [
-        ...parkingProperties,
-        ...(await this.parkingPropertyService.findAll()).filter(
-          (property) =>
-            parkingProperties.find((p) => p.id === property.id) === undefined,
-        ),
-      ];
-    }
+    // if (sender === this.simParkingPropertyService) {
+    //   parkingProperties = [
+    //     ...parkingProperties,
+    //     ...(await this.parkingPropertyService.findAll()).filter(
+    //       (property) =>
+    //         parkingProperties.find((p) => p.id === property.id) === undefined,
+    //     ),
+    //   ];
+    // }
     this.logger.debug('Parking property changed - Sending to clients');
     this.io.emit('parking-properties', parkingProperties);
   }

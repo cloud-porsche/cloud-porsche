@@ -12,7 +12,6 @@ import { ObjectStorageModule } from './object-storage/object-storage.module';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { ParkingPropertiesModule } from './parking-properties/parking-properties.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ParkingModule } from './parking/parking.module';
 import { LoggingMiddleware } from './pubsub/logging.middleware';
 import { PubSubModule } from './pubsub/pubsub.module';
 
@@ -25,7 +24,6 @@ import { PubSubModule } from './pubsub/pubsub.module';
       envFilePath: ['.env', '.env.production', '.env.development'],
     }),
     ParkingPropertiesModule,
-    ParkingModule,
     PubSubModule,
   ],
   controllers: [AppController],

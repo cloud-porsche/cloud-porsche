@@ -11,14 +11,14 @@ import {
 import { ParkingPropertiesService } from './parking-properties.service';
 import { CreateParkingPropertyDto } from './dto/create-parking-property.dto';
 import { UpdateParkingPropertyDto } from './dto/update-parking-property.dto';
-import { SimulationService } from '../parking/simulation/simulation.service';
 
 @Controller('parking-properties')
 export class ParkingPropertiesController {
   constructor(
     private readonly parkingPropertiesService: ParkingPropertiesService,
-    private readonly simulationService: SimulationService,
-    @Inject('SIMULATION_PARKING_PROPERTIES_SERVICE')
+    // TODO Fix SimulationService later
+    //private readonly simulationService: SimulationService,
+    //@Inject('SIMULATION_PARKING_PROPERTIES_SERVICE')
     private readonly simulationParkingPropertiesService: ParkingPropertiesService,
   ) {}
 
@@ -34,9 +34,9 @@ export class ParkingPropertiesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    if (this.simulationService.getSimulationStatus(id)) {
-      return this.simulationParkingPropertiesService.findOne(id);
-    }
+    // if (this.simulationService.getSimulationStatus(id)) {
+    //   return this.simulationParkingPropertiesService.findOne(id);
+    // }
     return this.parkingPropertiesService.findOne(id);
   }
 
