@@ -1,16 +1,5 @@
 <template>
   <div>
-    <!-- Filter Chips Section -->
-    <!-- <v-chip-group selected-class="text-primary">
-      <v-chip
-        v-for="filter in filters"
-        :key="filter"
-        @click="onFilterClick(filter)"
-      >
-        {{ filter }}
-      </v-chip>
-    </v-chip-group> -->
-
     <!-- Dashboard Container -->
     <div
       id="dashboard_container"
@@ -85,40 +74,35 @@ async function initDashBoard() {
     gui: {
       layouts: [
         {
-          id: "layout-1",
           rows: [
             {
               cells: [
                 {
-                  id: "dashboard-col-0",
+                  id: "col-1-row-1",
                   layout: {
                     rows: [
-                      { cells: [{ id: "dashboard-col-0-row-1" }] },
                       {
+                        id: "col-1-row-1",
                         cells: [
-                          {
-                            id: "dashboard-col-0-row-2A",
-                          },
-                          {
-                            id: "dashboard-col-0-row-2B",
-                            layout: {
-                              rows: [
-                                {
-                                  cells: [
-                                    { id: "dashboard-col-0-row-2B-1" },
-                                    { id: "dashboard-col-0-row-2B-2" },
-                                  ],
-                                },
-                                {
-                                  cells: [
-                                    { id: "dashboard-col-0-row-2B-2A" },
-                                    { id: "dashboard-col-0-row-2B-2B" },
-                                  ],
-                                },
-                              ],
-                            },
-                          },
+                          { id: "col-1-row-1A" },
+                          { id: "col-1-row-1B" },
+                          { id: "col-1-row-1C" },
+                          { id: "col-1-row-1D" },
                         ],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              cells: [
+                {
+                  id: "col-1-row-2", // Second row with Pie and Line charts
+                  layout: {
+                    rows: [
+                      {
+                        cells: [{ id: "col-1-row-2A" }, { id: "col-1-row-2B" }],
                       },
                     ],
                   },
@@ -132,39 +116,57 @@ async function initDashBoard() {
     },
     components: [
       {
-        renderTo: "dashboard-col-0-row-2B-1",
-        type: "KPI",
-        title: "Total API Calls",
-        value: apiCalls.value,
-      },
-      {
-        renderTo: "dashboard-col-0-row-2B-2",
-        type: "KPI",
-        title: "All Time Customers",
-        value: "MOCK",
-      },
-      {
-        renderTo: "dashboard-col-0-row-2B-2A",
         type: "HTML",
-        title: "All Time Customers",
-        elements: [
-          {
-            tagName: "h1",
-            style: {
-              "text-align": "center",
-            },
-            textContent: totalCustomers.value.toString(),
-          },
-        ],
+        renderTo: "col-1-row-1A",
+        html: `
+              <div class="custom_card">
+                <div class="custom_card-header">Total API Calls</div>
+                <span class="custom_card-value">${apiCalls.value}</span>
+                <span class="custom_card-subtext">+10% vs last Month</span>
+            </div>
+              `,
       },
       {
         type: "HTML",
-        renderTo: "dashboard-col-0-row-2B-2B",
-        html: `<p>Total Customers: ${totalCustomers.value}</p>`,
+        renderTo: "col-1-row-1B",
+        html: `
+              <div class="custom_card">
+                <div class="custom_card-header">Expenses</div>
+                <span class="custom_card-value">1000</span>
+                <span class="custom_card-subtext" style="color": red>-5% vs last Month</span>
+            </div>
+              `,
       },
-
       {
-        renderTo: "dashboard-col-0-row-1",
+        type: "HTML",
+        renderTo: "col-1-row-1C",
+        html: `
+              <div class="custom_card">
+                <div class="custom_card-header">MOCK</div>
+                <span class="custom_card-value">696969</span>
+                <span class="custom_card-subtext">This is the description</span>
+            </div>
+              `,
+      },
+      {
+        type: "HTML",
+        renderTo: "col-1-row-1D",
+        html: `
+              <div class="custom_card">
+                <div class="custom_card-header">Total Customers</div>
+                <span class="custom_card-value">${totalCustomers.value}</span>
+                <span class="custom_card-subtext">This is the description</span>
+            </div>
+              `,
+      },
+      {
+        renderTo: "col-1-row-2C",
+        type: "KPI",
+        title: "Total Customers",
+        value: totalCustomers.value,
+      },
+      {
+        renderTo: "col-1-row-2B",
         type: "Highcharts",
         chartOptions: {
           colors: ["#7cb5ec"],
@@ -191,7 +193,7 @@ async function initDashBoard() {
         },
       },
       {
-        renderTo: "dashboard-col-0-row-2A",
+        renderTo: "col-1-row-2A",
         type: "Highcharts",
         chartOptions: {
           chart: {
@@ -247,6 +249,35 @@ onMounted(async () => {
 
 <style>
 @import url("https://code.highcharts.com/dashboards/css/dashboards.css");
-@import url("https://code.highcharts.com/dashboards/css/datagrid.css");
 @import url("https://code.highcharts.com/css/highcharts.css");
+
+#col-1-row-1 {
+  height: 250px;
+}
+
+.custom_card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  align-items: center;
+}
+
+.custom_card-value {
+  font-size: 50px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; /* Ensures it does not exceed the container width */
+  display: block;
+
+  /* Dynamically adjust font size for overflow */
+  font-size: clamp(20px, 5vw, 50px);
+}
+
+.custom_card-subtext {
+  font-size: 14px;
+  color: green;
+}
 </style>
