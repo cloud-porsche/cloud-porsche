@@ -2,17 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { ApiCall } from './entities/api-call.entity';
 import { BaseFirestoreRepository, getRepository } from 'fireorm';
 import { ParkingAction } from './entities/parking-action-entity';
-import { addDays, subDays, startOfDay } from 'date-fns';
+import { addDays, subDays } from 'date-fns';
 import { PubSub } from '@google-cloud/pubsub';
 
 @Injectable()
 export class MonitoringService {
-  public apiCallRepository: BaseFirestoreRepository<ApiCall> =
-    getRepository(ApiCall);
-  public parkingActionRepository: BaseFirestoreRepository<ParkingAction> =
-    getRepository(ParkingAction);
-  public pubSubClient: PubSub;
-  public subscriptionName: string;
+  private apiCallRepository = getRepository(ApiCall);
+  private parkingActionRepository = getRepository(ParkingAction);
+  private pubSubClient: PubSub;
+  private subscriptionName = 'monitoring_subscription';
 
   constructor() {
     this.pubSubClient = new PubSub({
@@ -22,27 +20,22 @@ export class MonitoringService {
         private_key: process.env.FIREBASE_PRIVATE_KEY,
       },
     });
-    this.subscriptionName = 'monitoring_subscription';
-
     this.listenForMessages();
   }
 
-  async listenForMessages() {
+  private async listenForMessages() {
     const subscription = this.pubSubClient.subscription(this.subscriptionName);
 
     subscription.on('message', (message) => {
       const data = JSON.parse(message.data.toString());
       const { messageType, ...d } = data;
 
-      if (messageType == 'parking') {
-        const parkingAction = new ParkingAction(d);
-        this.parkingActionRepository.create(parkingAction);
-        message.ack();
+      if (messageType === 'parking') {
+        this.parkingActionRepository.create(new ParkingAction(d));
       } else {
-        const apiCall = new ApiCall(d);
-        this.apiCallRepository.create(apiCall);
-        message.ack();
+        this.apiCallRepository.create(new ApiCall(d));
       }
+      message.ack();
     });
 
     subscription.on('error', (error) => {
@@ -53,161 +46,108 @@ export class MonitoringService {
       `Listening for messages on subscription: ${this.subscriptionName}`,
     );
   }
-  async getAlltimeCustomers() {
-    const parkingActions = await this.parkingActionRepository.find();
-    const enterActions = parkingActions.filter(
-      (action) => action.action === 'enter',
-    );
 
-    return enterActions.length;
-  }
-
-  async getApiCalls(timeframe: string) {
+  private getStartDate(timeframe: string): Date {
     const now = new Date();
-    let startDate: Date;
-
     switch (timeframe) {
       case 'total':
-        startDate = subDays(now, 365 * 3);
-        break;
+        return subDays(now, 365 * 3);
       case 'yearly':
-        startDate = subDays(now, 365);
-        break;
+        return subDays(now, 365);
       case 'monthly':
-        startDate = subDays(now, 31);
-        break;
+        return subDays(now, 30);
       case 'weekly':
-        startDate = subDays(now, 7);
-        break;
+        return subDays(now, 7);
       default:
         throw new Error(
           'Invalid timeframe. Use total, yearly, monthly, or weekly.',
         );
     }
+  }
 
+  async getAlltimeCustomers(): Promise<number> {
+    const parkingActions = await this.parkingActionRepository.find();
+    return parkingActions.filter((action) => action.action === 'enter').length;
+  }
+
+  async getApiCalls(timeframe: string): Promise<number> {
+    const startDate = this.getStartDate(timeframe);
     const apiCalls = await this.apiCallRepository.find();
-
-    const total = apiCalls.filter(
+    return apiCalls.filter(
       (apiCall) => new Date(apiCall.timestamp) >= startDate,
     ).length;
-    return total;
   }
 
-  /**
-   * Gets the distribution of customers per propert
-y for a given timeframe
-   * @param timeframe timeframe to get customer data for
-   */
-  async getCustomerDistribution(timeframe: string) {
-    const now = new Date();
-
-    let startDate: Date;
-    switch (timeframe) {
-      case 'total':
-        startDate = subDays(now, 365 * 3);
-        break;
-      case 'yearly':
-        startDate = subDays(now, 365);
-        break;
-      case 'monthly':
-        startDate = subDays(now, 30);
-        break;
-      case 'weekly':
-        startDate = subDays(now, 7);
-        break;
-      default:
-        throw new Error(
-          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
-        );
-    }
-
+  async getCustomerDistribution(
+    timeframe: string,
+  ): Promise<Record<string, number>> {
+    const startDate = this.getStartDate(timeframe);
     const parkingActions = await this.parkingActionRepository.find();
     const enterActions = parkingActions.filter(
       (action) =>
         action.action === 'enter' && new Date(action.timestamp) >= startDate,
     );
 
-    const propertyDistribution = {};
-
-    enterActions.forEach((action) => {
-      if (!propertyDistribution[action.propertyName]) {
-        propertyDistribution[action.propertyName] = 0;
-      }
-      propertyDistribution[action.propertyName] += 1;
-    });
-
-    return propertyDistribution;
+    return enterActions.reduce(
+      (distribution, action) => {
+        distribution[action.propertyName] =
+          (distribution[action.propertyName] || 0) + 1;
+        return distribution;
+      },
+      {} as Record<string, number>,
+    );
   }
 
-  async getCustomerData(timeframe: string) {
-    const now = new Date();
-
-    let startDate: Date;
-    switch (timeframe) {
-      case 'total':
-        startDate = subDays(now, 365 * 3);
-        break;
-      case 'yearly':
-        startDate = subDays(now, 365);
-        break;
-      case 'monthly':
-        startDate = subDays(now, 31);
-        break;
-      case 'weekly':
-        startDate = subDays(now, 7);
-        break;
-      default:
-        throw new Error(
-          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
-        );
-    }
-
+  async getCustomerData(
+    timeframe: string,
+  ): Promise<{ data: Record<string, number> }> {
+    const startDate = this.getStartDate(timeframe);
     const parkingActions = await this.parkingActionRepository.find();
     const enterActions = parkingActions.filter(
       (action) => action.action === 'enter',
     );
-    const dateRange = this.generateDateRange(startDate, now);
+    const dateRange = this.generateDateRange(startDate, new Date());
 
-    return this.aggregateByDay(enterActions, dateRange);
+    return { data: this.aggregateByDay(enterActions, dateRange) };
   }
 
   private generateDateRange(startDate: Date, endDate: Date): string[] {
     const range: string[] = [];
     let currentDate = startDate;
-
     while (currentDate <= endDate) {
       range.push(currentDate.toISOString().slice(0, 10)); // Format: YYYY-MM-DD
       currentDate = addDays(currentDate, 1);
     }
-
     return range;
   }
 
-  private aggregateByDay(actions: ParkingAction[], daysInRange: string[]) {
-    const results = {};
+  private aggregateByDay(
+    actions: ParkingAction[],
+    daysInRange: string[],
+  ): Record<string, number> {
+    const results = daysInRange.reduce(
+      (acc, day) => ({ ...acc, [day]: 0 }),
+      {},
+    );
 
-    // Initialize all days with 0
-    daysInRange.forEach((day) => {
-      results[day] = 0;
-    });
-
-    // Increment counts for each action
     actions.forEach((action) => {
       const actionDate = action.timestamp.toString().slice(0, 10);
-
       if (results[actionDate] !== undefined) {
         results[actionDate] += 1;
       }
     });
 
-    return { data: results };
+    return results;
   }
 
   async getAllData(timeframe: string) {
-    const customers = await this.getCustomerData(timeframe);
-    const customerDistribution = await this.getCustomerDistribution(timeframe);
-    const totalCustomers = await this.getAlltimeCustomers();
-    const apiCalls = await this.getApiCalls(timeframe);
+    const [customers, customerDistribution, totalCustomers, apiCalls] =
+      await Promise.all([
+        this.getCustomerData(timeframe),
+        this.getCustomerDistribution(timeframe),
+        this.getAlltimeCustomers(),
+        this.getApiCalls(timeframe),
+      ]);
 
     return {
       data: {
