@@ -29,7 +29,7 @@ services:
     image: cloud-porsche-management
     build:
       context: .
-      dockerfile: ./cloud-dev-property-management/Dockerfile
+      dockerfile: ./cloud-dev-property-management/Dockerfile-local
     ports:
       - "8080:8080"
     environment:

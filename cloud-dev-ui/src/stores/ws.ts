@@ -4,7 +4,11 @@ import { usePropertyStore } from "@/stores/properties";
 import { propertyManagementUrl, useAppStore } from "@/stores/app";
 
 export function initWs() {
-  const socket = io(propertyManagementUrl);
+  const path = propertyManagementUrl.split("/").at(3);
+  console.debug("WS Path: ", path);
+  const socket = io(propertyManagementUrl.replace(path, ""), {
+    path: (path ? "/" + path : "") + "/socket.io/",
+  });
 
   socket.on("connect", function () {
     console.info("WS Connected");

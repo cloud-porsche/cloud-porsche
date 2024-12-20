@@ -1,0 +1,38 @@
+# Default values for default.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+images:
+  propertyManagement: cloud-porsche/property-management:latest
+
+ingress:
+  sslRedirect: false
+  proxyReadTimeout: 3600
+  proxySendTimeout: 3600
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+#This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled:
+    - property-management
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+envs:
+  FIREBASE_OVERWRITE_CREDENTIALS: true
+  CORS_ORIGIN: localhost
+  FIREBASE_STORAGE_BUCKET: cloud-porsche-staging
+  FIRESTORE_DB: staging
+
+propertyManagement:
+  port: 8080
+  livelinessProbe: true
