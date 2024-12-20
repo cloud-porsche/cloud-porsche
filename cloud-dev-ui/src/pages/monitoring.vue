@@ -1,11 +1,22 @@
 <template>
   <div>
+    <!-- Header Section -->
+    <div class="header-container">
+      <h1 class="dashboard-title">Cloud Porsche Management Dashboard</h1>
+
+      <!-- v-select for Filter -->
+      <div class="filter-select">
+        <v-select
+          v-model="selectedFilter"
+          :items="filters"
+          label="Select Timeframe"
+          @update:model-value="onFilterChange"
+        />
+      </div>
+    </div>
+
     <!-- Dashboard Container -->
-    <div
-      id="dashboard_container"
-      class="highcharts-light"
-      style="height: 100%"
-    ></div>
+    <div id="dashboard_container" style="height: 100%"></div>
   </div>
 </template>
 
@@ -65,12 +76,6 @@ function processData(data: Record<string, any>) {
 // Initialize Dashboard
 async function initDashBoard() {
   Dashboards.board("dashboard_container", {
-    editMode: {
-      enabled: true,
-      contextMenu: {
-        enabled: true,
-      },
-    },
     gui: {
       layouts: [
         {
@@ -160,12 +165,6 @@ async function initDashBoard() {
               `,
       },
       {
-        renderTo: "col-1-row-2C",
-        type: "KPI",
-        title: "Total Customers",
-        value: totalCustomers.value,
-      },
-      {
         renderTo: "col-1-row-2B",
         type: "Highcharts",
         chartOptions: {
@@ -230,10 +229,9 @@ function setTheme(isDark?: boolean) {
   )!.className = `highcharts-${theme}`;
 }
 
-// Handle Filter Click to Fetch Data and Update Dashboard
-function onFilterClick(filter: string) {
-  selectedFilter.value = filter;
-  fetchData(filter).then(() => {
+// Handle Filter Change to Fetch Data and Update Dashboard
+function onFilterChange() {
+  fetchData(selectedFilter.value).then(() => {
     // After data fetch, reinitialize the dashboard with new data
     initDashBoard();
   });
@@ -250,6 +248,10 @@ onMounted(async () => {
 <style>
 @import url("https://code.highcharts.com/dashboards/css/dashboards.css");
 @import url("https://code.highcharts.com/css/highcharts.css");
+
+.highcharts-dashboards-wrapper {
+  background-color: transparent;
+}
 
 #col-1-row-1 {
   height: 250px;
@@ -279,5 +281,26 @@ onMounted(async () => {
 .custom_card-subtext {
   font-size: 14px;
   color: green;
+}
+
+/* Header Styling */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 20px;
+}
+
+.dashboard-title {
+  font-size: 24px;
+  margin-right: 20px;
+  font-weight: bold;
+  margin-bottom: auto;
+}
+
+.filter-select {
+  width: 30%;
+  min-width: 200px;
 }
 </style>
