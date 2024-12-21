@@ -49,7 +49,7 @@ export const usePropertyStore = defineStore("properties", {
           await get("/v1/parking-properties/" + propertyId)
         ).json();
         this.$state.properties = this.$state.properties.map((property) =>
-          property.id === propertyId ? newProperty : property
+          property.id === propertyId ? newProperty : property,
         );
       } catch (error) {
         this.$state.loading = false;
@@ -63,7 +63,7 @@ export const usePropertyStore = defineStore("properties", {
       this.$state.properties = properties;
     },
     async addProperty(
-      property: Omit<IParkingProperty, "id" | "customers" | "parkingSpots">
+      property: Omit<IParkingProperty, "id" | "customers" | "parkingSpots">,
     ) {
       this.$state.loading = true;
       try {
@@ -82,7 +82,7 @@ export const usePropertyStore = defineStore("properties", {
       try {
         await del(`/v1/parking-properties/${propertyId}`);
         this.$state.properties = this.$state.properties.filter(
-          (property) => property.id !== propertyId
+          (property) => property.id !== propertyId,
         );
       } catch (error) {
         this.$state.loading = false;
@@ -95,7 +95,12 @@ export const usePropertyStore = defineStore("properties", {
     async setSimulationActive(propertyId: string) {
       this.$state.loading = true;
       try {
-        await post(`/v1/simulation/${propertyId}/start`);
+        await post(
+          `/v1/simulation/${propertyId}/start`,
+          undefined,
+          undefined,
+          "parkingManagement",
+        );
       } catch (error) {
         this.$state.loading = false;
         this.$state.error = error;
@@ -108,7 +113,12 @@ export const usePropertyStore = defineStore("properties", {
     async setSimulationInactive(propertyId: string) {
       this.$state.loading = true;
       try {
-        await post(`/v1/simulation/${propertyId}/stop`);
+        await post(
+          `/v1/simulation/${propertyId}/stop`,
+          undefined,
+          undefined,
+          "parkingManagement",
+        );
       } catch (error) {
         this.$state.loading = false;
         this.$state.error = error;
@@ -122,7 +132,11 @@ export const usePropertyStore = defineStore("properties", {
       this.$state.loading = true;
       try {
         const isRunning =
-          (await get(`/v1/simulation/${propertyId}/status`).json()) === "true";
+          (await get(
+            `/v1/simulation/${propertyId}/status`,
+            undefined,
+            "parkingManagement",
+          ).json()) === "true";
         if (isRunning && !this.$state.simulationActive.includes(propertyId)) {
           this.$state.simulationActive = [
             ...this.$state.simulationActive,
@@ -130,7 +144,7 @@ export const usePropertyStore = defineStore("properties", {
           ];
         } else if (!isRunning) {
           this.$state.simulationActive = this.$state.simulationActive.filter(
-            (id) => id !== propertyId
+            (id) => id !== propertyId,
           );
         }
       } catch (error) {
