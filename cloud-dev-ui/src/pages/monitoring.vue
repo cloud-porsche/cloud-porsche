@@ -3,13 +3,13 @@
     <!-- Header Section -->
     <div class="header-container">
       <h1 class="dashboard-title">Cloud Porsche Management Dashboard</h1>
-
-      <!-- v-select for Filter -->
       <div class="filter-select">
         <v-select
           v-model="selectedFilter"
           :items="filters"
           label="Select Timeframe"
+          item-value="value"
+          item-title="label"
           @update:model-value="onFilterChange"
         />
       </div>
@@ -29,30 +29,32 @@ import { useAppStore } from "@/stores/app";
 
 // Highcharts Configuration
 Highcharts.setOptions({
-  chart: {
-    styledMode: true,
-  },
+  chart: { styledMode: true },
 });
 
 // Reactive Variables
-const categories = ref<string[]>([]); // For the x-axis (timeframe)
-const lineChartData = ref<number[]>([]); // For the line chart (customers)
-const pieChartData = ref<number[]>([0, 0, 0, 0]); // Mock initial pie chart data
-const pieChartLabels = ref<string[]>([]); // Labels for Pie Chart
-const customers = ref(0); // Total Customers
-const percentileCustomersChange = ref(0);
-const apiCalls = ref(0);
-const percentileApiCallsChange = ref(0);
-const parkingIncome = ref(0);
-const percentileParkingIncomeChange = ref(0);
+const categories = ref<string[]>([]);
+const lineChartData = ref<number[]>([]);
+const pieChartData = ref<number[]>([0, 0, 0, 0]);
+const pieChartLabels = ref<string[]>([]);
+const stats = ref({
+  customers: { value: 0, percentChange: 0 },
+  apiCalls: { value: 0, percentChange: 0 },
+  parkingIncome: { value: 0, percentChange: 0 },
+});
 
 // App Store for Theme
 const appStore = useAppStore();
 const isDark = computed(() => appStore.isDark);
 
 // Filter Options
-const filters = ref(["weekly", "monthly", "yearly", "total"]);
-const selectedFilter = ref("weekly");
+const filters = [
+  { value: "weekly", label: "last week" },
+  { value: "monthly", label: "last month" },
+  { value: "yearly", label: "last year" },
+  { value: "total", label: "total" },
+];
+const selectedFilter = ref(filters[0]);
 
 // Fetch Data Function
 async function fetchData(timeframe: string) {
@@ -73,12 +75,41 @@ function processData(data: Record<string, any>) {
   lineChartData.value = Object.values(data.customers);
   pieChartData.value = Object.values(data.customer_distribution);
   pieChartLabels.value = Object.keys(data.customer_distribution);
-  customers.value = data.customer_count_change.current_period_customers;
-  percentileCustomersChange.value = data.customer_count_change.percent_change;
-  apiCalls.value = data.api_calls.current_period_api_calls;
-  percentileApiCallsChange.value = data.api_calls.percent_change;
-  parkingIncome.value = data.parking_income.current_period_income;
-  percentileParkingIncomeChange.value = data.parking_income.percent_change;
+  stats.value = {
+    customers: {
+      value: data.customer_count_change.current_period_customers,
+      percentChange: data.customer_count_change.percent_change,
+    },
+    apiCalls: {
+      value: data.api_calls.current_period_api_calls,
+      percentChange: data.api_calls.percent_change,
+    },
+    parkingIncome: {
+      value: data.parking_income.current_period_income,
+      percentChange: data.parking_income.percent_change,
+    },
+  };
+}
+
+// Create Custom HTML for Cards
+function createCardHTML(title: string, value: number, percentChange: number) {
+  const color = percentChange >= 0 ? "green" : "red";
+  const changeText =
+    percentChange >= 0
+      ? `+${percentChange.toFixed(2)}%`
+      : `${percentChange.toFixed(2)}%`;
+
+  return `
+    <div class="custom_card">
+      <div class="custom_card-header">${title}</div>
+      <span class="custom_card-value">${
+        value >= 1 ? value.toFixed(0) : value.toFixed(2)
+      }</span>
+      <span class="custom_card-subtext" style="color: ${color};">
+        ${changeText} vs ${selectedFilter.value.label}
+      </span>
+    </div>
+  `;
 }
 
 // Initialize Dashboard
@@ -91,16 +122,16 @@ async function initDashBoard() {
             {
               cells: [
                 {
-                  id: "col-1-row-1",
+                  id: "row-1",
                   layout: {
                     rows: [
                       {
-                        id: "col-1-row-1",
+                        id: "cards-row",
                         cells: [
-                          { id: "col-1-row-1A" },
-                          { id: "col-1-row-1B" },
-                          { id: "col-1-row-1C" },
-                          { id: "col-1-row-1D" },
+                          { id: "card-api-calls" },
+                          { id: "card-customers" },
+                          { id: "card-income" },
+                          { id: "card-expenses" },
                         ],
                       },
                     ],
@@ -111,11 +142,11 @@ async function initDashBoard() {
             {
               cells: [
                 {
-                  id: "col-1-row-2", // Second row with Pie and Line charts
+                  id: "charts-row",
                   layout: {
                     rows: [
                       {
-                        cells: [{ id: "col-1-row-2A" }, { id: "col-1-row-2B" }],
+                        cells: [{ id: "chart-pie" }, { id: "chart-line" }],
                       },
                     ],
                   },
@@ -130,115 +161,55 @@ async function initDashBoard() {
     components: [
       {
         type: "HTML",
-        renderTo: "col-1-row-1A",
-        html: `
-              <div class="custom_card">
-                <div class="custom_card-header">API Calls ${
-                  selectedFilter.value
-                }</div>
-                <span class="custom_card-value">${apiCalls.value}</span>
-                <span class="custom_card-subtext" style="color: ${
-                  percentileApiCallsChange.value >= 0 ? "green" : "red"
-                };">
-                  ${
-                    percentileApiCallsChange.value >= 0
-                      ? `+${percentileApiCallsChange.value.toFixed(2)}%`
-                      : `${percentileApiCallsChange.value.toFixed(2)}%`
-                  } vs last 
-            ${selectedFilter.value}</span>
-            </div>
-              `,
+        renderTo: "card-api-calls",
+        html: createCardHTML(
+          "API Calls",
+          stats.value.apiCalls.value,
+          stats.value.apiCalls.percentChange
+        ),
       },
       {
         type: "HTML",
-        renderTo: "col-1-row-1B",
-        html: `
-              <div class="custom_card">
-                <div class="custom_card-header">Customers ${
-                  selectedFilter.value
-                }</div>
-                <span class="custom_card-value">${customers.value}</span>
-                <span class="custom_card-subtext" style="color: ${
-                  percentileCustomersChange.value >= 0 ? "green" : "red"
-                };">
-                  ${
-                    percentileCustomersChange.value >= 0
-                      ? `+${percentileCustomersChange.value.toFixed(2)}%`
-                      : `${percentileCustomersChange.value.toFixed(2)}%`
-                  } vs last 
-            ${selectedFilter.value}</span>
-            </div>
-              `,
+        renderTo: "card-customers",
+        html: createCardHTML(
+          "Customers",
+          stats.value.customers.value,
+          stats.value.customers.percentChange
+        ),
       },
       {
         type: "HTML",
-        renderTo: "col-1-row-1C",
-        html: `
-              <div class="custom_card">
-                <div class="custom_card-header">Income ${
-                  selectedFilter.value
-                }</div>
-                <span class="custom_card-value">${parkingIncome.value}</span>
-                <span class="custom_card-subtext" style="color: ${
-                  percentileParkingIncomeChange.value >= 0 ? "green" : "red"
-                };">
-                  ${
-                    percentileParkingIncomeChange.value >= 0
-                      ? `+${percentileCustomersChange.value.toFixed(2)}%`
-                      : `${percentileCustomersChange.value.toFixed(2)}%`
-                  } vs last 
-            ${selectedFilter.value}</span>
-            </div>
-              `,
+        renderTo: "card-income",
+        html: createCardHTML(
+          "Income",
+          stats.value.parkingIncome.value,
+          stats.value.parkingIncome.percentChange
+        ),
       },
       {
         type: "HTML",
-        renderTo: "col-1-row-1D",
-        html: `
-              <div class="custom_card">
-                <div class="custom_card-header">Expenses</div>
-                <span class="custom_card-value">1000</span>
-                <span class="custom_card-subtext" style="color: red;">-5% vs last Month</span>
-            </div>
-              `,
+        renderTo: "card-expenses",
+        html: createCardHTML("Expenses", 1000, -20),
       },
       {
-        renderTo: "col-1-row-2B",
         type: "Highcharts",
+        renderTo: "chart-line",
         chartOptions: {
-          colors: ["#7cb5ec"],
-          chart: {
-            type: "line",
-          },
-          title: {
-            text: "Customer Trends",
-          },
-          xAxis: {
-            categories: categories.value,
-            title: { text: "Timeframe" },
-          },
-          yAxis: {
-            title: { text: "Number of Customers" },
-          },
+          chart: { type: "line" },
+          title: { text: "Customer Trends" },
+          xAxis: { categories: categories.value, title: { text: "Timeframe" } },
+          yAxis: { title: { text: "Number of Customers" } },
           series: [
-            {
-              type: "line",
-              name: "Customers",
-              data: lineChartData.value,
-            },
+            { type: "line", name: "Customers", data: lineChartData.value },
           ],
         },
       },
       {
-        renderTo: "col-1-row-2A",
         type: "Highcharts",
+        renderTo: "chart-pie",
         chartOptions: {
-          chart: {
-            type: "pie",
-          },
-          title: {
-            text: "Customer Distribution",
-          },
+          chart: { type: "pie" },
+          title: { text: "Customer Distribution" },
           series: [
             {
               type: "pie",
@@ -254,31 +225,26 @@ async function initDashBoard() {
     ],
   });
 }
+
 // Watch for Theme Changes
 watch(isDark, (newVal) => {
-  setTheme(newVal);
+  document.getElementById("dashboard_container")!.className = `highcharts-${
+    newVal ? "dark" : "light"
+  }`;
 });
 
-function setTheme(isDark?: boolean) {
-  const theme = isDark ? "dark" : "light";
-  document.getElementById(
-    "dashboard_container"
-  )!.className = `highcharts-${theme}`;
-}
-
-// Handle Filter Change to Fetch Data and Update Dashboard
+// Handle Filter Change
 function onFilterChange() {
-  fetchData(selectedFilter.value).then(() => {
-    // After data fetch, reinitialize the dashboard with new data
-    initDashBoard();
-  });
+  fetchData(selectedFilter.value.value).then(initDashBoard);
 }
 
 // Fetch Data and Initialize Dashboard on Mount
 onMounted(async () => {
-  await fetchData(selectedFilter.value); // Default timeframe
-  await initDashBoard();
-  setTheme(isDark.value);
+  await fetchData(selectedFilter.value.value);
+  initDashBoard();
+  document.getElementById("dashboard_container")!.className = `highcharts-${
+    isDark.value ? "dark" : "light"
+  }`;
 });
 </script>
 
@@ -290,7 +256,7 @@ onMounted(async () => {
   background-color: transparent;
 }
 
-#col-1-row-1 {
+#cards-row {
   height: 250px;
 }
 
@@ -304,36 +270,26 @@ onMounted(async () => {
 }
 
 .custom_card-value {
-  font-size: 50px;
+  font-size: clamp(20px, 5vw, 50px);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%; /* Ensures it does not exceed the container width */
-  display: block;
-
-  /* Dynamically adjust font size for overflow */
-  font-size: clamp(20px, 5vw, 50px);
+  max-width: 100%;
 }
 
 .custom_card-subtext {
   font-size: 14px;
-  color: green;
 }
 
-/* Header Styling */
 .header-container {
   display: flex;
   justify-content: space-between;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 20px;
+  padding: 20px;
 }
 
 .dashboard-title {
   font-size: 24px;
-  margin-right: 20px;
   font-weight: bold;
-  margin-bottom: auto;
 }
 
 .filter-select {
