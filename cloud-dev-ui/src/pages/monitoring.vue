@@ -1,16 +1,18 @@
 <template>
   <div>
     <!-- Header Section -->
-    <div class="header-container">
-      <h1 class="dashboard-title">Cloud Porsche Management Dashboard</h1>
-      <div class="filter-select">
-        <v-select
-          v-model="selectedFilter"
-          :items="filters"
-          label="Select Timeframe"
-          item-title="label"
-          @update:model-value="onFilterChange"
-        />
+    <div :class="['header', isDark ? 'dark-mode' : 'light-mode']">
+      <div class="header-container">
+        <h1 class="dashboard-title">Cloud Porsche Management Dashboard</h1>
+        <div class="filter-select">
+          <v-select
+            v-model="selectedFilter"
+            :items="filters"
+            label="Select Timeframe"
+            item-title="label"
+            @update:model-value="onFilterChange"
+          />
+        </div>
       </div>
     </div>
 
@@ -359,10 +361,24 @@ onMounted(async () => {
   font-size: 14px;
 }
 
+.header {
+  margin: 8px 20px 0px 20px;
+  border-radius: 3px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header.light-mode {
+  background-color: #ffffff;
+}
+
+.header.dark-mode {
+  background-color: #2b2b2b;
+}
+
 .header-container {
   display: flex;
   justify-content: space-between;
-  padding: 8px 16px 0 16px;
+  padding: 8px 8px 8px 8px;
 }
 
 .dashboard-title {
