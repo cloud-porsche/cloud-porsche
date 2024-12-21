@@ -36,6 +36,7 @@ const categories = ref<string[]>([]);
 const lineChartData = ref<number[]>([]);
 const pieChartData = ref<number[]>([0, 0, 0, 0]);
 const pieChartLabels = ref<string[]>([]);
+const avgUtilizationData = ref<any>({});
 const stats = ref({
   customers: { value: 0, percentChange: 0 },
   apiCalls: { value: 0, percentChange: 0 },
@@ -74,6 +75,7 @@ function processData(data: Record<string, any>) {
   lineChartData.value = Object.values(data.customers);
   pieChartData.value = Object.values(data.customer_distribution);
   pieChartLabels.value = Object.keys(data.customer_distribution);
+  avgUtilizationData.value = data.avg_utilization;
   stats.value = {
     customers: {
       value: data.customer_count_change.current_period_customers,
@@ -143,11 +145,25 @@ async function initDashBoard() {
             {
               cells: [
                 {
-                  id: "charts-row",
+                  id: "row-2",
                   layout: {
                     rows: [
                       {
                         cells: [{ id: "chart-pie" }, { id: "chart-line" }],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              cells: [
+                {
+                  id: "row-3",
+                  layout: {
+                    rows: [
+                      {
+                        cells: [{ id: "row-3A" }],
                       },
                     ],
                   },
@@ -221,6 +237,24 @@ async function initDashBoard() {
               })),
             },
           ],
+        },
+      },
+      {
+        type: "Highcharts",
+        renderTo: "row-3A",
+        chartOptions: {
+          chart: { type: "line" },
+          title: { text: "Average Daily Utilization" },
+          xAxis: {
+            categories: Object.keys(avgUtilizationData.value["Test Lars"]),
+            title: { text: "Date" },
+          },
+          yAxis: { title: { text: "Utilization in %" } },
+          series: Object.keys(avgUtilizationData.value).map((key) => ({
+            type: "line",
+            name: key,
+            data: Object.values(avgUtilizationData.value[key]),
+          })),
         },
       },
     ],

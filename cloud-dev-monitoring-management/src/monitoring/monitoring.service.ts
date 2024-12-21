@@ -200,9 +200,58 @@ export class MonitoringService {
   async getDailyAvgUtilization(
     timeframe: string,
     parkingActions: ParkingAction[],
-  ) {
-    const { currentStart, currentEnd, previousStart, previousEnd } =
-      this.calculateDateRanges(timeframe);
+  ): Promise<Record<string, Record<string, number>>> {
+    const { currentStart, currentEnd } = this.calculateDateRanges(timeframe);
+
+    const dateRange = this.generateDateRange(currentStart, currentEnd);
+
+    const avgUtilization: Record<string, Record<string, number>> = {};
+
+    const freeActions = parkingActions.filter(
+      (action) => action.action === 'occupy',
+    );
+    const groupedActions = freeActions.reduce(
+      (acc, action) => {
+        const actionDate = action.timestamp.toString().slice(0, 10);
+        if (!acc[action.propertyName]) {
+          acc[action.propertyName] = {};
+        }
+        if (!acc[action.propertyName][actionDate]) {
+          acc[action.propertyName][actionDate] = [];
+        }
+        acc[action.propertyName][actionDate].push(action);
+        return acc;
+      },
+      {} as Record<string, Record<string, ParkingAction[]>>,
+    );
+
+    dateRange.forEach((day) => {
+      for (const propertyName of Object.keys(groupedActions)) {
+        if (!avgUtilization[propertyName]) {
+          avgUtilization[propertyName] = {};
+        }
+        const actionsForDay = groupedActions[propertyName][day] || [];
+
+        console.log(actionsForDay);
+        const avgForDay =
+          actionsForDay.length > 0
+            ? actionsForDay.reduce(
+                (sum, action) => sum + action.currentUtilization,
+                0,
+              ) / actionsForDay.length
+            : 0;
+
+        avgUtilization[propertyName][day] = avgForDay;
+      }
+
+      for (const propertyName of Object.keys(avgUtilization)) {
+        if (!avgUtilization[propertyName][day]) {
+          avgUtilization[propertyName][day] = 0;
+        }
+      }
+    });
+
+    return avgUtilization;
   }
 
   private generateDateRange(startDate: Date, endDate: Date): string[] {
@@ -240,12 +289,14 @@ export class MonitoringService {
       apiCalls,
       customerCount,
       parkingIncome,
+      avgUtilization,
     ] = await Promise.all([
       this.getCustomerData(timeframe, allParkingActions),
       this.getCustomerDistribution(timeframe, allParkingActions),
       this.getApiCalls(timeframe, allApiCalls),
       this.getCustomerCount(timeframe, allParkingActions),
       this.getParkingIncome(timeframe, allParkingActions),
+      this.getDailyAvgUtilization(timeframe, allParkingActions),
     ]);
 
     return {
@@ -255,6 +306,7 @@ export class MonitoringService {
         api_calls: apiCalls,
         customer_count_change: customerCount,
         parking_income: parkingIncome,
+        avg_utilization: avgUtilization,
       },
     };
   }

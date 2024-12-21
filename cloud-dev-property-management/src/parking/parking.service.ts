@@ -76,7 +76,6 @@ export class ParkingService {
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
-    console.log(spot);
     if (!spot) throw new Error('Spot not found');
     if (
       [ParkingSpotState.OCCUPIED, ParkingSpotState.OUT_OF_ORDER].includes(
@@ -114,7 +113,6 @@ export class ParkingService {
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
-    console.log(spot);
     if (!spot) throw new Error('Spot not found');
     if (spot.state !== ParkingSpotState.OCCUPIED)
       throw new Error('Spot not occupied');
@@ -194,9 +192,9 @@ export class ParkingService {
   }
 
   private getUtilization(parkingProperty: ParkingProperty) {
-    const totalSpots = parkingProperty.layers.flatMap(
-      (l) => l.parkingSpots,
-    ).length;
+    const totalSpots = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => !s.placeholder).length;
     const occupiedSpots = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .filter((s) => s.state === ParkingSpotState.OCCUPIED).length;
