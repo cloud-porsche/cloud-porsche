@@ -15,7 +15,7 @@
     </div>
 
     <!-- Dashboard Container -->
-    <div id="dashboard_container" style="height: 100%"></div>
+    <div id="dashboard_container"></div>
   </div>
 </template>
 
@@ -129,12 +129,30 @@ async function initDashBoard() {
                   layout: {
                     rows: [
                       {
-                        id: "cards-row",
                         cells: [
-                          { id: "card-api-calls" },
-                          { id: "card-customers" },
-                          { id: "card-income" },
-                          { id: "card-expenses" },
+                          {
+                            id: "x",
+                            layout: {
+                              rows: [
+                                {
+                                  id: "row-1-1A",
+                                  cells: [
+                                    { id: "card-api-calls" },
+                                    { id: "card-customers" },
+                                  ],
+                                },
+                                {
+                                  id: "row-1-1B",
+                                  cells: [
+                                    { id: "card-income" },
+                                    { id: "card-expenses" },
+                                  ],
+                                },
+                              ],
+                            },
+                          },
+                          { id: "chart-pie" },
+                          { id: "chart-line" },
                         ],
                       },
                     ],
@@ -143,30 +161,13 @@ async function initDashBoard() {
               ],
             },
             {
+              id: "row-2",
               cells: [
                 {
-                  id: "row-2",
-                  layout: {
-                    rows: [
-                      {
-                        cells: [{ id: "chart-pie" }, { id: "chart-line" }],
-                      },
-                    ],
-                  },
+                  id: "row-2A",
                 },
-              ],
-            },
-            {
-              cells: [
                 {
-                  id: "row-3",
-                  layout: {
-                    rows: [
-                      {
-                        cells: [{ id: "row-3A" }],
-                      },
-                    ],
-                  },
+                  id: "row-2B",
                 },
               ],
             },
@@ -227,6 +228,11 @@ async function initDashBoard() {
         chartOptions: {
           chart: { type: "pie" },
           title: { text: "Customer Distribution" },
+          plotOptions: {
+            pie: {
+              innerSize: "50%",
+            },
+          },
           series: [
             {
               type: "pie",
@@ -241,7 +247,7 @@ async function initDashBoard() {
       },
       {
         type: "Highcharts",
-        renderTo: "row-3A",
+        renderTo: "row-2A",
         chartOptions: {
           chart: { type: "line" },
           title: { text: "Average Daily Utilization" },
@@ -255,6 +261,26 @@ async function initDashBoard() {
             name: key,
             data: Object.values(avgUtilizationData.value[key]),
           })),
+        },
+      },
+      {
+        type: "Highcharts",
+        renderTo: "row-2B",
+        chartOptions: {
+          chart: { type: "line" },
+          title: { text: "MOCK" },
+          xAxis: {
+            categories: Object.keys(avgUtilizationData),
+            title: { text: "Date" },
+          },
+          yAxis: { title: { text: "MOCK" } },
+          series: [
+            {
+              type: "line",
+              name: "MOCK",
+              data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            },
+          ],
         },
       },
     ],
@@ -289,10 +315,20 @@ onMounted(async () => {
 
 .highcharts-dashboards-wrapper {
   background-color: transparent;
+  padding-top: 0;
+  height: 100%;
 }
 
-#cards-row {
-  height: 250px;
+#card-customers,
+#card-api-calls,
+#card-income,
+#card-expenses {
+  height: 220px;
+}
+
+#row-2A,
+#row-2B {
+  height: 300px;
 }
 
 .custom_card {
@@ -319,7 +355,7 @@ onMounted(async () => {
 .header-container {
   display: flex;
   justify-content: space-between;
-  padding: 20px;
+  padding: 8px 16px 0 16px;
 }
 
 .dashboard-title {
