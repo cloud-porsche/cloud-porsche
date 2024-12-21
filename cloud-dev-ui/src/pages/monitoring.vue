@@ -8,7 +8,6 @@
           v-model="selectedFilter"
           :items="filters"
           label="Select Timeframe"
-          item-value="value"
           item-title="label"
           @update:model-value="onFilterChange"
         />
@@ -54,7 +53,7 @@ const filters = [
   { value: "yearly", label: "last year" },
   { value: "total", label: "total" },
 ];
-const selectedFilter = ref(filters[0]);
+const selectedFilter = ref("weekly");
 
 // Fetch Data Function
 async function fetchData(timeframe: string) {
@@ -106,7 +105,9 @@ function createCardHTML(title: string, value: number, percentChange: number) {
         value >= 1 ? value.toFixed(0) : value.toFixed(2)
       }</span>
       <span class="custom_card-subtext" style="color: ${color};">
-        ${changeText} vs ${selectedFilter.value.label}
+        ${changeText} vs ${
+    filters.find((f) => f.value === selectedFilter.value)?.label
+  }
       </span>
     </div>
   `;
@@ -235,12 +236,12 @@ watch(isDark, (newVal) => {
 
 // Handle Filter Change
 function onFilterChange() {
-  fetchData(selectedFilter.value.value).then(initDashBoard);
+  fetchData(selectedFilter.value).then(initDashBoard);
 }
 
 // Fetch Data and Initialize Dashboard on Mount
 onMounted(async () => {
-  await fetchData(selectedFilter.value.value);
+  await fetchData(selectedFilter.value);
   initDashBoard();
   document.getElementById("dashboard_container")!.className = `highcharts-${
     isDark.value ? "dark" : "light"
