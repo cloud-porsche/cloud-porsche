@@ -18,12 +18,13 @@ export class PubSubService {
     this.topicName = 'monitoring_queue';
   }
 
-  async publishMessage(messageData: object): Promise<void> {
+  async publishMessage(messageData: any): Promise<void> {
     try {
       const messageBuffer = Buffer.from(JSON.stringify(messageData));
-      const messageId = await this.pubSubClient
-        .topic(this.topicName)
-        .publish(messageBuffer);
+      await this.pubSubClient.topic(this.topicName).publish(messageBuffer);
+      console.log(
+        `Message of type ${messageData.messageType} published to Pub/Sub`,
+      );
     } catch (error) {
       this.logger.error('Error publishing message to Pub/Sub', error);
     }

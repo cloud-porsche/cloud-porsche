@@ -5,4 +5,7 @@ export interface IParkingAction {
   propertyId: string;
   propertyName: string;
   spotId: string;
+  currentUtilization: number;
+  costPerHour: number;
+  parkingDuration: number;
 }

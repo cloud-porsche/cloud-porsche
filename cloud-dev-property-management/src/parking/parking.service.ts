@@ -27,6 +27,9 @@ export class ParkingService {
       properyId: parkingPropertyId,
       propertyName: parkingProperty.name,
       spotId: null,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration: null,
     });
     // Update the customers in the parking property
     return this.parkingPropertiesService.update(parkingPropertyId, {
@@ -53,7 +56,11 @@ export class ParkingService {
       properyId: parkingPropertyId,
       propertyName: parkingProperty.name,
       spotId: null,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration: null,
     });
+
     return this.parkingPropertiesService.update(parkingPropertyId, {
       customers: currentCustomers.filter((c) => c.id !== customer.id),
     });
@@ -85,7 +92,11 @@ export class ParkingService {
       properyId: parkingPropertyId,
       propertyName: parkingProperty.name,
       spotId: spot.id,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration: null,
     });
+
     return this.parkingPropertiesService.update(
       parkingPropertyId,
       this.newSpotState(
@@ -114,6 +125,13 @@ export class ParkingService {
       properyId: parkingPropertyId,
       propertyName: parkingProperty.name,
       spotId: spot.id,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration:
+        (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
+        1000 /
+        60 /
+        60,
     });
     return this.parkingPropertiesService.update(
       parkingPropertyId,
@@ -137,6 +155,9 @@ export class ParkingService {
       properyId: parkingPropertyId,
       propertyName: parkingProperty.name,
       spotId: spot.id,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration: null,
     });
     return this.parkingPropertiesService.update(
       parkingPropertyId,
@@ -170,5 +191,15 @@ export class ParkingService {
         return l;
       }),
     };
+  }
+
+  private getUtilization(parkingProperty: ParkingProperty) {
+    const totalSpots = parkingProperty.layers.flatMap(
+      (l) => l.parkingSpots,
+    ).length;
+    const occupiedSpots = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => s.state === ParkingSpotState.OCCUPIED).length;
+    return (occupiedSpots / totalSpots) * 100;
   }
 }
