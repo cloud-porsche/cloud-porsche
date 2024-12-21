@@ -43,6 +43,8 @@ const customers = ref(0); // Total Customers
 const percentileCustomersChange = ref(0);
 const apiCalls = ref(0);
 const percentileApiCallsChange = ref(0);
+const parkingIncome = ref(0);
+const percentileParkingIncomeChange = ref(0);
 
 // App Store for Theme
 const appStore = useAppStore();
@@ -75,6 +77,8 @@ function processData(data: Record<string, any>) {
   percentileCustomersChange.value = data.customer_count_change.percent_change;
   apiCalls.value = data.api_calls.current_period_api_calls;
   percentileApiCallsChange.value = data.api_calls.percent_change;
+  parkingIncome.value = data.parking_income.current_period_income;
+  percentileParkingIncomeChange.value = data.parking_income.percent_change;
 }
 
 // Initialize Dashboard
@@ -170,12 +174,22 @@ async function initDashBoard() {
         type: "HTML",
         renderTo: "col-1-row-1C",
         html: `
-        <div class="custom_card">
-        <div class="custom_card-header">MOCK</div>
-        <span class="custom_card-value">696969</span>
-        <span class="custom_card-subtext">This is the description</span>
-        </div>
-        `,
+              <div class="custom_card">
+                <div class="custom_card-header">Income ${
+                  selectedFilter.value
+                }</div>
+                <span class="custom_card-value">${parkingIncome.value}</span>
+                <span class="custom_card-subtext" style="color: ${
+                  percentileParkingIncomeChange.value >= 0 ? "green" : "red"
+                };">
+                  ${
+                    percentileParkingIncomeChange.value >= 0
+                      ? `+${percentileCustomersChange.value.toFixed(2)}%`
+                      : `${percentileCustomersChange.value.toFixed(2)}%`
+                  } vs last 
+            ${selectedFilter.value}</span>
+            </div>
+              `,
       },
       {
         type: "HTML",

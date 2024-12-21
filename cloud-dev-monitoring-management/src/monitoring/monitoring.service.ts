@@ -66,7 +66,7 @@ export class MonitoringService {
   }
 
   // New Method to get the customer count and percent change
-  async getCustomerCountChange(timeframe: string) {
+  async getCustomerCount(timeframe: string) {
     const now = new Date();
 
     // Helper function to get the start date based on the timeframe
@@ -120,7 +120,6 @@ export class MonitoringService {
         new Date(action.timestamp) <= previousEndDate,
     ).length;
 
-    previousPeriodCustomers = 104;
     // Calculate the percentage change
     let percentChange = 0;
     if (previousPeriodCustomers !== 0) {
@@ -203,6 +202,79 @@ export class MonitoringService {
     };
   }
 
+  async getParkingIncome(timeframe: string) {
+    const now = new Date();
+
+    const getStartDate = (offset: number): Date => {
+      return subDays(now, offset);
+    };
+
+    let currentStartDate: Date;
+    let previousStartDate: Date;
+    let currentEndDate: Date = now;
+    let previousEndDate: Date;
+
+    switch (timeframe) {
+      case 'total':
+        currentStartDate = getStartDate(365 * 3);
+        previousStartDate = getStartDate(365 * 6); // 3 years ago
+        break;
+      case 'yearly':
+        currentStartDate = getStartDate(364);
+        previousStartDate = getStartDate(365 * 2); // 1 year ago
+        break;
+      case 'monthly':
+        currentStartDate = getStartDate(29);
+        previousStartDate = getStartDate(59); // 1 month ago
+        break;
+      case 'weekly':
+        currentStartDate = getStartDate(6);
+        previousStartDate = getStartDate(13); // 1 week ago
+        break;
+      default:
+        throw new Error(
+          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
+        );
+    }
+    previousEndDate = subDays(currentStartDate, 1);
+
+    const parkingActions = await this.parkingActionRepository.find();
+    const currentPeriodIncome = parkingActions
+      .filter(
+        (action) =>
+          action.action === 'free' &&
+          new Date(action.timestamp) >= currentStartDate &&
+          new Date(action.timestamp) <= currentEndDate,
+      )
+      .reduce(
+        (acc, action) => acc + action.costPerHour * action.parkingDuration,
+        0,
+      );
+
+    const previousPeriodIncome = parkingActions
+      .filter(
+        (action) =>
+          action.action === 'free' &&
+          new Date(action.timestamp) >= previousStartDate &&
+          new Date(action.timestamp) <= previousEndDate,
+      )
+      .reduce(
+        (acc, action) => acc + action.costPerHour * action.parkingDuration,
+        0,
+      );
+    let percentChange = 0;
+    if (previousPeriodIncome !== 0) {
+      percentChange =
+        ((currentPeriodIncome - previousPeriodIncome) / previousPeriodIncome) *
+        100;
+    }
+    return {
+      current_period_income: currentPeriodIncome,
+      previous_period_income: previousPeriodIncome,
+      percent_change: percentChange,
+    };
+  }
+
   // Existing Method to get customer distribution
   async getCustomerDistribution(
     timeframe: string,
@@ -267,35 +339,29 @@ export class MonitoringService {
     return results;
   }
 
-  // Existing Method to get all-time customers
-  async getAlltimeCustomers(): Promise<number> {
-    const parkingActions = await this.parkingActionRepository.find();
-    return parkingActions.filter((action) => action.action === 'enter').length;
-  }
-
   // Updated Method to get all data (including customer count change)
   async getAllData(timeframe: string) {
     const [
       customers,
       customerDistribution,
-      totalCustomers,
       apiCalls,
-      customerCountChange,
+      customerCount,
+      parkingIncome,
     ] = await Promise.all([
       this.getCustomerData(timeframe),
       this.getCustomerDistribution(timeframe),
-      this.getAlltimeCustomers(),
       this.getApiCalls(timeframe),
-      this.getCustomerCountChange(timeframe), // Adding customer count change
+      this.getCustomerCount(timeframe), // Adding customer count change
+      this.getParkingIncome(timeframe),
     ]);
 
     return {
       data: {
         customers: customers.data,
         customer_distribution: customerDistribution,
-        total_customers: totalCustomers,
         api_calls: apiCalls,
-        customer_count_change: customerCountChange, // Returning the customer count change
+        customer_count_change: customerCount, // Returning the customer count change
+        parking_income: parkingIncome,
       },
     };
   }
