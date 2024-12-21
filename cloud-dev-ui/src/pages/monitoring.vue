@@ -252,7 +252,14 @@ async function initDashBoard() {
           chart: { type: "line" },
           title: { text: "Average Daily Utilization" },
           xAxis: {
-            categories: Object.keys(avgUtilizationData.value["Test Lars"]),
+            categories:
+              Object.keys(avgUtilizationData).length > 0
+                ? Object.keys(
+                    avgUtilizationData.value[
+                      Object.keys(avgUtilizationData.value)[0]
+                    ]
+                  )
+                : [],
             title: { text: "Date" },
           },
           yAxis: { title: { text: "Utilization in %" } },
@@ -270,7 +277,7 @@ async function initDashBoard() {
           chart: { type: "line" },
           title: { text: "MOCK" },
           xAxis: {
-            categories: Object.keys(avgUtilizationData),
+            categories: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
             title: { text: "Date" },
           },
           yAxis: { title: { text: "MOCK" } },
