@@ -23,18 +23,17 @@ export class MonitoringService {
     this.listenForMessages();
   }
 
-  private async listenForMessages() {
+  private listenForMessages() {
     const subscription = this.pubSubClient.subscription(this.subscriptionName);
 
     subscription.on('message', (message) => {
       const data = JSON.parse(message.data.toString());
-      const { messageType, ...d } = data;
+      const { messageType, ...payload } = data;
 
-      if (messageType === 'parking') {
-        this.parkingActionRepository.create(new ParkingAction(d));
-      } else {
-        this.apiCallRepository.create(new ApiCall(d));
-      }
+      messageType === 'parking'
+        ? this.parkingActionRepository.create(payload)
+        : this.apiCallRepository.create(payload);
+
       message.ack();
     });
 
@@ -47,274 +46,170 @@ export class MonitoringService {
     );
   }
 
-  private getStartDate(timeframe: string): Date {
+  private calculateDateRanges(timeframe: string): {
+    currentStart: Date;
+    previousStart: Date;
+    currentEnd: Date;
+    previousEnd: Date;
+  } {
     const now = new Date();
+    let currentStart: Date, previousStart: Date;
+
     switch (timeframe) {
       case 'total':
-        return subDays(now, 365 * 3);
+        currentStart = subDays(now, 365 * 3);
+        previousStart = subDays(now, 365 * 6);
+        break;
       case 'yearly':
-        return subDays(now, 364);
+        currentStart = subDays(now, 364);
+        previousStart = subDays(now, 365 * 2);
+        break;
       case 'monthly':
-        return subDays(now, 30);
+        currentStart = subDays(now, 29);
+        previousStart = subDays(now, 59);
+        break;
       case 'weekly':
-        return subDays(now, 6);
+        currentStart = subDays(now, 6);
+        previousStart = subDays(now, 13);
+        break;
       default:
         throw new Error(
           'Invalid timeframe. Use total, yearly, monthly, or weekly.',
         );
     }
+
+    return {
+      currentStart,
+      previousStart,
+      currentEnd: now,
+      previousEnd: subDays(currentStart, 1),
+    };
   }
 
-  // New Method to get the customer count and percent change
-  async getCustomerCount(timeframe: string) {
-    const now = new Date();
+  private calculatePercentChange(current: number, previous: number): number {
+    return previous !== 0 ? ((current - previous) / previous) * 100 : 0;
+  }
 
-    // Helper function to get the start date based on the timeframe
-    const getStartDate = (offset: number): Date => {
-      return subDays(now, offset);
-    };
+  async getCustomerCount(timeframe: string, parkingActions: ParkingAction[]) {
+    const { currentStart, currentEnd, previousStart, previousEnd } =
+      this.calculateDateRanges(timeframe);
 
-    let currentStartDate: Date;
-    let previousStartDate: Date;
-    let currentEndDate: Date = now;
-    let previousEndDate: Date;
-
-    switch (timeframe) {
-      case 'total':
-        currentStartDate = getStartDate(365 * 3);
-        previousStartDate = getStartDate(365 * 6); // 3 years ago
-        break;
-      case 'yearly':
-        currentStartDate = getStartDate(364);
-        previousStartDate = getStartDate(365 * 2); // 1 year ago
-        break;
-      case 'monthly':
-        currentStartDate = getStartDate(29);
-        previousStartDate = getStartDate(59); // 1 month ago
-        break;
-      case 'weekly':
-        currentStartDate = getStartDate(6);
-        previousStartDate = getStartDate(13); // 1 week ago
-        break;
-      default:
-        throw new Error(
-          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
-        );
-    }
-    previousEndDate = subDays(currentStartDate, 1);
-
-    // Fetch the parking actions for current and previous periods
-    const parkingActions = await this.parkingActionRepository.find();
-
-    const currentPeriodCustomers = parkingActions.filter(
+    const current = parkingActions.filter(
       (action) =>
-        action.action === 'enter' &&
-        new Date(action.timestamp) >= currentStartDate &&
-        new Date(action.timestamp) <= currentEndDate,
+        action.action == 'enter' &&
+        new Date(action.timestamp) >= currentStart &&
+        new Date(action.timestamp) <= currentEnd,
     ).length;
 
-    let previousPeriodCustomers = parkingActions.filter(
+    const previous = parkingActions.filter(
       (action) =>
-        action.action === 'enter' &&
-        new Date(action.timestamp) >= previousStartDate &&
-        new Date(action.timestamp) <= previousEndDate,
+        action.action == 'enter' &&
+        new Date(action.timestamp) >= previousStart &&
+        new Date(action.timestamp) <= previousEnd,
     ).length;
 
-    // Calculate the percentage change
-    let percentChange = 0;
-    if (previousPeriodCustomers !== 0) {
-      percentChange =
-        ((currentPeriodCustomers - previousPeriodCustomers) /
-          previousPeriodCustomers) *
-        100;
-    }
-
     return {
-      current_period_customers: currentPeriodCustomers,
-      previous_period_customers: previousPeriodCustomers,
-      percent_change: percentChange,
+      current_period_customers: current,
+      previous_period_customers: previous,
+      percent_change: this.calculatePercentChange(current, previous),
     };
   }
 
-  // Existing Method to get the API calls and percent change
-  async getApiCalls(timeframe: string) {
-    const now = new Date();
+  async getApiCalls(timeframe: string, apiCalls: ApiCall[]) {
+    const { currentStart, currentEnd, previousStart, previousEnd } =
+      this.calculateDateRanges(timeframe);
 
-    const getStartDate = (offset: number): Date => {
-      return subDays(now, offset);
+    const current = apiCalls.filter(
+      (call) =>
+        new Date(call.timestamp) >= currentStart &&
+        new Date(call.timestamp) <= currentEnd,
+    ).length;
+
+    const previous = apiCalls.filter(
+      (call) =>
+        new Date(call.timestamp) >= previousStart &&
+        new Date(call.timestamp) <= previousEnd,
+    ).length;
+
+    return {
+      current_period_api_calls: current,
+      previous_period_api_calls: previous,
+      percent_change: this.calculatePercentChange(current, previous),
     };
+  }
 
-    let currentStartDate: Date;
-    let previousStartDate: Date;
-    let currentEndDate: Date = now;
-    let previousEndDate: Date;
+  async getParkingIncome(timeframe: string, parkingActions: ParkingAction[]) {
+    const filterFn = (action: ParkingAction) => action.action === 'free';
+    const { currentStart, currentEnd, previousStart, previousEnd } =
+      this.calculateDateRanges(timeframe);
 
-    switch (timeframe) {
-      case 'total':
-        currentStartDate = getStartDate(365 * 3);
-        previousStartDate = getStartDate(365 * 6); // 3 years ago
-        break;
-      case 'yearly':
-        currentStartDate = getStartDate(364);
-        previousStartDate = getStartDate(365 * 2); // 1 year ago
-        break;
-      case 'monthly':
-        currentStartDate = getStartDate(29);
-        previousStartDate = getStartDate(59); // 1 month ago
-        break;
-      case 'weekly':
-        currentStartDate = getStartDate(6);
-        previousStartDate = getStartDate(13); // 1 week ago
-        break;
-      default:
-        throw new Error(
-          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
+    const calculateIncome = (start: Date, end: Date) =>
+      parkingActions
+        .filter(
+          (action) =>
+            filterFn(action) &&
+            new Date(action.timestamp) >= start &&
+            new Date(action.timestamp) <= end,
+        )
+        .reduce(
+          (total, action) =>
+            total + action.costPerHour * action.parkingDuration,
+          0,
         );
-    }
-    previousEndDate = subDays(currentStartDate, 1);
 
-    const apiCalls = await this.apiCallRepository.find();
-
-    const currentPeriodApiCalls = apiCalls.filter(
-      (apiCall) =>
-        new Date(apiCall.timestamp) >= currentStartDate &&
-        new Date(apiCall.timestamp) <= currentEndDate,
-    ).length;
-
-    const previousPeriodApiCalls = apiCalls.filter(
-      (apiCall) =>
-        new Date(apiCall.timestamp) >= previousStartDate &&
-        new Date(apiCall.timestamp) <= previousEndDate,
-    ).length;
-
-    let percentChange = 0;
-    if (previousPeriodApiCalls !== 0) {
-      percentChange =
-        ((currentPeriodApiCalls - previousPeriodApiCalls) /
-          previousPeriodApiCalls) *
-        100;
-    }
+    const current = calculateIncome(currentStart, currentEnd);
+    const previous = calculateIncome(previousStart, previousEnd);
 
     return {
-      current_period_api_calls: currentPeriodApiCalls,
-      previous_period_api_calls: previousPeriodApiCalls,
-      percent_change: percentChange,
+      current_period_income: current,
+      previous_period_income: previous,
+      percent_change: this.calculatePercentChange(current, previous),
     };
   }
 
-  async getParkingIncome(timeframe: string) {
-    const now = new Date();
-
-    const getStartDate = (offset: number): Date => {
-      return subDays(now, offset);
-    };
-
-    let currentStartDate: Date;
-    let previousStartDate: Date;
-    let currentEndDate: Date = now;
-    let previousEndDate: Date;
-
-    switch (timeframe) {
-      case 'total':
-        currentStartDate = getStartDate(365 * 3);
-        previousStartDate = getStartDate(365 * 6); // 3 years ago
-        break;
-      case 'yearly':
-        currentStartDate = getStartDate(364);
-        previousStartDate = getStartDate(365 * 2); // 1 year ago
-        break;
-      case 'monthly':
-        currentStartDate = getStartDate(29);
-        previousStartDate = getStartDate(59); // 1 month ago
-        break;
-      case 'weekly':
-        currentStartDate = getStartDate(6);
-        previousStartDate = getStartDate(13); // 1 week ago
-        break;
-      default:
-        throw new Error(
-          'Invalid timeframe. Use total, yearly, monthly, or weekly.',
-        );
-    }
-    previousEndDate = subDays(currentStartDate, 1);
-
-    const parkingActions = await this.parkingActionRepository.find();
-    const currentPeriodIncome = parkingActions
-      .filter(
-        (action) =>
-          action.action === 'free' &&
-          new Date(action.timestamp) >= currentStartDate &&
-          new Date(action.timestamp) <= currentEndDate,
-      )
-      .reduce(
-        (acc, action) => acc + action.costPerHour * action.parkingDuration,
-        0,
-      );
-
-    const previousPeriodIncome = parkingActions
-      .filter(
-        (action) =>
-          action.action === 'free' &&
-          new Date(action.timestamp) >= previousStartDate &&
-          new Date(action.timestamp) <= previousEndDate,
-      )
-      .reduce(
-        (acc, action) => acc + action.costPerHour * action.parkingDuration,
-        0,
-      );
-    let percentChange = 0;
-    if (previousPeriodIncome !== 0) {
-      percentChange =
-        ((currentPeriodIncome - previousPeriodIncome) / previousPeriodIncome) *
-        100;
-    }
-    return {
-      current_period_income: currentPeriodIncome,
-      previous_period_income: previousPeriodIncome,
-      percent_change: percentChange,
-    };
-  }
-
-  // Existing Method to get customer distribution
   async getCustomerDistribution(
     timeframe: string,
+    parkingActions: ParkingAction[],
   ): Promise<Record<string, number>> {
-    const startDate = this.getStartDate(timeframe);
-    const parkingActions = await this.parkingActionRepository.find();
-    const enterActions = parkingActions.filter(
-      (action) =>
-        action.action === 'enter' && new Date(action.timestamp) >= startDate,
-    );
-
-    return enterActions.reduce(
-      (distribution, action) => {
-        distribution[action.propertyName] =
-          (distribution[action.propertyName] || 0) + 1;
-        return distribution;
-      },
-      {} as Record<string, number>,
-    );
+    const startDate = this.calculateDateRanges(timeframe).currentStart;
+    return parkingActions
+      .filter(
+        (action) =>
+          action.action === 'enter' && new Date(action.timestamp) >= startDate,
+      )
+      .reduce(
+        (distribution, action) => {
+          distribution[action.propertyName] =
+            (distribution[action.propertyName] || 0) + 1;
+          return distribution;
+        },
+        {} as Record<string, number>,
+      );
   }
 
-  // Existing Method to get customer data
-  async getCustomerData(
-    timeframe: string,
-  ): Promise<{ data: Record<string, number> }> {
-    const startDate = this.getStartDate(timeframe);
-    const parkingActions = await this.parkingActionRepository.find();
+  async getCustomerData(timeframe: string, parkingActions: ParkingAction[]) {
+    const startDate = this.calculateDateRanges(timeframe).currentStart;
+    const dateRange = this.generateDateRange(startDate, new Date());
+
     const enterActions = parkingActions.filter(
       (action) => action.action === 'enter',
     );
-    const dateRange = this.generateDateRange(startDate, new Date());
+    return this.aggregateByDay(enterActions, dateRange);
+  }
 
-    return { data: this.aggregateByDay(enterActions, dateRange) };
+  async getDailyAvgUtilization(
+    timeframe: string,
+    parkingActions: ParkingAction[],
+  ) {
+    const { currentStart, currentEnd, previousStart, previousEnd } =
+      this.calculateDateRanges(timeframe);
   }
 
   private generateDateRange(startDate: Date, endDate: Date): string[] {
     const range: string[] = [];
     let currentDate = startDate;
     while (currentDate <= endDate) {
-      range.push(currentDate.toISOString().slice(0, 10)); // Format: YYYY-MM-DD
+      range.push(currentDate.toISOString().slice(0, 10));
       currentDate = addDays(currentDate, 1);
     }
     return range;
@@ -324,23 +219,21 @@ export class MonitoringService {
     actions: ParkingAction[],
     daysInRange: string[],
   ): Record<string, number> {
-    const results = daysInRange.reduce(
-      (acc, day) => ({ ...acc, [day]: 0 }),
-      {},
+    return daysInRange.reduce(
+      (acc, day) => {
+        acc[day] = actions.filter(
+          (action) => action.timestamp.toString().slice(0, 10) === day,
+        ).length;
+        return acc;
+      },
+      {} as Record<string, number>,
     );
-
-    actions.forEach((action) => {
-      const actionDate = action.timestamp.toString().slice(0, 10);
-      if (results[actionDate] !== undefined) {
-        results[actionDate] += 1;
-      }
-    });
-
-    return results;
   }
 
-  // Updated Method to get all data (including customer count change)
   async getAllData(timeframe: string) {
+    const allParkingActions = await this.parkingActionRepository.find();
+    const allApiCalls = await this.apiCallRepository.find();
+
     const [
       customers,
       customerDistribution,
@@ -348,19 +241,19 @@ export class MonitoringService {
       customerCount,
       parkingIncome,
     ] = await Promise.all([
-      this.getCustomerData(timeframe),
-      this.getCustomerDistribution(timeframe),
-      this.getApiCalls(timeframe),
-      this.getCustomerCount(timeframe), // Adding customer count change
-      this.getParkingIncome(timeframe),
+      this.getCustomerData(timeframe, allParkingActions),
+      this.getCustomerDistribution(timeframe, allParkingActions),
+      this.getApiCalls(timeframe, allApiCalls),
+      this.getCustomerCount(timeframe, allParkingActions),
+      this.getParkingIncome(timeframe, allParkingActions),
     ]);
 
     return {
       data: {
-        customers: customers.data,
+        customers: customers,
         customer_distribution: customerDistribution,
         api_calls: apiCalls,
-        customer_count_change: customerCount, // Returning the customer count change
+        customer_count_change: customerCount,
         parking_income: parkingIncome,
       },
     };
