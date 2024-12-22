@@ -3,20 +3,16 @@ import { HttpService } from '@nestjs/axios';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ParkingService } from '../parking.service';
 import { ConfigService } from '@nestjs/config';
-import { ParkingSpotState } from '@cloud-porsche/types';
+import { IParkingProperty, ParkingSpotState } from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
-
-export enum SimulationState {
-  ENTERING,
-  EXITING,
-}
 
 const SIMULATION_INTERVAL = 10000;
 
 @Injectable()
 export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
-  private simulationIds = new Map<string, SimulationState>();
+  private simulationIds = new Set<string>();
+  private readonly parkingPropertiesApi: string = 'http://localhost:8080/v1';
 
   constructor(
     private readonly config: ConfigService,
@@ -25,25 +21,13 @@ export class SimulationService {
     private readonly httpService: HttpService,
   ) {}
 
-  async startSimulation(propertyId: string, simulationState?: SimulationState) {
+  async startSimulation(propertyId: string) {
     if (this.simulationIds.has(propertyId)) {
       this.logger.error('Simulation already running');
       return;
     }
 
-    // Kopiere echte Daten über die API
-    const existingProperty = await this.findParkingProperty(propertyId);
-
-    // Entferne vorherige Simulationsdaten (falls vorhanden)
-    await this.deleteParkingProperty(propertyId);
-
-    // Erstelle Simulationsdaten basierend auf echten Daten
-    await this.createParkingProperty(existingProperty);
-
-    this.simulationIds.set(
-      propertyId,
-      simulationState ?? SimulationState.ENTERING,
-    );
+    this.simulationIds.add(propertyId);
     this.schedulerRegistry.addInterval(
       'simulation',
       setInterval(
@@ -55,22 +39,33 @@ export class SimulationService {
   }
 
   async stopSimulation(propertyId: string) {
-    // Lösche Simulationsdaten
-    await this.deleteParkingProperty(propertyId);
+    await this.removeSimulationCars(propertyId);
 
     this.simulationIds.delete(propertyId);
     this.schedulerRegistry.deleteInterval('simulation');
     this.logger.log('Simulation stopped for: ' + propertyId);
   }
 
-  getSimulationStatus(propertyId: string) {
-    return this.simulationIds.has(propertyId);
+  private async removeSimulationCars(propertyId: string) {
+    const parkingProperty = await this.fetchParkingProperty(propertyId);
+
+    const occupiedSpots = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((spot) => spot.state === ParkingSpotState.OCCUPIED);
+
+    for (const spot of occupiedSpots) {
+      if (spot.customer?.licensePlate?.includes('SIMULATION')) {
+        await this.parkingService.freeSpot(propertyId, spot.id);
+        await this.parkingService.leave(propertyId, {
+          id: spot.customer.id,
+          licensePlate: spot.customer.licensePlate,
+        });
+      }
+    }
   }
 
-  changeSimulationState(propertyId: string, simulationState: SimulationState) {
-    if (!this.simulationIds.has(propertyId))
-      throw new Error('Simulation not running');
-    this.simulationIds.set(propertyId, simulationState);
+  getSimulationStatus(propertyId: string) {
+    return this.simulationIds.has(propertyId);
   }
 
   async runSimulation(propertyId: string) {
@@ -78,81 +73,85 @@ export class SimulationService {
       this.logger.error('Simulation not allowed in production');
       return;
     }
+
     this.logger.log('Running simulation for: ' + propertyId);
-    const state = this.simulationIds.get(propertyId);
+    const parkingProperty = await this.fetchParkingProperty(propertyId);
+    this.logger.log('Found parking property: ' + parkingProperty.name);
 
-    if (state === SimulationState.ENTERING) {
-      const id = crypto.randomUUID();
-      await this.parkingService.enter(propertyId, {
-        id: id,
-        licensePlate: 'SIMULATION',
-      });
+    const totalSpots = parkingProperty.layers.flatMap((l) => l.parkingSpots);
+    const freeSpots = totalSpots.filter(
+      (spot) => spot.state === ParkingSpotState.FREE,
+    );
+    const occupiedSpots = totalSpots.filter(
+      (spot) => spot.state === ParkingSpotState.OCCUPIED,
+    );
 
-      setTimeout(async () => {
-        if (!this.getSimulationStatus(propertyId)) return;
-        const parkingProperty = await this.findParkingProperty(propertyId);
-        const spot = parkingProperty.layers
-          .flatMap((l) => l.parkingSpots)
-          .find((s) => s.state === ParkingSpotState.FREE);
-        if (!spot) {
-          this.logger.warn(
-            'No free spots available - changing state to EXITING',
-          );
-          this.changeSimulationState(propertyId, SimulationState.EXITING);
-          return;
-        }
-        await this.parkingService.occupySpot(propertyId, spot.id, {
-          id,
-          licensePlate: 'SIMULATION',
-        });
-        if (spot.electricCharging) {
-          setTimeout(async () => {
-            await this.parkingService.chargeSpot(propertyId, spot.id);
-          }, SIMULATION_INTERVAL / 5);
-        }
-      }, SIMULATION_INTERVAL / 2);
-    } else if (state === SimulationState.EXITING) {
-      const parkingProperty = await this.findParkingProperty(propertyId);
-      const spot = parkingProperty.layers
-        .flatMap((l) => l.parkingSpots)
-        .find((s) => s.state === ParkingSpotState.OCCUPIED);
-      if (!spot) {
-        this.logger.warn('No occupied spots left - changing state to ENTERING');
-        this.changeSimulationState(propertyId, SimulationState.ENTERING);
-        return;
-      }
-      await this.parkingService.freeSpot(propertyId, spot.id);
+    const occupancyRate = occupiedSpots.length / totalSpots.length;
 
-      setTimeout(async () => {
-        if (!this.getSimulationStatus(propertyId)) return;
-        const id = spot.customer.id;
-        await this.parkingService.leave(propertyId, {
-          id,
-          licensePlate: 'DOESNTMATTER',
-        });
-      }, SIMULATION_INTERVAL / 2);
+    // Entscheidungslogik: Mehr Autos einfahren, wenn die Auslastung gering ist
+    if (Math.random() > occupancyRate) {
+      await this.simulateCarEntering(propertyId, freeSpots);
+    } else {
+      await this.simulateCarExiting(propertyId, occupiedSpots);
     }
   }
 
-  private async findParkingProperty(propertyId: string) {
-    const response = this.httpService.get(
-      `${this.config.get('PARKING_PROPERTIES_API_URL')}/properties/${propertyId}`,
-    );
-    return lastValueFrom(response).then((res) => res.data);
+  private async simulateCarEntering(propertyId: string, freeSpots: any[]) {
+    if (freeSpots.length === 0) {
+      this.logger.warn('No free spots available');
+      return;
+    }
+
+    const id = crypto.randomUUID();
+    await this.parkingService.enter(propertyId, {
+      id: id,
+      licensePlate: 'SIMULATION',
+    });
+
+    const spot = freeSpots[0]; // Nimm den ersten freien Platz
+    await this.parkingService.occupySpot(propertyId, spot.id, {
+      id,
+      licensePlate: 'SIMULATION',
+    });
+
+    if (spot.electricCharging) {
+      setTimeout(async () => {
+        await this.parkingService.chargeSpot(propertyId, spot.id);
+      }, SIMULATION_INTERVAL / 5);
+    }
   }
 
-  private async deleteParkingProperty(propertyId: string) {
-    const response = this.httpService.delete(
-      `${this.config.get('PARKING_PROPERTIES_API_URL')}/properties/${propertyId}`,
-    );
-    return lastValueFrom(response);
+  private async simulateCarExiting(propertyId: string, occupiedSpots: any[]) {
+    if (occupiedSpots.length === 0) {
+      this.logger.warn('No occupied spots left');
+      return;
+    }
+
+    const spot = occupiedSpots[0]; // Nimm den ersten belegten Platz
+    await this.parkingService.freeSpot(propertyId, spot.id);
+
+    setTimeout(async () => {
+      const id = spot.customer.id;
+      await this.parkingService.leave(propertyId, {
+        id,
+        licensePlate: 'SIMULATION',
+      });
+    }, SIMULATION_INTERVAL / 2);
   }
 
-  private async createParkingProperty(property: any) {
-    const response = this.httpService.post(
-      `${this.config.get('PARKING_PROPERTIES_API_URL')}/properties`,
-      property,
-    );
-    return lastValueFrom(response);
+  private async fetchParkingProperty(
+    parkingPropertyId: string,
+  ): Promise<IParkingProperty> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get<IParkingProperty>(
+          `${this.parkingPropertiesApi}/parking-properties/${parkingPropertyId}`,
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error(`Failed to fetch parking property: ${error.message}`);
+      throw new Error('Parking Property not found');
+    }
   }
 }

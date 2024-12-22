@@ -1,6 +1,5 @@
-import { Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
-import { SimulationService, SimulationState } from './simulation.service';
-import { ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Logger, Param, Post } from '@nestjs/common';
+import { SimulationService } from './simulation.service';
 
 @Controller('simulation')
 export class SimulationController {
@@ -9,20 +8,9 @@ export class SimulationController {
   constructor(private readonly simulationService: SimulationService) {}
 
   @Post(':propertyId/start')
-  @ApiQuery({
-    name: 'state',
-    type: typeof SimulationState,
-    required: false,
-  })
-  async startSimulation(
-    @Param('propertyId') propertyId: string,
-    @Query('state') simulationState: SimulationState,
-  ) {
+  async startSimulation(@Param('propertyId') propertyId: string) {
     try {
-      return await this.simulationService.startSimulation(
-        propertyId,
-        simulationState,
-      );
+      return await this.simulationService.startSimulation(propertyId);
     } catch (error) {
       this.logger.error(
         'Error starting simulation - trying to stop simulation',
@@ -46,16 +34,5 @@ export class SimulationController {
   @Get(':propertyId/status')
   getSimulationStatus(@Param('propertyId') propertyId: string) {
     return this.simulationService.getSimulationStatus(propertyId);
-  }
-
-  @Post(':propertyId/change')
-  changeSimulationState(
-    @Param('propertyId') propertyId: string,
-    @Query('state') simulationState: SimulationState,
-  ) {
-    return this.simulationService.changeSimulationState(
-      propertyId,
-      simulationState,
-    );
   }
 }
