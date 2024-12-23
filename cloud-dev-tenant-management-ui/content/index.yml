@@ -1,0 +1,125 @@
+title: Cloud Porsche - Parking Management Solution
+description: Cloud Porsche is a parking management solution that helps you manage your parking spaces with ease.
+hero:
+  title: Manage your parking spaces with ease
+  description: Build a 1-to-1 copy of your physical parking spaces in the cloud and manage them with our easy-to-use interface.
+  links:
+    - label: Get started
+      icon: i-heroicons-arrow-right-20-solid
+      trailing: true
+      to: '#features'
+      size: xl
+logos:
+  title: In collaboration with
+  icons:
+    - i-simple-icons-googlecloud
+    - i-simple-icons-firebase
+    - i-simple-icons-github
+    - i-simple-icons-docker
+    - i-simple-icons-helm
+    - i-simple-icons-kubernetes
+    - i-simple-icons-githubactions
+    - i-simple-icons-vuetify
+features:
+  headline: Features
+  title: Why choose our service?
+  description: Bet on experience and security. We have been in the market for over 1 day and have a 99.9% uptime guarantee.
+  items:
+    - title: Easy to use
+      description: Our interface is easy to use and intuitive. You don't need any training to get started.
+      icon: i-heroicons-cog
+    - title: Secure
+      description: Our experts have been working on security for over 1 day. Your data is safe with us.
+      icon: i-heroicons-lock-closed
+    - title: Scalable
+      description: With our service, you can start small and grow as your business grows. We scale with you.
+      icon: i-heroicons-chart-bar
+pricing:
+  headline: Pricing
+  title: A plan for every need
+  description: Choose the plan that best suits your needs.
+  plans:
+    - title: Free
+      description: A free plan to get you started.
+      price: $0.00
+      align: top
+      button:
+        label: Get Started
+        color: gray
+      features:
+        - 1 User
+        - 1 Parking Property
+        - Shared Compute
+        - Management Overview
+        - Community Support
+    - title: Pro
+      description: Our most popular plan.
+      price: $99.99
+      highlight: true
+      scale: true
+      align: top
+      button:
+        label: Get Started
+      features:
+        - Free Tier
+        - Up to 5 Parking Properties
+        - Analytical Dashboard
+        - Unlimited Users
+        - Income Reporting
+        - Priority Support
+    - title: Enterprise
+      description: The best service experience for your business.
+      price: $449.99
+      align: top
+      button:
+        label: Get Started
+        color: gray
+      features:
+        - Pro Tier
+        - High Data Separation
+        - User Management
+        - Custom Branding
+        - Role Based Permissions
+        - 24/7 Live Support
+testimonials:
+  headline: Testimonials
+  title: What our customers are saying.
+  description: Don't just take our word for it. Here's what our customers have to say.
+  items:
+    - quote: This is a great service. I've been using it for over 1 day and I'm very happy with it.
+      author:
+        name: Nobody
+        description: CEO at NoCompany Inc.
+        avatar:
+          src: https://i.pravatar.cc/120?img=1
+          loading: lazy
+    - quote: Best service ever. I've been using it for over 1 day and I'm very happy with it.
+      author:
+        name: Nobody 2
+        description: CTO at NoCompany Inc.
+        avatar:
+          src: https://i.pravatar.cc/120?img=2
+          loading: lazy
+    - quote: No idea why my quote is here. I'm not even a real person. Also, I'm hungry...
+      author:
+        name: Real Person
+        description: NotRealCompany Inc.
+        avatar:
+          src: https://i.pravatar.cc/120?img=3
+          loading: lazy
+    - quote: I'm just here to fill up space. I don't even know what I'm doing here.
+      author:
+        name: Spaceman
+        description: Astronaut at NASA
+        avatar:
+          src: https://i.pravatar.cc/120?img=4
+          loading: lazy
+faq:
+  title: Frequently asked questions
+  description: Here are some of the most frequently asked questions.
+  items:
+    - label: Is this a real service?
+      content: No.
+      defaultOpen: true
+    - label: Why is your service just so damn good?
+      content: Because we're awesome.

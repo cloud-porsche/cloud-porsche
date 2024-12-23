@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 @Injectable()
 export class TenantsService {
   async createTenant(name: string) {
-    const newTenant = admin
+    return admin
       .auth()
       .tenantManager()
       .createTenant({
@@ -20,7 +20,6 @@ export class TenantsService {
       .catch((error) => {
         return error;
       });
-    return newTenant;
   }
 
   async deleteTenant(name: string) {
