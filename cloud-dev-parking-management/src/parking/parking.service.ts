@@ -3,13 +3,21 @@ import { HttpService } from '@nestjs/axios';
 import { Customer, ParkingSpotState } from '@cloud-porsche/types';
 import { IParkingProperty } from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ParkingService {
   private readonly logger = new Logger(ParkingService.name);
-  private readonly parkingPropertiesApi: string = 'http://localhost:8080/v1';
+  private parkingPropertiesApi: string;
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly config: ConfigService,
+  ) {
+    this.parkingPropertiesApi = this.config.get<string>(
+      'PROPERTY_MANAGEMENT_API_URL',
+    );
+  }
 
   private async fetchParkingProperty(
     parkingPropertyId: string,
@@ -17,7 +25,7 @@ export class ParkingService {
     try {
       const response = await lastValueFrom(
         this.httpService.get<IParkingProperty>(
-          `${this.parkingPropertiesApi}/parking-properties/${parkingPropertyId}`,
+          `${this.parkingPropertiesApi}/v1/parking-properties/${parkingPropertyId}`,
         ),
       );
       return response.data;
@@ -34,7 +42,7 @@ export class ParkingService {
     try {
       const response = await lastValueFrom(
         this.httpService.patch<IParkingProperty>(
-          `${this.parkingPropertiesApi}/parking-properties/${parkingPropertyId}`,
+          `${this.parkingPropertiesApi}/v1/parking-properties/${parkingPropertyId}`,
           updateData,
         ),
       );

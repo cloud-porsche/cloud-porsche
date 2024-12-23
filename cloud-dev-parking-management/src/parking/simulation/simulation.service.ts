@@ -12,14 +12,19 @@ const SIMULATION_INTERVAL = 10000;
 export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
   private simulationIds = new Set<string>();
-  private readonly parkingPropertiesApi: string = 'http://localhost:8080/v1';
+  private parkingPropertiesApi: string;
 
   constructor(
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly parkingService: ParkingService,
     private readonly httpService: HttpService,
-  ) {}
+  ) {
+    this.parkingPropertiesApi = this.config.get<string>(
+      'PROPERTY_MANAGEMENT_API_URL',
+    );
+    console.log('this.parkingPropertiesApi', this.parkingPropertiesApi);
+  }
 
   async startSimulation(propertyId: string) {
     if (this.simulationIds.has(propertyId)) {
@@ -145,7 +150,7 @@ export class SimulationService {
     try {
       const response = await lastValueFrom(
         this.httpService.get<IParkingProperty>(
-          `${this.parkingPropertiesApi}/parking-properties/${parkingPropertyId}`,
+          `${this.parkingPropertiesApi}/v1/parking-properties/${parkingPropertyId}`,
         ),
       );
       return response.data;
