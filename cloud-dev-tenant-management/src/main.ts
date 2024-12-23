@@ -42,7 +42,9 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  app.use(json({ limit: '15mb' }));
+  app.use(json({ limit: '1mb' }));
+
+  app.getHttpServer().setTimeout(0);
 
   const config = new DocumentBuilder()
     .setTitle('Cloud Porsche Tenant Management API')
@@ -57,4 +59,5 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3001);
 }
+
 bootstrap();

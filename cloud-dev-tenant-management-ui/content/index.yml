@@ -46,6 +46,7 @@ pricing:
       button:
         label: Get Started
         color: gray
+        to: 'sign-up?plan=free'
       features:
         - 1 User
         - 1 Parking Property
@@ -60,6 +61,7 @@ pricing:
       align: top
       button:
         label: Get Started
+        to: 'sign-up?plan=pro'
       features:
         - Free Tier
         - Up to 5 Parking Properties
@@ -68,12 +70,14 @@ pricing:
         - Income Reporting
         - Priority Support
     - title: Enterprise
+      target: 'sign-up?plan=enterprise'
       description: The best service experience for your business.
       price: $449.99
       align: top
       button:
         label: Get Started
         color: gray
+        to: 'sign-up?plan=pro'
       features:
         - Pro Tier
         - High Data Separation

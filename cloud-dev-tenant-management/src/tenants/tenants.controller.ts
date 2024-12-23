@@ -1,19 +1,44 @@
-import { Controller, Delete, Param, Post, Body } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
+import { Tenant } from './dto/tenant.dto';
 
 @Controller('tenants')
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
 
-  @Post(':name')
-  createTenant(@Param('name') displayName: string): Promise<string> {
-    return this.tenantsService.createTenant(displayName);
+  @Post('/')
+  @ApiBody({
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'The name of the new tenant',
+          example: 'Gustav-AG',
+        },
+        plan: {
+          type: 'string',
+          description: 'The plan of the new tenant',
+          example: 'enterprise',
+        },
+        email: {
+          type: 'string',
+          description: 'The email of the tenant creator',
+          example: 'user@example.com',
+        },
+      },
+      required: ['email', 'plan', 'name'],
+    },
+  })
+  async createTenant(@Body() tenant: Tenant) {
+    return await this.tenantsService.createTenant(tenant);
   }
 
-  @Delete(':name')
-  deleteTenant(@Param('name') name: string): Promise<string> {
-    return this.tenantsService.deleteTenant(name);
+  @Delete(':tenantId')
+  async deleteTenant(@Param('tenantId') tenantId: string) {
+    return await this.tenantsService.deleteTenant(tenantId);
   }
 
   @Post(':tenantId/users')

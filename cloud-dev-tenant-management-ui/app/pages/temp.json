@@ -1,0 +1,55 @@
+{
+  "res": {
+    "tenantId": "bosch-u8crk",
+    "displayName": "bosch",
+    "emailSignInConfig": {
+      "enabled": true,
+      "passwordRequired": true
+    },
+    "anonymousSignInEnabled": false
+  },
+  "ghResponse": {
+    "status": 200,
+    "url": "https://api.github.com/repos/cloud-porsche/cloud-porsche/actions/workflows/134220414",
+    "headers": {
+      "access-control-allow-origin": "*",
+      "access-control-expose-headers": "ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset",
+      "cache-control": "private, max-age=60, s-maxage=60",
+      "content-encoding": "gzip",
+      "content-security-policy": "default-src 'none'",
+      "content-type": "application/json; charset=utf-8",
+      "date": "Mon, 23 Dec 2024 18:55:50 GMT",
+      "etag": "W/\"32cf99a5f5da9dac4fa46a8decd485f76de97513557843f147bd60079e6c9bdd\"",
+      "github-authentication-token-expiration": "2025-01-22 18:06:13 +0100",
+      "referrer-policy": "origin-when-cross-origin, strict-origin-when-cross-origin",
+      "server": "github.com",
+      "strict-transport-security": "max-age=31536000; includeSubdomains; preload",
+      "transfer-encoding": "chunked",
+      "vary": "Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With",
+      "x-accepted-github-permissions": "actions=read",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "deny",
+      "x-github-api-version-selected": "2022-11-28",
+      "x-github-media-type": "github.v3; format=json",
+      "x-github-request-id": "DF97:1F1E7F:A807B08:AC674D7:6769B235",
+      "x-ratelimit-limit": "5000",
+      "x-ratelimit-remaining": "4998",
+      "x-ratelimit-reset": "1734983749",
+      "x-ratelimit-resource": "core",
+      "x-ratelimit-used": "2",
+      "x-xss-protection": "0"
+    },
+    "data": {
+      "id": 134220414,
+      "node_id": "W_kwDOM_N5f84IAAp-",
+      "name": "Terraform Create Tenant",
+      "path": ".github/workflows/tf-tenant-create.yml",
+      "state": "active",
+      "created_at": "2024-12-19T15:16:22.000+01:00",
+      "updated_at": "2024-12-19T15:16:22.000+01:00",
+      "url": "https://api.github.com/repos/cloud-porsche/cloud-porsche/actions/workflows/134220414",
+      "html_url": "https://github.com/cloud-porsche/cloud-porsche/blob/develop/.github/workflows/tf-tenant-create.yml",
+      "badge_url": "https://github.com/cloud-porsche/cloud-porsche/workflows/Terraform%20Create%20Tenant/badge.svg"
+    }
+  }
+}
