@@ -56,10 +56,21 @@ jobs:
               -compact-warnings \
               -auto-approve \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+      - name: Delete on Terraform fail
+        if: failure()
+        run: |
+          terraform destroy \
+              -target helm.${{ inputs.tenant_id }} \
+              -target module.${{ inputs.tenant_id }} \
+              -input=false \
+              -compact-warnings \
+              -auto-approve \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Commit and push changes
         run: |
           git config --global user.name 'Tenant Creation Bot'
           git config --global user.email 'tenant-bot@noreply.com'
+          git pull --rebase --strategy-option=theirs
           git add ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
           git commit -am "Created tenant: ${{ inputs.tenant_id }}"
           git push

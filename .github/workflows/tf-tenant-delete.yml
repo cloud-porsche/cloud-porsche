@@ -60,5 +60,6 @@ jobs:
         run: |
           git config --global user.name 'Tenant Deletion Bot'
           git config --global user.email 'tenant-bot@noreply.com'
+          git pull --rebase --strategy-option=theirs
           git commit -am "Deleted tenant: ${{ inputs.tenant_id }}"
           git push
