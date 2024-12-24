@@ -1,0 +1,59 @@
+name: Google Cloud
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build-and-push-to-gcr:
+    name: Build and Push image to GCR 📦
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: 'write'
+      contents: 'read'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      - name: Configure Docker to use the gcloud command-line tool as a credential helper
+        run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - name: Build the Docker image
+        run: |
+          export IMAGE_URL=europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/tenant-management
+          docker build -t $IMAGE_URL:latest \
+                       -t $IMAGE_URL:${{ github.sha }} \
+                       -f ./cloud-dev-tenant-management/Dockerfile .
+          docker push $IMAGE_URL:${{ github.sha }}
+          docker push $IMAGE_URL:latest
+
+  cloud-run:
+    name: Deploy to Cloud Run 🚀
+    runs-on: ubuntu-22.04
+    needs:
+      - build-and-push-to-gcr
+    permissions:
+      id-token: 'write'
+      contents: 'read'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      - uses: google-github-actions/deploy-cloudrun@v2
+        id: deploy
+        with:
+          service: tenant-management
+          image: europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/tenant-management:latest
+          region: europe-west4
+          env_vars: |-
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          flags: |-
+            --max-instances=1
+      - name: Print the URL
+        run: echo "${{ steps.deploy.outputs.url }}"
