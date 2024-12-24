@@ -14,7 +14,7 @@ export default defineNuxtConfig({
       dir: "../cloud-dev-tenant-management/client",
     },
   },
-  ssr: false,
+  ssr: true,
   routeRules: {
     // Temporary workaround for prerender regression. see https://github.com/nuxt/nuxt/issues/27490
     "/": { prerender: true },

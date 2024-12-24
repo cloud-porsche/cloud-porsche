@@ -70,14 +70,13 @@ pricing:
         - Income Reporting
         - Priority Support
     - title: Enterprise
-      target: 'sign-up?plan=enterprise'
       description: The best service experience for your business.
       price: $449.99
       align: top
       button:
         label: Get Started
         color: gray
-        to: 'sign-up?plan=pro'
+        to: 'sign-up?plan=enterprise'
       features:
         - Pro Tier
         - High Data Separation

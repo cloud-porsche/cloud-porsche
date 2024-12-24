@@ -10,6 +10,7 @@ const state = reactive({
   plan: initialPlan.value,
   name: undefined,
   email: undefined,
+  confirmEmail: undefined,
 });
 
 watch(state, (_) => {
@@ -24,6 +25,10 @@ const validate = (state: any): FormError[] => {
   if (!state.plan) errors.push({ path: "plan", message: "Required" });
   if (!state.name) errors.push({ path: "name", message: "Required" });
   if (!state.email) errors.push({ path: "email", message: "Required" });
+  if (!state.confirmEmail)
+    errors.push({ path: "confirmEmail", message: "Required" });
+  if (state.email !== state.confirmEmail)
+    errors.push({ path: "confirmEmail", message: "Emails do not match" });
 
   if (!/^[a-z][a-z0-9-]{3,19}$/.test(state.name))
     errors.push({
@@ -37,7 +42,10 @@ const validate = (state: any): FormError[] => {
   return errors;
 };
 
+const loading = ref(false);
+
 async function onSubmit(_: FormSubmitEvent<any>) {
+  loading.value = true;
   const res = await fetch(
     (import.meta.dev ? "http://localhost:8081" : "") + "/v1/tenants/",
     {
@@ -48,7 +56,9 @@ async function onSubmit(_: FormSubmitEvent<any>) {
       },
     },
   );
-  console.log(res);
+  loading.value = false;
+  // TODO: Do something with res
+  await router.push("/sign-up-done");
 }
 </script>
 
@@ -77,8 +87,16 @@ async function onSubmit(_: FormSubmitEvent<any>) {
           <UInput v-model="state.email" required />
         </UFormGroup>
 
-        <UButton type="submit" :disabled="validate(state).length > 0"
-          >Submit
+        <UFormGroup label="Confirm Email" name="confirm-email">
+          <UInput v-model="state.confirmEmail" required />
+        </UFormGroup>
+
+        <UButton
+          type="submit"
+          :disabled="validate(state).length > 0"
+          :loading="loading"
+        >
+          Submit
         </UButton>
       </UForm>
     </UCard>
