@@ -53,7 +53,7 @@ jobs:
           image: europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/tenant-management:latest
           region: europe-west4
           env_vars: |-
-            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+            GITHUB_TOKEN=${{ secrets.A_GITHUB_TOKEN }}
           flags: |-
             --max-instances=1
       - name: Print the URL
