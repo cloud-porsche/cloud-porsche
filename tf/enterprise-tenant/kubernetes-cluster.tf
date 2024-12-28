@@ -1,6 +1,6 @@
 ### Cluster Configuration
 resource "google_container_cluster" "enterprise_tenant" {
-  name = "cloud-porsche-${var.tenant_id}"
+  name = var.tenant_id
 
   location                 = "europe-west4"
   enable_autopilot         = true
@@ -17,7 +17,7 @@ resource "google_container_cluster" "enterprise_tenant" {
 
 resource "helm_release" "enterprise_tenant" {
   chart      = "cloud-porsche-default"
-  name       = "cloud-porsche-${var.tenant_id}"
+  name       = var.tenant_id
   repository = "oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/"
 
   values = compact([
