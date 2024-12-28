@@ -16,7 +16,7 @@ on:
         description: 'Type of tenant (e.g. pricing plan); free, pro, or enterprise'
 jobs:
   tf-tenant-create:
-    if: github.ref == 'refs/heads/develop'
+    #if: github.ref == 'refs/heads/develop'
     name: Terraform create tenant 🚮
     runs-on: ubuntu-22.04
     permissions:

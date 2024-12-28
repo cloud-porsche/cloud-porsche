@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { Octokit } from 'octokit';
@@ -6,9 +6,13 @@ import { Tenant } from './dto/tenant.dto';
 
 @Injectable()
 export class TenantsService {
+  private logger = new Logger(TenantsService.name);
+
+  private targetBranch: string;
   private octokit: Octokit;
 
   constructor(config: ConfigService) {
+    this.targetBranch = config.get('TARGET_BRANCH', 'develop');
     this.octokit = new Octokit({ auth: config.get('GITHUB_TOKEN') });
   }
 
@@ -28,7 +32,7 @@ export class TenantsService {
         const ghResponse = await this.octokit.request(
           'POST /repos/cloud-porsche/cloud-porsche/actions/workflows/134220414/dispatches',
           {
-            ref: 'develop',
+            ref: this.targetBranch,
             inputs: {
               tenant_id: newTenant.tenantId,
               tenant_type: tenant.plan,
@@ -46,6 +50,7 @@ export class TenantsService {
         };
       })
       .catch((error) => {
+        this.logger.error(error);
         return error;
       });
   }

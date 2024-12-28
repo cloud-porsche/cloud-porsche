@@ -61,7 +61,7 @@ nuxtApp.hooks.hookOnce("page:finish", () => {
     </template>
 
     <template #panel>
-      <UAsideLinks :links="links" v-if="onLandingPage" />
+      <UAsideLinks :links="links" />
 
       <UDivider class="my-6" />
 

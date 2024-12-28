@@ -1,22 +1,4 @@
-<script setup lang="ts">
-const toast = useToast();
-
-const email = ref('');
-const loading = ref(false);
-
-function onSubmit() {
-  loading.value = true;
-
-  setTimeout(() => {
-    toast.add({
-      title: 'Subscribed!',
-      description: "You've been subscribed to our newsletter.",
-    });
-
-    loading.value = false;
-  }, 1000);
-}
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <UFooter>
