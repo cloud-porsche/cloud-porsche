@@ -8,7 +8,7 @@ on:
         required: true
 jobs:
   tf-tenant-delete:
-    if: github.ref == 'refs/heads/develop'
+    #if: github.ref == 'refs/heads/develop'
     name: Terraform delete tenant 🚮
     runs-on: ubuntu-22.04
     permissions:
