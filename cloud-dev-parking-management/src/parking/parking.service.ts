@@ -4,6 +4,7 @@ import { Customer, ParkingSpotState } from '@cloud-porsche/types';
 import { IParkingProperty } from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import { PubSubService } from 'src/pubsub/pubsub.service';
 
 @Injectable()
 export class ParkingService {
@@ -13,6 +14,7 @@ export class ParkingService {
   constructor(
     private readonly httpService: HttpService,
     private readonly config: ConfigService,
+    private readonly pubSubService: PubSubService,
   ) {
     this.parkingPropertiesApi = this.config.get<string>(
       'PROPERTY_MANAGEMENT_API_URL',
@@ -59,6 +61,17 @@ export class ParkingService {
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
 
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'enter',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: null,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration: null,
+    });
     // Update the customers in the parking property
     return this.updateParkingProperty(parkingPropertyId, {
       customers: [...currentCustomers, newCustomer],
@@ -76,6 +89,18 @@ export class ParkingService {
       this.logger.warn('Customer still has a spot occupied - setting it free');
       await this.freeSpot(parkingPropertyId, spot.id);
     }
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'leave',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: null,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration: null,
+    });
+
     return this.updateParkingProperty(parkingPropertyId, {
       customers: currentCustomers.filter((c) => c.id !== customer.id),
     });
@@ -95,8 +120,21 @@ export class ParkingService {
       [ParkingSpotState.OCCUPIED, ParkingSpotState.OUT_OF_ORDER].includes(
         spot.state,
       )
-    )
+    ) {
       throw new Error('Spot already occupied or out of order');
+    }
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'occupy',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: spot.id,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration: null,
+    });
+
     return this.updateParkingProperty(
       parkingPropertyId,
       this.newSpotState(
@@ -116,6 +154,21 @@ export class ParkingService {
     if (!spot) throw new Error('Spot not found');
     if (spot.state !== ParkingSpotState.OCCUPIED)
       throw new Error('Spot not occupied');
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'free',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: spot.id,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration:
+        (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
+        1000 /
+        60 /
+        60,
+    });
     return this.updateParkingProperty(
       parkingPropertyId,
       this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
@@ -130,6 +183,17 @@ export class ParkingService {
     if (!spot) throw new Error('Spot not found');
     if (spot.state !== ParkingSpotState.OCCUPIED && !spot.electricCharging)
       throw new Error('Spot already occupied or not an electric charger');
+    this.pubSubService.publishMessage({
+      messageType: 'parking',
+      action: 'occupy',
+      timestamp: new Date(),
+      properyId: parkingPropertyId,
+      propertyName: parkingProperty.name,
+      spotId: spot.id,
+      currentUtilization: this.getUtilization(parkingProperty),
+      costPerHour: parkingProperty.pricePerHour,
+      parkingDuration: null,
+    });
     return this.updateParkingProperty(
       parkingPropertyId,
       this.newSpotState(
@@ -162,5 +226,15 @@ export class ParkingService {
         return l;
       }),
     };
+  }
+
+  private getUtilization(parkingProperty: IParkingProperty) {
+    const totalSpots = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => !s.placeholder).length;
+    const occupiedSpots = parkingProperty.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => s.state === ParkingSpotState.OCCUPIED).length;
+    return (occupiedSpots / totalSpots) * 100;
   }
 }

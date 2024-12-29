@@ -5,11 +5,12 @@ import { SimulationService } from './simulation/simulation.service';
 import { SimulationController } from './simulation/simulation.controller';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
+import { PubSubService } from 'src/pubsub/pubsub.service';
 
 @Module({
   imports: [forwardRef(() => ConfigModule), HttpModule],
   controllers: [ParkingController, SimulationController],
-  providers: [ParkingService, SimulationService],
+  providers: [ParkingService, SimulationService, PubSubService],
   exports: [SimulationService],
 })
 export class ParkingModule {}
