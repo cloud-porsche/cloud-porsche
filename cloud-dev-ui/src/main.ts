@@ -22,6 +22,7 @@ import {
 import Dashboards from "@highcharts/dashboards";
 import Highcharts from "highcharts";
 import LayoutModule from "@highcharts/dashboards/modules/layout";
+import { initWs } from "./stores/ws";
 
 const app = createApp(App);
 registerPlugins(app);
@@ -50,4 +51,4 @@ app.use(VueFire, {
 
 app.mount("#app");
 
-// initWs();
+initWs();

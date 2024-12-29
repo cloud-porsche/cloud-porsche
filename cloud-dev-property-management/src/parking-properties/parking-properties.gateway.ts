@@ -17,7 +17,7 @@ import { ParkingProperty } from './entities/parking-property.entity';
 // pain: https://github.com/nestjs/nest/issues/7649#issuecomment-964873444
 @WebSocketGateway({
   cors: {
-    origin: ['https://cloud-porsche.github.io', 'https://cloud-dev.ostabo.com'],
+    origin: ['https://cloud-porsche.github.io', 'https://cloud-dev.ostabo.com', 'http://localhost:3000'],
   },
 })
 export class ParkingPropertiesGateway
