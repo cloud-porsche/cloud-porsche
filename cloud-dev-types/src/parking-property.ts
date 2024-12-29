@@ -28,6 +28,7 @@ export abstract class IParkingProperty {
   customers: Customer[];
   parkingType: ParkingPropertyType;
   layers: ParkingSpotLayer[];
+  defects: string[];
 }
 
 export class ParkingSpotLayer {

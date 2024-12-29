@@ -16,6 +16,13 @@
       <v-btn
         class="ml-4"
         density="comfortable"
+        :to="`/defects/${property.id}`"
+        :icon="'mdi-hammer-screwdriver'"
+        v-tooltip="'Defects'"
+      />
+      <v-btn
+        class="ml-4"
+        density="comfortable"
         :icon="'mdi-sync'"
         v-tooltip="'Refresh'"
         @click="

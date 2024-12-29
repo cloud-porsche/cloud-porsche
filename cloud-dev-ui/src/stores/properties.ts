@@ -1,7 +1,7 @@
 // Utilities
 import { defineStore } from "pinia";
 import { IParkingProperty } from "@cloud-porsche/types";
-import { del, get, post, postJSON } from "@/http/http";
+import { del, get, patchJSON, post, postJSON } from "@/http/http";
 
 interface PropertyStoreState {
   properties: IParkingProperty[];
@@ -90,6 +90,24 @@ export const usePropertyStore = defineStore("properties", {
       } finally {
         this.$state.loading = false;
         this.$state.error = null;
+      }
+    },
+    async updateProperty(
+      propertyId: string,
+      property: Partial<IParkingProperty>,
+    ) {
+      this.$state.loading = true;
+      try {
+        await patchJSON(`/v1/parking-properties/${propertyId}`, property
+        );
+      } catch (error) {
+        this.$state.loading = false;
+        this.$state.error = error;
+      }
+      finally {
+        this.$state.loading = false;
+        this.$state.error = null;
+        await this.fetchProperty(propertyId);
       }
     },
     async setSimulationActive(propertyId: string) {

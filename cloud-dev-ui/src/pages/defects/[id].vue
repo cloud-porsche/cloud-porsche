@@ -206,6 +206,7 @@ import { IDefect } from "@cloud-porsche/types";
 import StatusChip from "@/components/StatusChip.vue";
 import { useDisplay } from "vuetify";
 import { useDateFormat } from "@vueuse/core";
+import { ref } from "vue";
 
 export type SignedDefect = IDefect & { signedImage: string };
 
