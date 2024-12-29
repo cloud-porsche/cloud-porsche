@@ -1,0 +1,25 @@
+resources:
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+#This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: [ ] # Disable autoscaling in free-tier plan
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+envs:
+  FIREBASE_OVERWRITE_CREDENTIALS: true
+  CORS_ORIGIN: localhost
+  FIREBASE_STORAGE_BUCKET: property-management-free-tier
+  FIRESTORE_DB: property-management-free-tier
+ 
+propertyManagement:
+  port: 8080
+  livelinessProbe: true
