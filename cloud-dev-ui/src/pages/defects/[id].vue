@@ -300,6 +300,10 @@ const headers = [
 
 refetch();
 
+watch(id, () => {
+  refetch();
+});
+
 function errHandler(_: Error) {
   loading.value = false;
   error.value = true;
