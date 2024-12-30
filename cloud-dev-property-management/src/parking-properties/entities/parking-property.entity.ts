@@ -11,6 +11,7 @@ export class ParkingProperty extends IParkingProperty {
   lastModified: Date = new Date();
   customers: Customer[] = [];
   layers: ParkingSpotLayer[] = [];
+  defects: string[] = [];
 
   constructor(obj?: Partial<IParkingProperty>) {
     super();

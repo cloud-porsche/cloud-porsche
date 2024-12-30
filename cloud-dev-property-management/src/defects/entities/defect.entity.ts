@@ -4,6 +4,7 @@ import { Collection } from 'fireorm';
 @Collection()
 export class Defect implements IDefect {
   id: string;
+  propertyId: string;
   name: string;
   location: string;
   descriptionShort: string;

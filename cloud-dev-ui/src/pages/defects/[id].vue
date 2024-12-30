@@ -207,6 +207,7 @@ import StatusChip from "@/components/StatusChip.vue";
 import { useDisplay } from "vuetify";
 import { useDateFormat } from "@vueuse/core";
 import { ref } from "vue";
+import { useRoute } from "vue-router";
 
 export type SignedDefect = IDefect & { signedImage: string };
 
@@ -217,6 +218,9 @@ const error = ref(false);
 const defects = ref<SignedDefect[]>([]);
 const dialog = ref(false);
 const confirmDialog = ref(false);
+
+const route = useRoute();
+const id = computed(() => (route.params as any)["id"]);
 
 const inspectedImage = ref<{ open: boolean; src?: string }>({
   open: false,
@@ -302,8 +306,13 @@ function errHandler(_: Error) {
 }
 
 function refetch() {
+  if (!id.value) {
+    console.error("Property ID is missing");
+    return;
+  }
+
   loading.value = true;
-  get("/v1/defects")
+  get(`/v1/defects?propertyId=${id.value}`)
     .json()
     .then(async (data) => {
       defects.value = await Promise.all(
@@ -311,7 +320,7 @@ function refetch() {
           // Fetch the image URL and assign it to the defect object
           defect.signedImage = await fetchImage(defect.image); // Replace with actual image filename as needed
           return defect;
-        }),
+        })
       );
       loading.value = false;
       error.value = false;
@@ -359,6 +368,8 @@ function initiateDeletion(defect: SignedDefect | undefined) {
 
 // Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect, image?: File) {
+  newDefect.propertyId = id.value;
+  console.log(newDefect);
   loading.value = true;
   if (image) {
     const newFile = new File([image], newDefect.image, { type: image.type });
@@ -370,7 +381,7 @@ function handleSave(newDefect: IDefect, image?: File) {
       .then(() =>
         postJSON("/v1/defects", newDefect).then(() => {
           refetch();
-        }),
+        })
       )
       .catch(errHandler);
   } else {
@@ -384,9 +395,16 @@ function handleSave(newDefect: IDefect, image?: File) {
 }
 
 // Function to handle search/filter update from SearchFilter component
-function handleUpdateList(search: String, filter: String) {
+function handleUpdateList(search: string, filter: string) {
+  if (!id.value) {
+    console.error("Property ID is missing");
+    return;
+  }
+
   loading.value = true;
-  get(`/v1/defects/search?search=${search}&filter=${filter}`)
+  get(
+    `/v1/defects/search?search=${search}&filter=${filter}&propertyId=${id.value}`
+  )
     .json()
     .then(async (data) => {
       defects.value = await Promise.all(
@@ -394,7 +412,7 @@ function handleUpdateList(search: String, filter: String) {
           // Fetch the image URL and assign it to the defect object
           defect.signedImage = await fetchImage(defect.image); // Replace with actual image filename as needed
           return defect;
-        }),
+        })
       );
       loading.value = false;
       error.value = false;
@@ -414,7 +432,7 @@ function patchDefect(
   id: string,
   defect: Partial<SignedDefect>,
   image?: File,
-  oldId?: string,
+  oldId?: string
 ) {
   loading.value = true;
   if (image && defect.image && oldId !== defect.image) {
@@ -430,7 +448,7 @@ function patchDefect(
       .then(() =>
         patchJSON(`/v1/defects/${id}`, defect).then(() => {
           refetch();
-        }),
+        })
       )
       .catch(errHandler);
   } else if (!image && oldId) {
@@ -450,7 +468,6 @@ function patchDefect(
   }
 }
 </script>
-
 <style>
 .data-table td {
   overflow: hidden;

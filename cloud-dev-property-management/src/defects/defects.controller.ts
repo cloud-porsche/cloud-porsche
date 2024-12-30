@@ -23,16 +23,19 @@ export class DefectsController {
   }
 
   @Get()
-  async findAll() {
-    return await this.defectsService.findAll();
+  async findAll(@Query('propertyId') propertyId?: string) {
+    if (propertyId) {
+      return await this.defectsService.findAll(propertyId);
+    }
   }
 
   @Get('search')
   async findBySearchAndFilter(
     @Query('search') search: string,
     @Query('filter') filter: keyof Defect,
+    @Query('propertyId') propertyId?: string,
   ) {
-    return await this.defectsService.findFiltered(search, filter);
+    return await this.defectsService.findFiltered(search, filter, propertyId);
   }
 
   @Get(':id')
