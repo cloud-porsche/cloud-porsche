@@ -7,7 +7,7 @@
 // Composables
 import { createRouter } from "vue-router/auto";
 import { routes } from "vue-router/auto-routes";
-import { createWebHashHistory } from "vue-router";
+import { createWebHashHistory, useRoute } from "vue-router";
 import { getCurrentUser } from "vuefire";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 
@@ -19,20 +19,29 @@ const router = createRouter({
 // Redirect to login page if the user is not logged in or their email is not verified
 router.beforeEach(async (to) => {
   const currentUser = await getCurrentUser();
-
   const isLoggedIn = !!currentUser;
+  const tenantId = (to.params as any)["tenantId"];
+  console.log("To path: ", to.path);
+  console.log("tenantId ", tenantId);
 
+  if(!tenantId) {
+    console.log("Redirecting to /free/ bc path is /");
+    return {
+      path: "/free/"
+    }
+  }
   if (
     (!isLoggedIn || verifiedIfPassword(currentUser)) &&
-    to.path !== "/profile"
+    to.path !== `/${tenantId}/profile`
   ) {
-    return {
-      path: "/profile",
-      query: {
-        // Store the intended path to redirect after successful login and verification
-        redirect: to.fullPath,
-      },
-    };
+    console.log("Redirecting to /tenantId/profile bc user is not logged in or email is not verified");
+      return {
+        path: `${tenantId}/profile`,
+        query: {
+          // Store the intended path to redirect after successful login and verification
+          redirect: to.fullPath,
+        },
+      };
   }
 });
 

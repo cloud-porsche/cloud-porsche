@@ -35,7 +35,7 @@
           <v-card
             v-for="property in propertyStore.properties"
             :key="property.id"
-            :to="'/property/' + property.id"
+            :to="`/${tenantId}/property/${property.id}`"
             :value="property.id"
             :style="{
               backgroundColor: getStateColor(property),
@@ -488,6 +488,9 @@ import {
 import { useDisplay } from "vuetify";
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
+
+const route = useRoute();
+const tenantId = computed(() => (route.params as any)["tenantId"]);
 
 const mobile = useDisplay().mobile;
 const propertyStore = usePropertyStore();
