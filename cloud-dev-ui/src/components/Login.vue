@@ -24,8 +24,12 @@
         <v-btn @click="signIn" color="primary" width="100%">Confirm</v-btn>
       </v-form>
       <v-card-text class="w-100 text-center text-grey">
-        No Account yet? Register
-        <a class="register-link text-accent" @click="openRegister">here</a>
+        <span v-if="tenantId === 'free'"
+          >No Account yet? Register
+          <a class="register-link text-accent" @click="openRegister"
+            >here</a
+          ></span
+        >
         <br /><br /><small
           >Forgot your Password?<br />
           Enter your email and click
@@ -34,8 +38,9 @@
           ></small
         >
       </v-card-text>
-      <v-divider class="ma-4"></v-divider>
+      <v-divider class="ma-4" v-if="tenantId === 'free'"></v-divider>
       <v-btn-group
+        v-if="tenantId === 'free'"
         class="d-flex justify-center align-center"
         rounded
         variant="outlined"
@@ -111,6 +116,9 @@ const appStore = useAppStore();
 const isDark = computed(() => appStore.isDark);
 
 const auth = useFirebaseAuth();
+
+const route = useRoute();
+const tenantId = computed(() => (route.params as any)["tenantId"]);
 
 const emailRules = [
   (value: any) => {
