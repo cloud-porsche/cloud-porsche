@@ -16,7 +16,7 @@
       <v-btn
         class="ml-4"
         density="comfortable"
-        :to="`/defects/${property.id}`"
+        :to="`/${tenantId}/defects/${property.id}`"
         :icon="'mdi-hammer-screwdriver'"
         v-tooltip="'Defects'"
       />
@@ -271,6 +271,7 @@ const { isFullscreen, toggle } = useFullscreen(fullscreenRef);
 const propertyStore = usePropertyStore();
 const route = useRoute();
 const id = computed(() => (route.params as any)["id"]);
+const tenantId = computed(() => (route.params as any)["tenantId"]);
 
 await propertyStore.fetchSimulationStatus(id.value);
 
