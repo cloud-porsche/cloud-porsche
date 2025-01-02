@@ -21,8 +21,10 @@ export class PubSubService {
   async publishMessage(messageData: any): Promise<void> {
     try {
       const messageBuffer = Buffer.from(JSON.stringify(messageData));
-      await this.pubSubClient.topic(this.topicName).publish(messageBuffer);
-      console.log(
+      await this.pubSubClient
+        .topic(this.topicName)
+        .publishMessage({ data: messageBuffer });
+      this.logger.log(
         `Message of type ${messageData.messageType} published to Pub/Sub`,
       );
     } catch (error) {

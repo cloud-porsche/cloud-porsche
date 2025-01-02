@@ -119,7 +119,12 @@ function request<T extends BodyInit>(
     const token = await useCurrentUser().value?.getIdToken(true);
     const tenantId = (router.currentRoute.value.params as any)["tenantId"];
 
-    if (tenantId) headers.set("tenant-id", tenantId);
+    if (tenantId && tenantId !== "free") {
+      headers.set(
+        "tenant-id",
+        tenantId.includes(":") ? tenantId.split(":")[1] : tenantId,
+      );
+    }
     if (token) headers.set("authorization", token);
     const req = new Request(input, {
       ...defaults.init,

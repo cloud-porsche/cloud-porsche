@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ApiCall } from './entities/api-call.entity';
-import { BaseFirestoreRepository, getRepository } from 'fireorm';
+import { getRepository } from 'fireorm';
 import { ParkingAction } from './entities/parking-action-entity';
 import { addDays, subDays } from 'date-fns';
 import { PubSub } from '@google-cloud/pubsub';
 
 @Injectable()
 export class MonitoringService {
+  private readonly logger = new Logger(MonitoringService.name);
+
   private apiCallRepository = getRepository(ApiCall);
   private parkingActionRepository = getRepository(ParkingAction);
   private pubSubClient: PubSub;
@@ -38,10 +40,10 @@ export class MonitoringService {
     });
 
     subscription.on('error', (error) => {
-      console.error('Error receiving message:', error);
+      this.logger.error('Error receiving message:', error);
     });
 
-    console.log(
+    this.logger.log(
       `Listening for messages on subscription: ${this.subscriptionName}`,
     );
   }
@@ -232,16 +234,13 @@ export class MonitoringService {
         }
         const actionsForDay = groupedActions[propertyName][day] || [];
 
-        console.log(actionsForDay);
-        const avgForDay =
+        avgUtilization[propertyName][day] =
           actionsForDay.length > 0
             ? actionsForDay.reduce(
                 (sum, action) => sum + action.currentUtilization,
                 0,
               ) / actionsForDay.length
             : 0;
-
-        avgUtilization[propertyName][day] = avgForDay;
       }
 
       for (const propertyName of Object.keys(avgUtilization)) {
