@@ -29,10 +29,10 @@
       <v-list nav v-model:opened="openNavigations">
         <v-list-item
           prepend-icon="mdi-view-dashboard"
-          to="/"
+          :to="`/${tenantId}/`"
           title="Dashboard"
           value="dashboard"
-          :active="router.currentRoute.value.path === '/'"
+          :active="router.currentRoute.value.path === `/${tenantId}/`"
         >
         </v-list-item>
         <v-list-group>
@@ -44,48 +44,48 @@
             ></v-list-item>
           </template>
           <v-list-item
-            to="/property"
+            :to="`/${tenantId}/property`"
             prepend-icon="mdi-view-list"
             title="Management"
             value="properties"
-            :active="router.currentRoute.value.path === '/property'"
+            :active="router.currentRoute.value.path === `/${tenantId}/property`"
           >
           </v-list-item>
           <v-list-item
             v-for="property in propertyStore.properties"
-            :to="'/property/' + property.id"
+            :to="`/${tenantId}/property/${property.id}`"
             :title="property.name ?? property.id"
             :value="property.id"
             :active="
-              router.currentRoute.value.path === '/property/' + property.id
+              router.currentRoute.value.path === `/${tenantId}/property/${property.id}`
             "
           />
         </v-list-group>
         <v-list-item
-          prepend-icon="mdi-hammer-screwdriver"
-          to="/defects"
-          title="Defects"
-          value="defects"
-          :active="router.currentRoute.value.path === '/defects'"
+          prepend-icon="mdi-monitor-dashboard"
+          :to="`/${tenantId}/monitoring`"
+          title="Monitoring"
+          value="monitoring"
+          :active="router.currentRoute.value.path === `/${tenantId}/monitoring`"
         />
       </v-list>
       <template v-slot:append>
         <v-list nav>
           <v-list-item
             v-if="user"
-            to="/profile"
+            :to="`/${tenantId}/profile`"
             title="Profile"
             value="profile"
             prepend-icon="mdi-account-circle"
-            :active="router.currentRoute.value.path === '/profile'"
+            :active="router.currentRoute.value.path === `/${tenantId}/profile`"
           >
           </v-list-item>
           <v-list-item
             prepend-icon="mdi-cog"
-            to="/settings"
+            :to="`/${tenantId}/settings`"
             title="Settings"
             value="settings"
-            :active="router.currentRoute.value.path === '/settings'"
+            :active="router.currentRoute.value.path === `${tenantId}/settings`"
           />
         </v-list>
       </template>
@@ -111,7 +111,6 @@
         </template>
       </RouterView>
     </v-main>
-
     <AppFooter />
 
     <v-bottom-sheet
@@ -151,6 +150,8 @@ const isDark = computed(() => appStore.isDark);
 const user = useCurrentUser();
 
 const auth = useFirebaseAuth();
+const route = useRoute();
+const tenantId = computed(() => (route.params as any)["tenantId"]);
 
 auth?.authStateReady().then(() => appStore.setAuthLoading(false));
 

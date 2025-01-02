@@ -97,6 +97,29 @@ const tabs = computed(() => [
       },
     ],
   },
+  {
+    title: "Parking Management",
+    text: "Settings for the Parking Management Module.",
+    selections: [
+      {
+        title: "API Endpoint",
+        text: "This will be the communication endpoint for Parking spots.",
+        options: [
+          ...new Set<string>([
+            ...(
+              import.meta.env.VITE_PARKING_MANAGEMENT_API_OPTIONS ?? ""
+            ).split(","),
+            import.meta.env.VITE_PARKING_MANAGEMENT_API_URL,
+            appStore.api.parkingManagement,
+          ]),
+        ],
+        initial: appStore.api.parkingManagement,
+        valueChange: (value: string) => {
+          appStore.changeParkingManagementApiURL(value);
+        },
+      },
+    ],
+  },
 ]);
 const activeTab = ref(tabs.value[0]);
 </script>

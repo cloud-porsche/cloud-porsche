@@ -93,11 +93,15 @@ function request<T extends BodyInit>(
   init: Omit<Init, "headers"> | undefined,
   method: Method,
   body?: T,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement", // Standard: Property Management
 ) {
   // ADJUSTED PART
   // if input is not a full url, prepend the base url in env
 
-  const api_url = useAppStore().api.propertyManagement;
+  const api_url =
+    api === "propertyManagement"
+      ? useAppStore().api.propertyManagement
+      : useAppStore().api.parkingManagement;
   if (
     typeof input === "string" &&
     api_url !== undefined &&
@@ -152,8 +156,12 @@ function getJSONHeaders(init?: Init) {
 /**
  * Performs a HTTP `GET` request.
  */
-export function get(input: RequestInfo | URL, init?: Init) {
-  return request(input, getHeaders(init), init, "GET");
+export function get(
+  input: RequestInfo | URL,
+  init?: Init,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+) {
+  return request(input, getHeaders(init), init, "GET", undefined, api);
 }
 
 /**
@@ -165,8 +173,9 @@ export function post<T extends BodyInit>(
   input: RequestInfo | URL,
   body?: T,
   init?: Init,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
 ) {
-  return request(input, getHeaders(init), init, "POST", body);
+  return request(input, getHeaders(init), init, "POST", body, api);
 }
 
 /**
@@ -184,6 +193,7 @@ export function postJSON<T extends object>(
   input: RequestInfo | URL,
   body: T,
   init?: Init,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
 ) {
   return request(
     input,
@@ -191,6 +201,7 @@ export function postJSON<T extends object>(
     init,
     "POST",
     JSON.stringify(body),
+    api,
   );
 }
 
@@ -206,8 +217,9 @@ export function put<T extends BodyInit>(
   input: RequestInfo | URL,
   body?: T,
   init?: Init,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
 ) {
-  return request(input, getHeaders(init), init, "PUT", body);
+  return request(input, getHeaders(init), init, "PUT", body, api);
 }
 
 /**
@@ -219,6 +231,7 @@ export function putJSON<T extends object>(
   input: RequestInfo | URL,
   body: T,
   init?: Init,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
 ) {
   return request(
     input,
@@ -226,6 +239,7 @@ export function putJSON<T extends object>(
     init,
     "PUT",
     JSON.stringify(body),
+    api,
   );
 }
 
@@ -238,8 +252,9 @@ export function patch<T extends BodyInit>(
   input: RequestInfo | URL,
   body?: T,
   init?: Init,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
 ) {
-  return request(input, getHeaders(init), init, "PATCH", body);
+  return request(input, getHeaders(init), init, "PATCH", body, api);
 }
 
 /**
@@ -251,6 +266,7 @@ export function patchJSON<T extends object>(
   input: RequestInfo | URL,
   body: T,
   init?: Init,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
 ) {
   return request(
     input,
@@ -258,6 +274,7 @@ export function patchJSON<T extends object>(
     init,
     "PATCH",
     JSON.stringify(body),
+    api,
   );
 }
 
@@ -265,6 +282,10 @@ export function patchJSON<T extends object>(
  * Performs a HTTP `DELETE` request.
  */
 // Cannot be named delete :-/
-export function del(input: RequestInfo | URL, init?: Init) {
-  return request(input, getHeaders(init), init, "DELETE");
+export function del(
+  input: RequestInfo | URL,
+  init?: Init,
+  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+) {
+  return request(input, getHeaders(init), init, "DELETE", undefined, api);
 }

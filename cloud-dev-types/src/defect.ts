@@ -7,6 +7,7 @@ export enum DefectState {
 
 export interface IDefect {
   id: string;
+  propertyId: string;
   name: string;
   location: string;
   descriptionShort: string;

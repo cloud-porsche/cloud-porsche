@@ -24,6 +24,7 @@
     "run-loadtest": "bzt test/loadtest.yml"
   },
   "dependencies": {
+    "@google-cloud/pubsub": "^4.9.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.0.0",

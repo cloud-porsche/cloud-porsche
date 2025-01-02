@@ -1,7 +1,7 @@
 // Utilities
 import { defineStore } from "pinia";
 import { IParkingProperty } from "@cloud-porsche/types";
-import { del, get, post, postJSON } from "@/http/http";
+import { del, get, patchJSON, post, postJSON } from "@/http/http";
 
 interface PropertyStoreState {
   properties: IParkingProperty[];
@@ -92,10 +92,33 @@ export const usePropertyStore = defineStore("properties", {
         this.$state.error = null;
       }
     },
+    async updateProperty(
+      propertyId: string,
+      property: Partial<IParkingProperty>,
+    ) {
+      this.$state.loading = true;
+      try {
+        await patchJSON(`/v1/parking-properties/${propertyId}`, property
+        );
+      } catch (error) {
+        this.$state.loading = false;
+        this.$state.error = error;
+      }
+      finally {
+        this.$state.loading = false;
+        this.$state.error = null;
+        await this.fetchProperty(propertyId);
+      }
+    },
     async setSimulationActive(propertyId: string) {
       this.$state.loading = true;
       try {
-        await post(`/v1/simulation/${propertyId}/start`);
+        await post(
+          `/v1/simulation/${propertyId}/start`,
+          undefined,
+          undefined,
+          "parkingManagement",
+        );
       } catch (error) {
         this.$state.loading = false;
         this.$state.error = error;
@@ -108,7 +131,12 @@ export const usePropertyStore = defineStore("properties", {
     async setSimulationInactive(propertyId: string) {
       this.$state.loading = true;
       try {
-        await post(`/v1/simulation/${propertyId}/stop`);
+        await post(
+          `/v1/simulation/${propertyId}/stop`,
+          undefined,
+          undefined,
+          "parkingManagement",
+        );
       } catch (error) {
         this.$state.loading = false;
         this.$state.error = error;
@@ -122,7 +150,11 @@ export const usePropertyStore = defineStore("properties", {
       this.$state.loading = true;
       try {
         const isRunning =
-          (await get(`/v1/simulation/${propertyId}/status`).json()) === "true";
+          (await get(
+            `/v1/simulation/${propertyId}/status`,
+            undefined,
+            "parkingManagement",
+          ).json()) === "true";
         if (isRunning && !this.$state.simulationActive.includes(propertyId)) {
           this.$state.simulationActive = [
             ...this.$state.simulationActive,

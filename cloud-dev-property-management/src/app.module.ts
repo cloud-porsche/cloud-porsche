@@ -12,7 +12,8 @@ import { ObjectStorageModule } from './object-storage/object-storage.module';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { ParkingPropertiesModule } from './parking-properties/parking-properties.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ParkingModule } from './parking/parking.module';
+import { LoggingMiddleware } from './pubsub/logging.middleware';
+import { PubSubModule } from './pubsub/pubsub.module';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { ParkingModule } from './parking/parking.module';
       envFilePath: ['.env', '.env.production', '.env.development'],
     }),
     ParkingPropertiesModule,
-    ParkingModule,
+    PubSubModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -31,7 +32,7 @@ import { ParkingModule } from './parking/parking.module';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(AuthMiddleware)
+      .apply(AuthMiddleware, LoggingMiddleware)
       .exclude(
         { path: 'v1', method: RequestMethod.GET },
         { path: 'api', method: RequestMethod.ALL },

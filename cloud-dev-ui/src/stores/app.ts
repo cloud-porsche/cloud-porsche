@@ -7,6 +7,11 @@ export const propertyManagementUrl =
   import.meta.env.VITE_PROPERTY_MANAGEMENT_API_URL ??
   "";
 
+export const parkingManagementUrl =
+  localStorage.getItem("parkingManagement") ??
+  import.meta.env.VITE_PARKING_MANAGEMENT_API_URL ??
+  "";
+
 export const useAppStore = defineStore("app", {
   state: () => {
     return {
@@ -15,6 +20,7 @@ export const useAppStore = defineStore("app", {
       },
       api: {
         propertyManagement: propertyManagementUrl,
+        parkingManagement: parkingManagementUrl,
         ws: {
           socket: {} as Socket,
           connected: false,
@@ -48,6 +54,10 @@ export const useAppStore = defineStore("app", {
     changePropertyManagementApiURL(url: string) {
       this.api.propertyManagement = url;
       localStorage.setItem("propertyManagement", url);
+    },
+    changeParkingManagementApiURL(url: string) {
+      this.api.parkingManagement = url;
+      localStorage.setItem("parkingManagement", url);
     },
     setAuthLoading(loading: boolean) {
       this.auth.loading = loading;

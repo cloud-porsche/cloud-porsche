@@ -35,7 +35,7 @@
           <v-card
             v-for="property in propertyStore.properties"
             :key="property.id"
-            :to="'/property/' + property.id"
+            :to="`/${tenantId}/property/${property.id}`"
             :value="property.id"
             :style="{
               backgroundColor: getStateColor(property),
@@ -50,7 +50,7 @@
                 parkingSpots(property.id).filter(
                   (s) =>
                     s.state === ParkingSpotState.OCCUPIED ||
-                    s.state === ParkingSpotState.CHARGING,
+                    s.state === ParkingSpotState.CHARGING
                 ).length
               }}
               / {{ parkingSpots(property.id).length }}
@@ -401,7 +401,7 @@
                           {{
                             newLayers.reduce(
                               (acc, layer) => acc + layer.spotCount,
-                              0,
+                              0
                             )
                           }}
                           spots in total
@@ -489,6 +489,9 @@ import { useDisplay } from "vuetify";
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
 
+const route = useRoute();
+const tenantId = computed(() => (route.params as any)["tenantId"]);
+
 const mobile = useDisplay().mobile;
 const propertyStore = usePropertyStore();
 const { parkingSpots } = storeToRefs(propertyStore);
@@ -566,7 +569,7 @@ function nextOrGenerate(next: () => void) {
               .replace("${index}", index.toString())
               .replace("${layer}", layer.floor.toString());
         return spot;
-      }),
+      })
     );
   }
   next();
@@ -589,7 +592,7 @@ function togglePlaceholder(layer: ParkingSpotLayer, spot: ParkingSpot) {
   spot.electricCharging = false;
   if (spot.placeholder) {
     layer.parkingSpots = layer.parkingSpots.filter(
-      (s) => s.placeholder || s.id !== spot.id,
+      (s) => s.placeholder || s.id !== spot.id
     );
     spot.placeholder = !spot.placeholder;
   } else {
@@ -610,6 +613,7 @@ async function saveNewProperty() {
     ...newProperty,
     lastModified: new Date(),
     layers: newLayers,
+    defects: [],
   };
 
   await propertyStore.addProperty(finalProperty);
@@ -627,7 +631,7 @@ function getStateColor(property: IParkingProperty) {
     return undefined;
   }
   const occupied = spots.filter(
-    (s) => s.state === ParkingSpotState.OCCUPIED,
+    (s) => s.state === ParkingSpotState.OCCUPIED
   ).length;
   if (occupied === spots.length) {
     return "tomato";
