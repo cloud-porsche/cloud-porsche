@@ -3,10 +3,12 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { DefectsService } from './defects.service';
 import { CreateDefectDto } from './dto/create-defect.dto';
@@ -18,7 +20,7 @@ export class DefectsController {
   constructor(private readonly defectsService: DefectsService) {}
 
   @Post()
-  async create(@Body() createDefectDto: CreateDefectDto) {
+  async create(@Body() createDefectDto: CreateDefectDto, @Headers('tenant-id') tenantId: string) {
     return await this.defectsService.create(createDefectDto);
   }
 

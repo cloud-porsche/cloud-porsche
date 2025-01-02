@@ -1,6 +1,7 @@
 /// Source: https://github.com/tkrotoff/fetch/blob/master/src/Http.ts
 
 import { HttpError } from "@/http/http-error";
+import router from "@/router";
 import { useAppStore } from "@/stores/app";
 import { useCurrentUser } from "vuefire";
 
@@ -112,13 +113,13 @@ function request<T extends BodyInit>(
     input = `${api_url}${input.startsWith("/") ? input : `/${input}`}`;
   }
 
-  //
-
   async function _fetch() {
     // Have to wait for headers to be modified inside extendResponsePromiseWithBodyMethods
     await Promise.resolve();
     const token = await useCurrentUser().value?.getIdToken(true);
+    const tenantId = (router.currentRoute.value.params as any)["tenantId"];
 
+    if (tenantId) headers.set("tenant-id", tenantId);
     if (token) headers.set("authorization", token);
     const req = new Request(input, {
       ...defaults.init,

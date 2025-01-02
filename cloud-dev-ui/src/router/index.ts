@@ -21,11 +21,9 @@ router.beforeEach(async (to) => {
   const currentUser = await getCurrentUser();
   const isLoggedIn = !!currentUser;
   const tenantId = (to.params as any)["tenantId"];
-  console.log("To path: ", to.path);
-  console.log("tenantId ", tenantId);
+
 
   if(!tenantId) {
-    console.log("Redirecting to /free/ bc path is /");
     return {
       path: "/free/"
     }
@@ -34,7 +32,6 @@ router.beforeEach(async (to) => {
     (!isLoggedIn || verifiedIfPassword(currentUser)) &&
     to.path !== `/${tenantId}/profile`
   ) {
-    console.log("Redirecting to /tenantId/profile bc user is not logged in or email is not verified");
       return {
         path: `${tenantId}/profile`,
         query: {

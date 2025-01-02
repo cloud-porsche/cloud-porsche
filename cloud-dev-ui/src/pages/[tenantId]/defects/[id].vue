@@ -373,7 +373,6 @@ function initiateDeletion(defect: SignedDefect | undefined) {
 // Handle the save action from AddDefectPopup
 function handleSave(newDefect: IDefect, image?: File) {
   newDefect.propertyId = id.value;
-  console.log(newDefect);
   loading.value = true;
   if (image) {
     const newFile = new File([image], newDefect.image, { type: image.type });
