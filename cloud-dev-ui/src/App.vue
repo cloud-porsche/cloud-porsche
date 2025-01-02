@@ -25,10 +25,10 @@
       />
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawerOpen">
+    <v-navigation-drawer v-model="drawerOpen" elevation="4">
       <v-list nav v-model:opened="openNavigations">
         <v-list-item
-          prepend-icon="mdi-view-dashboard"
+          prepend-icon="mdi-monitor-dashboard"
           :to="`/${tenantId}/`"
           title="Dashboard"
           value="dashboard"
@@ -62,13 +62,6 @@
             "
           />
         </v-list-group>
-        <v-list-item
-          prepend-icon="mdi-monitor-dashboard"
-          :to="`/${tenantId}/monitoring`"
-          title="Monitoring"
-          value="monitoring"
-          :active="router.currentRoute.value.path === `/${tenantId}/monitoring`"
-        />
       </v-list>
       <template v-slot:append>
         <v-list nav>

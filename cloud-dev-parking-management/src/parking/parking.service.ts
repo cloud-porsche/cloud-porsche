@@ -157,7 +157,7 @@ export class ParkingService {
     if (!spot) throw new Error('Spot not found');
     if (spot.state !== ParkingSpotState.OCCUPIED)
       throw new Error('Spot not occupied');
-    this.pubSubService.publishMessage({
+    await this.pubSubService.publishMessage({
       messageType: 'parking',
       action: 'free',
       timestamp: new Date(),

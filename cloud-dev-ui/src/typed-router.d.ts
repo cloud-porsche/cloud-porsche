@@ -21,7 +21,6 @@ declare module 'vue-router/auto-routes' {
     '/[...path]': RouteRecordInfo<'/[...path]', '/:path(.*)', { path: ParamValue<true> }, { path: ParamValue<false> }>,
     '/[tenantId]/': RouteRecordInfo<'/[tenantId]/', '/:tenantId', { tenantId: ParamValue<true> }, { tenantId: ParamValue<false> }>,
     '/[tenantId]/defects/[id]': RouteRecordInfo<'/[tenantId]/defects/[id]', '/:tenantId/defects/:id', { tenantId: ParamValue<true>, id: ParamValue<true> }, { tenantId: ParamValue<false>, id: ParamValue<false> }>,
-    '/[tenantId]/monitoring': RouteRecordInfo<'/[tenantId]/monitoring', '/:tenantId/monitoring', { tenantId: ParamValue<true> }, { tenantId: ParamValue<false> }>,
     '/[tenantId]/profile': RouteRecordInfo<'/[tenantId]/profile', '/:tenantId/profile', { tenantId: ParamValue<true> }, { tenantId: ParamValue<false> }>,
     '/[tenantId]/property/': RouteRecordInfo<'/[tenantId]/property/', '/:tenantId/property', { tenantId: ParamValue<true> }, { tenantId: ParamValue<false> }>,
     '/[tenantId]/property/[id]': RouteRecordInfo<'/[tenantId]/property/[id]', '/:tenantId/property/:id', { tenantId: ParamValue<true>, id: ParamValue<true> }, { tenantId: ParamValue<false>, id: ParamValue<false> }>,
