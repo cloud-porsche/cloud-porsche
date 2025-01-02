@@ -57,7 +57,8 @@
             :title="property.name ?? property.id"
             :value="property.id"
             :active="
-              router.currentRoute.value.path === `/${tenantId}/property/${property.id}`
+              router.currentRoute.value.path ===
+              `/${tenantId}/property/${property.id}`
             "
           />
         </v-list-group>
@@ -151,15 +152,24 @@ const user = useCurrentUser();
 
 const auth = useFirebaseAuth();
 const route = useRoute();
-const tenantId = computed(() => {
-  const tenantId = (route.params as any)["tenantId"]
-  auth!.tenantId = tenantId;
+const determineCurrentTenantId = () => {
+  const tenantId = (route.params as any)["tenantId"];
+  if (!tenantId || !auth) return null;
+  auth.tenantId =
+    tenantId === "free"
+      ? null
+      : tenantId.includes(":")
+        ? tenantId.split(":")[1]
+        : tenantId;
   return tenantId;
+};
+const tenantId = computed(() => {
+  return determineCurrentTenantId();
 });
 
 auth?.authStateReady().then(() => {
-  appStore.setAuthLoading(false)
-  auth.tenantId = (route.params as any)["tenantId"];
+  appStore.setAuthLoading(false);
+  determineCurrentTenantId();
 });
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
@@ -169,11 +179,10 @@ if (authDomain && auth && authDomain.includes("localhost")) {
 
 const propertyStore = usePropertyStore();
 
-onMounted(async() => {
+onMounted(async () => {
   await router.isReady();
   await propertyStore.fetchProperties();
-})
-
+});
 </script>
 
 <style lang="scss">

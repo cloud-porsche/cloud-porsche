@@ -7,7 +7,7 @@
 // Composables
 import { createRouter } from "vue-router/auto";
 import { routes } from "vue-router/auto-routes";
-import { createWebHashHistory, useRoute } from "vue-router";
+import { createWebHashHistory } from "vue-router";
 import { getCurrentUser } from "vuefire";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 
@@ -22,23 +22,22 @@ router.beforeEach(async (to) => {
   const isLoggedIn = !!currentUser;
   const tenantId = (to.params as any)["tenantId"];
 
-
-  if(!tenantId) {
+  if (!tenantId && to.path !== "/free/") {
     return {
-      path: "/free/"
-    }
+      path: "/free/",
+    };
   }
   if (
     (!isLoggedIn || verifiedIfPassword(currentUser)) &&
     to.path !== `/${tenantId}/profile`
   ) {
-      return {
-        path: `${tenantId}/profile`,
-        query: {
-          // Store the intended path to redirect after successful login and verification
-          redirect: to.fullPath,
-        },
-      };
+    return {
+      path: `${tenantId}/profile`,
+      query: {
+        // Store the intended path to redirect after successful login and verification
+        redirect: to.fullPath,
+      },
+    };
   }
 });
 

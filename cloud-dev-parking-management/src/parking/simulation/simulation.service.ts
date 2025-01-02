@@ -12,7 +12,7 @@ const SIMULATION_INTERVAL = 10000;
 export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
   private simulationIds = new Set<string>();
-  private parkingPropertiesApi: string;
+  private readonly parkingPropertiesApi: string;
 
   constructor(
     private readonly config: ConfigService,
@@ -43,10 +43,11 @@ export class SimulationService {
   }
 
   async stopSimulation(propertyId: string) {
+    this.schedulerRegistry.deleteInterval('simulation');
+
     await this.removeSimulationCars(propertyId);
 
     this.simulationIds.delete(propertyId);
-    this.schedulerRegistry.deleteInterval('simulation');
     this.logger.log('Simulation stopped for: ' + propertyId);
   }
 

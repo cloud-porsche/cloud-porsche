@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { Customer, ParkingSpotState } from '@cloud-porsche/types';
-import { IParkingProperty } from '@cloud-porsche/types';
+import {
+  Customer,
+  IParkingProperty,
+  ParkingSpotState,
+} from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { PubSubService } from 'src/pubsub/pubsub.service';
@@ -9,7 +12,7 @@ import { PubSubService } from 'src/pubsub/pubsub.service';
 @Injectable()
 export class ParkingService {
   private readonly logger = new Logger(ParkingService.name);
-  private parkingPropertiesApi: string;
+  private readonly parkingPropertiesApi: string;
 
   constructor(
     private readonly httpService: HttpService,
@@ -61,7 +64,7 @@ export class ParkingService {
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
 
-    this.pubSubService.publishMessage({
+    await this.pubSubService.publishMessage({
       messageType: 'parking',
       action: 'enter',
       timestamp: new Date(),
@@ -89,7 +92,7 @@ export class ParkingService {
       this.logger.warn('Customer still has a spot occupied - setting it free');
       await this.freeSpot(parkingPropertyId, spot.id);
     }
-    this.pubSubService.publishMessage({
+    await this.pubSubService.publishMessage({
       messageType: 'parking',
       action: 'leave',
       timestamp: new Date(),
@@ -123,7 +126,7 @@ export class ParkingService {
     ) {
       throw new Error('Spot already occupied or out of order');
     }
-    this.pubSubService.publishMessage({
+    await this.pubSubService.publishMessage({
       messageType: 'parking',
       action: 'occupy',
       timestamp: new Date(),
@@ -183,7 +186,7 @@ export class ParkingService {
     if (!spot) throw new Error('Spot not found');
     if (spot.state !== ParkingSpotState.OCCUPIED && !spot.electricCharging)
       throw new Error('Spot already occupied or not an electric charger');
-    this.pubSubService.publishMessage({
+    await this.pubSubService.publishMessage({
       messageType: 'parking',
       action: 'occupy',
       timestamp: new Date(),
