@@ -6,6 +6,7 @@ import { BaseFirestoreRepository, getRepository } from 'fireorm';
 import { ObjectStorageService } from '../object-storage/object-storage.service';
 import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
 import { ParkingProperty } from '../parking-properties/entities/parking-property.entity';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class DefectsService {

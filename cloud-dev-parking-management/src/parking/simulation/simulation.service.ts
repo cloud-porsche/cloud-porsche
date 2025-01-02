@@ -23,7 +23,6 @@ export class SimulationService {
     this.parkingPropertiesApi = this.config.get<string>(
       'PROPERTY_MANAGEMENT_API_URL',
     );
-    console.log('this.parkingPropertiesApi', this.parkingPropertiesApi);
   }
 
   async startSimulation(propertyId: string) {

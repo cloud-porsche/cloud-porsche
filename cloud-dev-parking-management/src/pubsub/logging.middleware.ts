@@ -11,7 +11,6 @@ export class LoggingMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction) {
     const { method, originalUrl, body } = req;
-    console.log(body);
 
     // Log the incoming request
     this.logger.log(`Incoming request: ${method} ${originalUrl}`);

@@ -151,9 +151,16 @@ const user = useCurrentUser();
 
 const auth = useFirebaseAuth();
 const route = useRoute();
-const tenantId = computed(() => (route.params as any)["tenantId"]);
+const tenantId = computed(() => {
+  const tenantId = (route.params as any)["tenantId"]
+  auth!.tenantId = tenantId;
+  return tenantId;
+});
 
-auth?.authStateReady().then(() => appStore.setAuthLoading(false));
+auth?.authStateReady().then(() => {
+  appStore.setAuthLoading(false)
+  auth.tenantId = (route.params as any)["tenantId"];
+});
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
 if (authDomain && auth && authDomain.includes("localhost")) {
@@ -162,9 +169,11 @@ if (authDomain && auth && authDomain.includes("localhost")) {
 
 const propertyStore = usePropertyStore();
 
-onMounted(() => {
-  propertyStore.fetchProperties();
-});
+onMounted(async() => {
+  await router.isReady();
+  await propertyStore.fetchProperties();
+})
+
 </script>
 
 <style lang="scss">
