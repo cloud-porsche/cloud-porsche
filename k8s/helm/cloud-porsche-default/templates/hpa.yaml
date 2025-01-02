@@ -3,6 +3,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ $service}}
+  namespace: {{ $.Release.Namespace }}
   labels:
     name: {{ $service }}
 spec:

@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: property-management
+  namespace: {{ .Release.Namespace}}
 spec:
   ports:
     - name: {{ .Values.propertyManagement.port | quote }}
