@@ -63,17 +63,28 @@ async function onSubmit(_: FormSubmitEvent<any>) {
 </script>
 
 <template>
-  <UContainer class="flex flex-col justify-center items-center p-12 m-12">
-    <UCard class="min-w-96 p-4">
+  <ULandingSection
+    title="Sign Up"
+    description="We'll help you put everything on track for success."
+    align="center"
+    :ui="{
+      title:
+        'text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl lg:text-4xl',
+      description: 'mt-4 text-md text-gray-600 dark:text-gray-300',
+      container: 'max-w-2xl',
+      wrapper: 'py-12 sm:py-12',
+    }"
+  >
+    <UCard>
       <UForm
         :validate="validate"
         :state="state"
         class="space-y-4"
         @submit="onSubmit"
       >
-        <UFormGroup label="Plan" name="plan">
+        <UFormGroup label="Plan" name="plan" class="py-4">
           <USelect
-            :options="['free', 'pro', 'enterprise']"
+            :options="['pro', 'enterprise']"
             v-model="state.plan"
             required
           ></USelect>
@@ -90,15 +101,20 @@ async function onSubmit(_: FormSubmitEvent<any>) {
         <UFormGroup label="Confirm Email" name="confirm-email">
           <UInput v-model="state.confirmEmail" required />
         </UFormGroup>
-
-        <UButton
-          type="submit"
-          :disabled="validate(state).length > 0"
-          :loading="loading"
+        <UDivider></UDivider>
+        <span class="flex justify-center">
+          <UButton
+            type="submit"
+            padded
+            block
+            class="disabled:opacity-50"
+            :disabled="validate(state).length > 0"
+            :loading="loading"
+          >
+            Submit
+          </UButton></span
         >
-          Submit
-        </UButton>
       </UForm>
     </UCard>
-  </UContainer>
+  </ULandingSection>
 </template>

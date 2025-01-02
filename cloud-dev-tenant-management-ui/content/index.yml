@@ -46,7 +46,7 @@ pricing:
       button:
         label: Get Started
         color: gray
-        to: 'sign-up?plan=free'
+        to: 'https://cloud-porsche.github.io/cloud-porsche/#/free-tier/'
       features:
         - 1 User
         - 1 Parking Property

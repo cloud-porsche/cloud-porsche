@@ -5,6 +5,8 @@ const { data: page } = await useAsyncData("index", () =>
 
 const colorMode = useColorMode();
 
+const isDev = import.meta.dev;
+
 useSeoMeta({
   title: page.value.title,
   ogTitle: page.value.title,
@@ -46,12 +48,19 @@ useSeoMeta({
         </UBadge>
       </template>
 
-      <!--ImagePlaceholder /-->
-      <NuxtImg
-        :src="colorMode.value === 'dark' ? 'hero.png' : 'hero-light.png'"
-        alt="Hero"
-        class="w-full h-full object-cover border-gradient rounded-xl p-4"
-      ></NuxtImg>
+      <ClientOnly fallbackTag="span">
+        <NuxtImg
+          :src="
+            (isDev ? '' : '../..') +
+            (colorMode.value === 'dark' ? '/hero.png' : '/hero-light.png')
+          "
+          alt="Hero"
+          class="w-full h-full object-cover border-gradient rounded-xl p-4"
+        ></NuxtImg>
+        <template #fallback>
+          <NuxtLoadingIndicator />
+        </template>
+      </ClientOnly>
 
       <ULandingLogos :title="page.logos.title" align="center">
         <UIcon
@@ -87,7 +96,6 @@ useSeoMeta({
     >
       <UPricingGrid
         id="pricing"
-        compact
         class="scroll-mt-[calc(var(--header-height)+140px+128px+96px)]"
       >
         <UPricingCard
