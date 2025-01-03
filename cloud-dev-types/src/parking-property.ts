@@ -20,6 +20,7 @@ export enum ParkingPropertyType {
 
 export abstract class IParkingProperty {
   id: string;
+  tenantId: string;
   name: string;
   location: string;
   description: string;

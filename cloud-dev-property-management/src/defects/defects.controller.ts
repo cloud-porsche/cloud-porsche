@@ -20,12 +20,18 @@ export class DefectsController {
   constructor(private readonly defectsService: DefectsService) {}
 
   @Post()
-  async create(@Headers('tenant-id') tenantId: string, @Body() createDefectDto: CreateDefectDto) {
+  async create(
+    @Headers('tenant-id') tenantId: string,
+    @Body() createDefectDto: CreateDefectDto,
+  ) {
     return await this.defectsService.create(createDefectDto, tenantId);
   }
 
   @Get()
-  async findAll(@Headers('tenant-id') tenantId: string, @Query('propertyId') propertyId?: string) {
+  async findAll(
+    @Headers('tenant-id') tenantId: string,
+    @Query('propertyId') propertyId?: string,
+  ) {
     if (propertyId) {
       return await this.defectsService.findAll(propertyId, tenantId);
     }
@@ -38,7 +44,12 @@ export class DefectsController {
     @Query('filter') filter: keyof Defect,
     @Query('propertyId') propertyId?: string,
   ) {
-    return await this.defectsService.findFiltered(search, filter, propertyId, tenantId);
+    return await this.defectsService.findFiltered(
+      search,
+      filter,
+      propertyId,
+      tenantId,
+    );
   }
 
   @Get(':id')
@@ -56,7 +67,10 @@ export class DefectsController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return await this.defectsService.remove(id);
+  async remove(
+    @Headers('tenant-id') tenantId: string,
+    @Param('id') id: string,
+  ) {
+    return await this.defectsService.remove(tenantId, id);
   }
 }

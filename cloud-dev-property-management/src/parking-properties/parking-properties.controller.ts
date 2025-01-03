@@ -3,7 +3,7 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
+  Headers,
   Param,
   Patch,
   Post,
@@ -23,13 +23,19 @@ export class ParkingPropertiesController {
   ) {}
 
   @Post()
-  create(@Body() createParkingPropertyDto: CreateParkingPropertyDto) {
-    return this.parkingPropertiesService.create(createParkingPropertyDto);
+  create(
+    @Headers('tenant-id') tenantId: string,
+    @Body() createParkingPropertyDto: CreateParkingPropertyDto,
+  ) {
+    return this.parkingPropertiesService.create(
+      createParkingPropertyDto,
+      tenantId,
+    );
   }
 
   @Get()
-  findAll() {
-    return this.parkingPropertiesService.findAll();
+  findAll(@Headers('tenant-id') tenantId: string) {
+    return this.parkingPropertiesService.findAll(tenantId);
   }
 
   @Get(':id')
@@ -42,14 +48,19 @@ export class ParkingPropertiesController {
 
   @Patch(':id')
   update(
+    @Headers('tenant-id') tenantId: string,
     @Param('id') id: string,
     @Body() updateParkingPropertyDto: UpdateParkingPropertyDto,
   ) {
-    return this.parkingPropertiesService.update(id, updateParkingPropertyDto);
+    return this.parkingPropertiesService.update(
+      tenantId,
+      id,
+      updateParkingPropertyDto,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.parkingPropertiesService.remove(id);
+  remove(@Headers('tenant-id') tenantId: string, @Param('id') id: string) {
+    return this.parkingPropertiesService.remove(tenantId, id);
   }
 }

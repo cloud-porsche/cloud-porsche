@@ -428,7 +428,7 @@
               >Next</v-btn
             >
             <v-btn
-              :disabled="!valid"
+              :disabled="!valid || savingProcess"
               @click="saveNewProperty()"
               v-else-if="step >= stepperPages.length"
               >Save</v-btn
@@ -522,6 +522,7 @@ const stepperPages = computed(() => [
 const newPropertyDialog = ref(false);
 const step = ref(1); // index start at 1 for stepper
 const valid = ref(false);
+const savingProcess = ref(false);
 const validateForm = () => {
   if (valid.value) {
     if (step.value === stepperPages.value.length) {
@@ -605,6 +606,7 @@ function togglePlaceholder(layer: ParkingSpotLayer, spot: ParkingSpot) {
 const newLoading = ref(false);
 
 async function saveNewProperty() {
+  savingProcess.value = true;
   newLoading.value = true;
   const finalProperty: Omit<
     IParkingProperty,
@@ -614,6 +616,7 @@ async function saveNewProperty() {
     lastModified: new Date(),
     layers: newLayers,
     defects: [],
+    tenantId: ""
   };
 
   await propertyStore.addProperty(finalProperty);
@@ -623,6 +626,7 @@ async function saveNewProperty() {
   newLayers = [];
   step.value = 1;
   newLoading.value = false;
+  savingProcess.value = false;
 }
 
 function getStateColor(property: IParkingProperty) {

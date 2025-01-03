@@ -29,28 +29,41 @@ export class ParkingPropertiesService {
     this.listeners.push(listener);
   }
 
-  private async notify() {
+  private async notify(tenantId: string) {
     for (const listener of this.listeners) {
-      await listener.changedParkingProperty(this, await this.findAll());
+      await listener.changedParkingProperty(this, await this.findAll(tenantId));
     }
   }
 
-  async create(createDefectDto: CreateParkingPropertyDto) {
-    const newProperty = new ParkingProperty(createDefectDto);
+  async create(createDefectDto: CreateParkingPropertyDto, tenantId: string) {
+    console.log('creating parking property');
+    const newProperty = new ParkingProperty({
+      ...createDefectDto,
+      tenantId: tenantId,
+    });
     const res = await this.parkingPropertyRepository.create(newProperty);
-    await this.notify();
+    await this.notify(tenantId);
     return res;
   }
 
-  async findAll() {
-    return await this.parkingPropertyRepository.find();
+  async findAll(tenantId: string) {
+    if (!tenantId) {
+      return await this.parkingPropertyRepository.find();
+    }
+    return await this.parkingPropertyRepository
+      .whereEqualTo('tenantId', tenantId)
+      .find();
   }
 
   async findOne(id: string) {
     return await this.parkingPropertyRepository.findById(id);
   }
 
-  async update(id: string, updateParkingPropertyDto: UpdateParkingPropertyDto) {
+  async update(
+    tenantId: string,
+    id: string,
+    updateParkingPropertyDto: UpdateParkingPropertyDto,
+  ) {
     const toUpdate = {
       id: id,
       lastModified: new Date(),
@@ -59,13 +72,14 @@ export class ParkingPropertiesService {
     const res = await this.parkingPropertyRepository.update(
       toUpdate as ParkingProperty,
     );
-    await this.notify();
+    await this.notify(tenantId);
     return res;
   }
 
-  async remove(id: string) {
+  async remove(tenantId: string, id: string) {
+    console.log('removing parking property with id: ', id);
     const res = await this.parkingPropertyRepository.delete(id);
-    await this.notify();
+    await this.notify(tenantId);
     return res;
   }
 }

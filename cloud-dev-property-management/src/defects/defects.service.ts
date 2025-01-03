@@ -33,7 +33,7 @@ export class DefectsService {
     );
     if (property) {
       property.defects = [...(property.defects || []), newDefect.id];
-      await this.parkingPropertiesService.update(property.id, {
+      await this.parkingPropertiesService.update(tenantId, property.id, {
         defects: property.defects,
       });
     }
@@ -48,7 +48,12 @@ export class DefectsService {
       .find();
   }
 
-  async findFiltered(search: string, filter: keyof Defect, propertyId: string, tenantId: string) {
+  async findFiltered(
+    search: string,
+    filter: keyof Defect,
+    propertyId: string,
+    tenantId: string,
+  ) {
     if (!search || !filter) return this.findAll(propertyId, tenantId);
     return await this.defectRepository
       .whereGreaterOrEqualThan(filter, search)
@@ -70,7 +75,7 @@ export class DefectsService {
     } as Defect);
   }
 
-  async remove(id: string) {
+  async remove(tenantId: string, id: string) {
     const existingDefect = await this.findOne(id);
     if (!existingDefect) {
       throw new Error(`Defect with id ${id} not found.`);
@@ -84,7 +89,7 @@ export class DefectsService {
       property.defects = (property.defects || []).filter(
         (defectId) => defectId !== id,
       );
-      await this.parkingPropertiesService.update(property.id, {
+      await this.parkingPropertiesService.update(tenantId, property.id, {
         defects: property.defects,
       });
     }
