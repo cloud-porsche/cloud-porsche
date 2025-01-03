@@ -278,9 +278,9 @@ export class MonitoringService {
     );
   }
 
-  async getAllData(timeframe: string) {
-    const allParkingActions = await this.parkingActionRepository.find();
-    const allApiCalls = await this.apiCallRepository.find();
+  async getAllData(tenantId: string, timeframe: string) {
+    const allParkingActions = await this.parkingActionRepository.whereEqualTo('tenantId', tenantId).find();
+    const allApiCalls = await this.apiCallRepository.whereEqualTo('tenantId', tenantId).find();
 
     const [
       customers,
@@ -298,7 +298,7 @@ export class MonitoringService {
       this.getDailyAvgUtilization(timeframe, allParkingActions),
     ]);
 
-    return {
+    const data = {
       data: {
         customers: customers,
         customer_distribution: customerDistribution,
@@ -308,5 +308,7 @@ export class MonitoringService {
         avg_utilization: avgUtilization,
       },
     };
+    return data;
   }
+  
 }

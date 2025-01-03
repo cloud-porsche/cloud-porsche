@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Param, Post } from '@nestjs/common';
+import { Controller, Get, Logger, Param, Post, Headers } from '@nestjs/common';
 import { SimulationService } from './simulation.service';
 
 @Controller('simulation')
@@ -8,23 +8,23 @@ export class SimulationController {
   constructor(private readonly simulationService: SimulationService) {}
 
   @Post(':propertyId/start')
-  async startSimulation(@Param('propertyId') propertyId: string) {
+  async startSimulation(@Headers('tenant-id') tenantId: string, @Param('propertyId') propertyId: string) {
     try {
-      return await this.simulationService.startSimulation(propertyId);
+      return await this.simulationService.startSimulation(tenantId, propertyId);
     } catch (error) {
       this.logger.error(
         'Error starting simulation - trying to stop simulation',
         error,
       );
-      await this.simulationService.stopSimulation(propertyId);
+      await this.simulationService.stopSimulation(tenantId, propertyId);
       return error;
     }
   }
 
   @Post(':propertyId/stop')
-  async stopSimulation(@Param('propertyId') propertyId: string) {
+  async stopSimulation(@Headers('tenant-id') tenantId: string, @Param('propertyId') propertyId: string) {
     try {
-      return await this.simulationService.stopSimulation(propertyId);
+      return await this.simulationService.stopSimulation(tenantId, propertyId);
     } catch (error) {
       this.logger.error('Error stopping simulation', error);
       return error;

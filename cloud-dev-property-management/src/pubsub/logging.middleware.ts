@@ -1,7 +1,6 @@
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { PubSubService } from './pubsub.service'; // Import PubSubService
-import { IApiCall } from '@cloud-porsche/types';
 
 @Injectable()
 export class LoggingMiddleware implements NestMiddleware {
@@ -23,6 +22,7 @@ export class LoggingMiddleware implements NestMiddleware {
         method: method,
         url: originalUrl,
         timestamp: new Date(),
+        tenantId: req.headers['tenant-id'],
       });
     });
 

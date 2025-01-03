@@ -3,6 +3,7 @@ import { Collection } from 'fireorm';
 
 @Collection()
 export class ApiCall implements IApiCall {
+  tenantId: string;
   id: string;
   method: string;
   timestamp: Date;

@@ -15,6 +15,7 @@ export class LoggingMiddleware implements NestMiddleware {
     // Log the incoming request
     this.logger.log(`Incoming request: ${method} ${originalUrl}`);
 
+    this.logger.log('Tenant ID of the request:', req.headers['tenant-id'])
     // Call the next middleware or controller handler
     res.on('finish', async () => {
       // After the request is handled, publish the log messagee
@@ -22,6 +23,7 @@ export class LoggingMiddleware implements NestMiddleware {
         method: method,
         url: originalUrl,
         timestamp: new Date(),
+        tenantId: req.headers['tenant-id'],
       });
 
       this.logger.log(`Message published for ${method} ${originalUrl}`);

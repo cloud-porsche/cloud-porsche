@@ -11,6 +11,9 @@ export class AuthMiddleware implements NestMiddleware {
     const tenantId = req.headers['tenant-id'] as string;
 
     if (req.hostname === 'localhost') {
+      if (!tenantId) {
+        req.headers['tenant-id'] = 'localhost';
+      }
       next();
       return;
     }
@@ -21,26 +24,27 @@ export class AuthMiddleware implements NestMiddleware {
       return;
     }
 
-    (() => {
-      if (!tenantId) {
-        this.logger.log('No tenantId provided, assuming free tier');
-        return admin.auth().verifyIdToken(token);
-      }
-      return admin
-        .auth()
-        .tenantManager()
-        .authForTenant(tenantId)
-        .verifyIdToken(token);
-    })()
-      .then((decodedToken) => {
+    const verifyToken = tenantId
+      ? admin
+          .auth()
+          .tenantManager()
+          .authForTenant(tenantId)
+          .verifyIdToken(token)
+      : admin.auth().verifyIdToken(token);
+
+    verifyToken
+      .then((decodedToken: any) => {
         req['user'] = {
           email: decodedToken.email,
           uid: decodedToken.uid,
-          tenantId: tenantId,
+          tenantId: tenantId || decodedToken.uid,
         };
+        if (!tenantId) {
+          req.headers['tenant-id'] = decodedToken.uid;
+        }
         next();
       })
-      .catch((error) => {
+      .catch((error: any) => {
         this.logger.error(error);
         this.accessDenied(req.url, res);
       });

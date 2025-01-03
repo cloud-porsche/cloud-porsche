@@ -1,4 +1,4 @@
-import { Body, Controller, Logger, Param, Post } from '@nestjs/common';
+import { Body, Controller, Logger, Param, Post, Headers } from '@nestjs/common';
 import { Customer } from '@cloud-porsche/types';
 import { ParkingService } from './parking.service';
 
@@ -10,11 +10,12 @@ export class ParkingController {
 
   @Post(':parkingPropertyId/enter')
   async enter(
+    @Headers('tenant-id') tenantId: string,
     @Param('parkingPropertyId') parkingPropertyId: string,
     @Body() newCustomer: Customer,
   ) {
     try {
-      return await this.parkingService.enter(parkingPropertyId, newCustomer);
+      return await this.parkingService.enter(tenantId, parkingPropertyId, newCustomer);
     } catch (error) {
       this.logger.error('Error entering parking property', error);
       return error;
@@ -23,11 +24,12 @@ export class ParkingController {
 
   @Post(':parkingPropertyId/leave')
   async leave(
+    @Headers('tenant-id') tenantId: string,
     @Param('parkingPropertyId') parkingPropertyId: string,
     @Body() customer: Customer,
   ) {
     try {
-      return await this.parkingService.leave(parkingPropertyId, customer);
+      return await this.parkingService.leave(tenantId, parkingPropertyId, customer);
     } catch (error) {
       this.logger.error('Error leaving parking property', error);
       return error;
@@ -36,12 +38,14 @@ export class ParkingController {
 
   @Post(':parkingPropertyId/:spotId/occupy')
   async occupySpot(
+    @Headers('tenant-id') tenantId: string,
     @Param('parkingPropertyId') parkingPropertyId: string,
     @Param('spotId') spotId: string,
     @Body() customer: Customer,
   ) {
     try {
       return await this.parkingService.occupySpot(
+        tenantId,
         parkingPropertyId,
         spotId,
         customer,
@@ -54,11 +58,12 @@ export class ParkingController {
 
   @Post(':parkingPropertyId/:spotId/free')
   async freeSpot(
+    @Headers('tenant-id') tenantId: string,
     @Param('parkingPropertyId') parkingPropertyId: string,
     @Param('spotId') spotId: string,
   ) {
     try {
-      return await this.parkingService.freeSpot(parkingPropertyId, spotId);
+      return await this.parkingService.freeSpot(tenantId, parkingPropertyId, spotId);
     } catch (error) {
       this.logger.error('Error freeing parking spot', error);
       return error;

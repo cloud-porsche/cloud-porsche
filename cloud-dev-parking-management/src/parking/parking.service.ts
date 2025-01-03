@@ -59,13 +59,14 @@ export class ParkingService {
   }
 
   // This method will publish the message to Pub/Sub when a customer enters
-  async enter(parkingPropertyId: string, newCustomer: Customer) {
+  async enter(tenantId: string, parkingPropertyId: string, newCustomer: Customer) {
     const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
 
     await this.pubSubService.publishMessage({
       messageType: 'parking',
+      tenantId: tenantId,
       action: 'enter',
       timestamp: new Date(),
       properyId: parkingPropertyId,
@@ -81,7 +82,7 @@ export class ParkingService {
     });
   }
 
-  async leave(parkingPropertyId: string, customer: Customer) {
+  async leave(tenantId: string, parkingPropertyId: string, customer: Customer) {
     const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
@@ -90,10 +91,11 @@ export class ParkingService {
       .find((s) => s.customer?.id === customer.id);
     if (spot) {
       this.logger.warn('Customer still has a spot occupied - setting it free');
-      await this.freeSpot(parkingPropertyId, spot.id);
+      await this.freeSpot(tenantId, parkingPropertyId, spot.id);
     }
     await this.pubSubService.publishMessage({
       messageType: 'parking',
+      tenantId: tenantId,
       action: 'leave',
       timestamp: new Date(),
       properyId: parkingPropertyId,
@@ -110,6 +112,7 @@ export class ParkingService {
   }
 
   async occupySpot(
+    tenantId: string,
     parkingPropertyId: string,
     spotId: string,
     customer: Customer,
@@ -128,6 +131,7 @@ export class ParkingService {
     }
     await this.pubSubService.publishMessage({
       messageType: 'parking',
+      tenantId: tenantId,
       action: 'occupy',
       timestamp: new Date(),
       properyId: parkingPropertyId,
@@ -149,7 +153,7 @@ export class ParkingService {
     );
   }
 
-  async freeSpot(parkingPropertyId: string, spotId: string) {
+  async freeSpot(tenantId: string, parkingPropertyId: string, spotId: string) {
     const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
@@ -159,6 +163,7 @@ export class ParkingService {
       throw new Error('Spot not occupied');
     await this.pubSubService.publishMessage({
       messageType: 'parking',
+      tenantId: tenantId,
       action: 'free',
       timestamp: new Date(),
       properyId: parkingPropertyId,
@@ -167,10 +172,10 @@ export class ParkingService {
       currentUtilization: this.getUtilization(parkingProperty),
       costPerHour: parkingProperty.pricePerHour,
       parkingDuration:
-        (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
-        1000 /
-        60 /
-        60,
+      (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
+      1000 /
+      60 /
+      60,
     });
     return this.updateParkingProperty(
       parkingPropertyId,
@@ -178,7 +183,7 @@ export class ParkingService {
     );
   }
 
-  async chargeSpot(parkingPropertyId: string, spotId: string) {
+  async chargeSpot(tenantId: string, parkingPropertyId: string, spotId: string) {
     const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
@@ -188,6 +193,7 @@ export class ParkingService {
       throw new Error('Spot already occupied or not an electric charger');
     await this.pubSubService.publishMessage({
       messageType: 'parking',
+      tenantId: tenantId,
       action: 'occupy',
       timestamp: new Date(),
       properyId: parkingPropertyId,

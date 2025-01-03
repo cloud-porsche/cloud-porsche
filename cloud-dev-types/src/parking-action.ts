@@ -1,5 +1,6 @@
 export interface IParkingAction {
   id: string;
+  tenantId: string;
   action: string;
   timestamp: Date;
   propertyId: string;
