@@ -22,9 +22,9 @@ export class DefectsService {
     );
   }
 
-  async create(createDefectDto: CreateDefectDto) {
+  async create(createDefectDto: CreateDefectDto, tenantId: string) {
     const newDefect = await this.defectRepository.create(
-      new Defect(createDefectDto),
+      new Defect({ ...createDefectDto, tenantId }),
     );
 
     // Update the associated property's defectIds
@@ -41,18 +41,20 @@ export class DefectsService {
     return newDefect;
   }
 
-  async findAll(propertyId: string) {
+  async findAll(propertyId: string, tenantId: string) {
     return await this.defectRepository
       .whereEqualTo('propertyId', propertyId)
+      .whereEqualTo('tenantId', tenantId)
       .find();
   }
 
-  async findFiltered(search: string, filter: keyof Defect, propertyId: string) {
-    if (!search || !filter) return this.findAll(propertyId);
+  async findFiltered(search: string, filter: keyof Defect, propertyId: string, tenantId: string) {
+    if (!search || !filter) return this.findAll(propertyId, tenantId);
     return await this.defectRepository
       .whereGreaterOrEqualThan(filter, search)
       .whereLessOrEqualThan(filter, search + '\uf8ff')
       .whereEqualTo('propertyId', propertyId)
+      .whereEqualTo('tenantId', tenantId)
       .find();
   }
 
