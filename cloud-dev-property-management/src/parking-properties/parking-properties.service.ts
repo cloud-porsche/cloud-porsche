@@ -25,16 +25,6 @@ export class ParkingPropertiesService {
     this.parkingPropertyRepository = getRepository(repositoryClass);
   }
 
-  addListener(listener: any) {
-    this.listeners.push(listener);
-  }
-
-  private async notify(tenantId: string) {
-    for (const listener of this.listeners) {
-      await listener.changedParkingProperty(this, await this.findAll(tenantId));
-    }
-  }
-
   async create(createDefectDto: CreateParkingPropertyDto, tenantId: string) {
     console.log('creating parking property');
     const newProperty = new ParkingProperty({
@@ -42,7 +32,6 @@ export class ParkingPropertiesService {
       tenantId: tenantId,
     });
     const res = await this.parkingPropertyRepository.create(newProperty);
-    await this.notify(tenantId);
     return res;
   }
 
@@ -72,14 +61,12 @@ export class ParkingPropertiesService {
     const res = await this.parkingPropertyRepository.update(
       toUpdate as ParkingProperty,
     );
-    await this.notify(tenantId);
     return res;
   }
 
   async remove(tenantId: string, id: string) {
     console.log('removing parking property with id: ', id);
     const res = await this.parkingPropertyRepository.delete(id);
-    await this.notify(tenantId);
     return res;
   }
 }

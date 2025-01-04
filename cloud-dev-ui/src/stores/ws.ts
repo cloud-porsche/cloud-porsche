@@ -3,11 +3,18 @@ import { io } from "socket.io-client";
 import { usePropertyStore } from "@/stores/properties";
 import { propertyManagementUrl, useAppStore } from "@/stores/app";
 
-export function initWs() {
+export function initWs(authToken: string, tenantId: string) {
+  console.log("Initializing WS");
+  console.log("token is: ", authToken);
+  console.log("tenantId is: ", tenantId);
   const path = propertyManagementUrl.split("/").at(3);
   console.debug("WS Path: ", path);
   const socket = io(propertyManagementUrl.replace(path, ""), {
     path: (path ? "/" + path : "") + "/socket.io/",
+    extraHeaders: {
+      authorization: authToken,
+      "tenant-id": tenantId,
+    },
   });
 
   socket.on("connect", function () {

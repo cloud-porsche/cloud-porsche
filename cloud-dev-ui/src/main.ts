@@ -50,5 +50,3 @@ app.use(VueFire, {
 });
 
 app.mount("#app");
-
-initWs();
