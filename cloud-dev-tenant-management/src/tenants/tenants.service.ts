@@ -10,10 +10,28 @@ export class TenantsService {
 
   private targetBranch: string;
   private octokit: Octokit;
+  private workflowId: string;
 
   constructor(config: ConfigService) {
     this.targetBranch = config.get('TARGET_BRANCH', 'develop');
     this.octokit = new Octokit({ auth: config.get('GITHUB_TOKEN') });
+    this.workflowId = config.get('WORKFLOW_ID');
+    if (!this.workflowId) {
+      this.octokit
+        .request('GET /repos/cloud-porsche/cloud-porsche/actions/workflows', {
+          owner: 'cloud-porsche',
+          repo: 'cloud-porsche',
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28',
+          },
+        })
+        .then((response) => {
+          this.workflowId = response.data.workflows.find(
+            (workflow: { name: string }) => workflow.name === 'Terraform',
+          ).id;
+          this.logger.log('Workflow ID: ', this.workflowId);
+        });
+    }
   }
 
   async createTenant(tenant: Tenant) {
@@ -30,10 +48,11 @@ export class TenantsService {
       })
       .then(async (newTenant) => {
         const ghResponse = await this.octokit.request(
-          'POST /repos/cloud-porsche/cloud-porsche/actions/workflows/134220414/dispatches',
+          `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
           {
             ref: this.targetBranch,
             inputs: {
+              run_type: 'tenant-create',
               tenant_id: newTenant.tenantId,
               tenant_type: tenant.plan,
             },
