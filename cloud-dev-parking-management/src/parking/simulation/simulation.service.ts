@@ -26,7 +26,7 @@ export class SimulationService {
     );
   }
 
-  async startSimulation(tenantId, propertyId: string) {
+  async startSimulation(token: string, tenantId: string, propertyId: string) {
     if (this.simulationIds.has(propertyId)) {
       this.logger.error('Simulation already running');
       return;
@@ -36,24 +36,32 @@ export class SimulationService {
     this.schedulerRegistry.addInterval(
       'simulation',
       setInterval(
-        async () => this.runSimulation(tenantId, propertyId),
+        async () => this.runSimulation(token, tenantId, propertyId),
         SIMULATION_INTERVAL,
       ),
     );
     this.logger.log('Simulation started for: ' + propertyId);
   }
 
-  async stopSimulation(tenantId: string, propertyId: string) {
+  async stopSimulation(token: string, tenantId: string, propertyId: string) {
     this.schedulerRegistry.deleteInterval('simulation');
 
-    await this.removeSimulationCars(tenantId, propertyId);
+    await this.removeSimulationCars(token, tenantId, propertyId);
 
     this.simulationIds.delete(propertyId);
     this.logger.log('Simulation stopped for: ' + propertyId);
   }
 
-  private async removeSimulationCars(tenantId: string, propertyId: string) {
-    const parkingProperty = await this.fetchParkingProperty(propertyId);
+  private async removeSimulationCars(
+    token: string,
+    tenantId: string,
+    propertyId: string,
+  ) {
+    const parkingProperty = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      propertyId,
+    );
 
     const occupiedSpots = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
@@ -61,8 +69,13 @@ export class SimulationService {
 
     for (const spot of occupiedSpots) {
       if (spot.customer?.licensePlate?.includes('SIMULATION')) {
-        await this.parkingService.freeSpot(tenantId, propertyId, spot.id);
-        await this.parkingService.leave(tenantId, propertyId, {
+        await this.parkingService.freeSpot(
+          token,
+          tenantId,
+          propertyId,
+          spot.id,
+        );
+        await this.parkingService.leave(token, tenantId, propertyId, {
           id: spot.customer.id,
           licensePlate: spot.customer.licensePlate,
         });
@@ -74,14 +87,18 @@ export class SimulationService {
     return this.simulationIds.has(propertyId);
   }
 
-  async runSimulation(tenantId, propertyId: string) {
+  async runSimulation(token: string, tenantId: string, propertyId: string) {
     if (this.config.get('FIRESTORE_DB') === 'prod') {
       this.logger.error('Simulation not allowed in production');
       return;
     }
 
     this.logger.log('Running simulation for: ' + propertyId);
-    const parkingProperty = await this.fetchParkingProperty(propertyId);
+    const parkingProperty = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      propertyId,
+    );
     this.logger.log('Found parking property: ' + parkingProperty.name);
 
     const totalSpots = parkingProperty.layers.flatMap((l) => l.parkingSpots);
@@ -96,49 +113,64 @@ export class SimulationService {
 
     // Entscheidungslogik: Mehr Autos einfahren, wenn die Auslastung gering ist
     if (Math.random() > occupancyRate) {
-      await this.simulateCarEntering(tenantId, propertyId, freeSpots);
+      await this.simulateCarEntering(token, tenantId, propertyId, freeSpots);
     } else {
-      await this.simulateCarExiting(tenantId, propertyId, occupiedSpots);
+      await this.simulateCarExiting(token, tenantId, propertyId, occupiedSpots);
     }
   }
 
-  private async simulateCarEntering(tenantId: string, propertyId: string, freeSpots: any[]) {
+  private async simulateCarEntering(
+    token: string,
+    tenantId: string,
+    propertyId: string,
+    freeSpots: any[],
+  ) {
     if (freeSpots.length === 0) {
       this.logger.warn('No free spots available');
       return;
     }
 
     const id = crypto.randomUUID();
-    await this.parkingService.enter(tenantId, propertyId, {
+    await this.parkingService.enter(token, tenantId, propertyId, {
       id: id,
       licensePlate: 'SIMULATION',
     });
 
     const spot = freeSpots[0]; // Nimm den ersten freien Platz
-    await this.parkingService.occupySpot(tenantId, propertyId, spot.id, {
+    await this.parkingService.occupySpot(token, tenantId, propertyId, spot.id, {
       id,
       licensePlate: 'SIMULATION',
     });
 
     if (spot.electricCharging) {
       setTimeout(async () => {
-        await this.parkingService.chargeSpot(tenantId, propertyId, spot.id);
+        await this.parkingService.chargeSpot(
+          token,
+          tenantId,
+          propertyId,
+          spot.id,
+        );
       }, SIMULATION_INTERVAL / 5);
     }
   }
 
-  private async simulateCarExiting(tenantId: string, propertyId: string, occupiedSpots: any[]) {
+  private async simulateCarExiting(
+    token: string,
+    tenantId: string,
+    propertyId: string,
+    occupiedSpots: any[],
+  ) {
     if (occupiedSpots.length === 0) {
       this.logger.warn('No occupied spots left');
       return;
     }
 
     const spot = occupiedSpots[0]; // Nimm den ersten belegten Platz
-    await this.parkingService.freeSpot(tenantId, propertyId, spot.id);
+    await this.parkingService.freeSpot(token, tenantId, propertyId, spot.id);
 
     setTimeout(async () => {
       const id = spot.customer.id;
-      await this.parkingService.leave(tenantId, propertyId, {
+      await this.parkingService.leave(token, tenantId, propertyId, {
         id,
         licensePlate: 'SIMULATION',
       });
@@ -146,13 +178,20 @@ export class SimulationService {
   }
 
   private async fetchParkingProperty(
+    token: string,
+    tenantId: string,
     parkingPropertyId: string,
   ): Promise<IParkingProperty> {
-    const token = await admin.auth().createCustomToken
     try {
       const response = await lastValueFrom(
         this.httpService.get<IParkingProperty>(
           `${this.parkingPropertiesApi}/v1/parking-properties/${parkingPropertyId}`,
+          {
+            headers: {
+              authorization: token,
+              'tenant-id': tenantId,
+            },
+          },
         ),
       );
       return response.data;

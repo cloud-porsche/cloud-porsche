@@ -25,12 +25,20 @@ export class ParkingService {
   }
 
   private async fetchParkingProperty(
+    token: string,
+    tenantId: string,
     parkingPropertyId: string,
   ): Promise<IParkingProperty> {
     try {
       const response = await lastValueFrom(
         this.httpService.get<IParkingProperty>(
           `${this.parkingPropertiesApi}/v1/parking-properties/${parkingPropertyId}`,
+          {
+            headers: {
+              authorization: token,
+              'tenant-id': tenantId,
+            },
+          },
         ),
       );
       return response.data;
@@ -41,6 +49,8 @@ export class ParkingService {
   }
 
   private async updateParkingProperty(
+    token: string,
+    tenantId: string,
     parkingPropertyId: string,
     updateData: Partial<IParkingProperty>,
   ): Promise<IParkingProperty> {
@@ -49,6 +59,12 @@ export class ParkingService {
         this.httpService.patch<IParkingProperty>(
           `${this.parkingPropertiesApi}/v1/parking-properties/${parkingPropertyId}`,
           updateData,
+          {
+            headers: {
+              authorization: token,
+              'tenant-id': tenantId,
+            },
+          },
         ),
       );
       return response.data;
@@ -59,8 +75,17 @@ export class ParkingService {
   }
 
   // This method will publish the message to Pub/Sub when a customer enters
-  async enter(tenantId: string, parkingPropertyId: string, newCustomer: Customer) {
-    const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
+  async enter(
+    token: string,
+    tenantId: string,
+    parkingPropertyId: string,
+    newCustomer: Customer,
+  ) {
+    const parkingProperty = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      parkingPropertyId,
+    );
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
 
@@ -77,13 +102,22 @@ export class ParkingService {
       parkingDuration: null,
     });
     // Update the customers in the parking property
-    return this.updateParkingProperty(parkingPropertyId, {
+    return this.updateParkingProperty(token, tenantId, parkingPropertyId, {
       customers: [...currentCustomers, newCustomer],
     });
   }
 
-  async leave(tenantId: string, parkingPropertyId: string, customer: Customer) {
-    const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
+  async leave(
+    token: string,
+    tenantId: string,
+    parkingPropertyId: string,
+    customer: Customer,
+  ) {
+    const parkingProperty = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      parkingPropertyId,
+    );
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
     const spot = parkingProperty.layers
@@ -91,7 +125,7 @@ export class ParkingService {
       .find((s) => s.customer?.id === customer.id);
     if (spot) {
       this.logger.warn('Customer still has a spot occupied - setting it free');
-      await this.freeSpot(tenantId, parkingPropertyId, spot.id);
+      await this.freeSpot(token, tenantId, parkingPropertyId, spot.id);
     }
     await this.pubSubService.publishMessage({
       messageType: 'parking',
@@ -106,18 +140,23 @@ export class ParkingService {
       parkingDuration: null,
     });
 
-    return this.updateParkingProperty(parkingPropertyId, {
+    return this.updateParkingProperty(token, tenantId, parkingPropertyId, {
       customers: currentCustomers.filter((c) => c.id !== customer.id),
     });
   }
 
   async occupySpot(
+    token: string,
     tenantId: string,
     parkingPropertyId: string,
     spotId: string,
     customer: Customer,
   ) {
-    const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
+    const parkingProperty = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      parkingPropertyId,
+    );
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
@@ -143,6 +182,8 @@ export class ParkingService {
     });
 
     return this.updateParkingProperty(
+      token,
+      tenantId,
       parkingPropertyId,
       this.newSpotState(
         parkingProperty,
@@ -153,8 +194,17 @@ export class ParkingService {
     );
   }
 
-  async freeSpot(tenantId: string, parkingPropertyId: string, spotId: string) {
-    const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
+  async freeSpot(
+    token: string,
+    tenantId: string,
+    parkingPropertyId: string,
+    spotId: string,
+  ) {
+    const parkingProperty = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      parkingPropertyId,
+    );
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
@@ -172,19 +222,30 @@ export class ParkingService {
       currentUtilization: this.getUtilization(parkingProperty),
       costPerHour: parkingProperty.pricePerHour,
       parkingDuration:
-      (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
-      1000 /
-      60 /
-      60,
+        (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
+        1000 /
+        60 /
+        60,
     });
     return this.updateParkingProperty(
+      token,
+      tenantId,
       parkingPropertyId,
       this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
     );
   }
 
-  async chargeSpot(tenantId: string, parkingPropertyId: string, spotId: string) {
-    const parkingProperty = await this.fetchParkingProperty(parkingPropertyId);
+  async chargeSpot(
+    token: string,
+    tenantId: string,
+    parkingPropertyId: string,
+    spotId: string,
+  ) {
+    const parkingProperty = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      parkingPropertyId,
+    );
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
@@ -204,6 +265,8 @@ export class ParkingService {
       parkingDuration: null,
     });
     return this.updateParkingProperty(
+      token,
+      tenantId,
       parkingPropertyId,
       this.newSpotState(
         parkingProperty,
