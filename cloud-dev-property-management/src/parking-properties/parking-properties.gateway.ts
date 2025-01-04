@@ -36,17 +36,20 @@ export class ParkingPropertiesGateway {
     // Listen for real-time updates
     collectionRef.onSnapshot(
       (snapshot) => {
-        const parkingProperties: ParkingProperty[] = [];
 
-        snapshot.forEach((doc) => {
-          parkingProperties.push({
-            id: doc.id,
-            ...doc.data(),
-          } as ParkingProperty);
+        this.client_tenantIds.forEach((tenantId, clientId) => {
+          const parkingProperties: ParkingProperty[] = [];
+          snapshot.forEach((doc) => {
+            if (doc.data().tenantId === tenantId) {
+              parkingProperties.push({
+                id: doc.id,
+                ...doc.data(),
+              } as ParkingProperty);
+            }
+          })
+          this.logger.debug('Parking property changed - Sending to clients');
+          this.io.to(clientId).emit('parking-properties', parkingProperties); // Emit the changes to connected clients
         });
-
-        this.logger.debug('Parking property changed - Sending to clients');
-        this.io.emit('parking-properties', parkingProperties); // Emit the changes to connected clients
       },
       (error) => {
         this.logger.error('Error listening to Firestore changes:', error);
@@ -60,11 +63,16 @@ export class ParkingPropertiesGateway {
 
   handleConnection(client: any) {
     this.logger.log(`Client id: ${client.id} connected`);
+
+    
     this.client_tenantIds.set(client.id, client.handshake.headers['tenant-id']);
+    console.log(this.client_tenantIds);
   }
 
   handleDisconnect(client: any) {
     this.logger.log(`Client id: ${client.id} disconnected`);
+    this.client_tenantIds.delete(client.id);
+    console.log(this.client_tenantIds);
   }
 
   @SubscribeMessage('ping')
