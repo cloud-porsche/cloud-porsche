@@ -67,8 +67,6 @@ export class ParkingPropertiesGateway {
     const token = client.handshake.headers['authorization'];
     const tenantId = client.handshake.headers['tenant-id'];
 
-    console.log(token);
-    console.log(tenantId);
     this.logger.log(`Client id: ${client.id} connected`);
     if (!token) {
       this.logger.error('No token provided');
@@ -84,7 +82,6 @@ export class ParkingPropertiesGateway {
           .authForTenant(tenantId)
           .verifyIdToken(token)
       : admin.auth().verifyIdToken(token);
-
     verifyToken
       .then(() => {
         this.client_tenantIds.set(client.id, tenantId);
@@ -93,13 +90,11 @@ export class ParkingPropertiesGateway {
         this.logger.error(error);
         client.disconnect();
       });
-    console.log(this.client_tenantIds);
   }
 
   handleDisconnect(client: any) {
     this.logger.log(`Client id: ${client.id} disconnected`);
     this.client_tenantIds.delete(client.id);
-    console.log(this.client_tenantIds);
   }
 
   @SubscribeMessage('ping')

@@ -5,8 +5,6 @@ import { propertyManagementUrl, useAppStore } from "@/stores/app";
 
 export function initWs(authToken: string, tenantId: string) {
   console.log("Initializing WS");
-  console.log("token is: ", authToken);
-  console.log("tenantId is: ", tenantId);
   const path = propertyManagementUrl.split("/").at(3);
   console.debug("WS Path: ", path);
   const socket = io(propertyManagementUrl.replace(path, ""), {

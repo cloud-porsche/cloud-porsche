@@ -26,7 +26,6 @@ export class ParkingPropertiesService {
   }
 
   async create(createDefectDto: CreateParkingPropertyDto, tenantId: string) {
-    console.log('creating parking property');
     const newProperty = new ParkingProperty({
       ...createDefectDto,
       tenantId: tenantId,
@@ -65,7 +64,6 @@ export class ParkingPropertiesService {
   }
 
   async remove(tenantId: string, id: string) {
-    console.log('removing parking property with id: ', id);
     const res = await this.parkingPropertyRepository.delete(id);
     return res;
   }

@@ -10,13 +10,13 @@ export class AuthMiddleware implements NestMiddleware {
     const token = req.headers.authorization;
     const tenantId = req.headers['tenant-id'] as string;
 
-    // if (req.hostname === 'localhost') {
-    //   if (!tenantId) {
-    //     req.headers['tenant-id'] = 'localhost';
-    //   }
-    //   next();
-    //   return;
-    // }
+    if (req.hostname === 'localhost') {
+      if (!tenantId) {
+        req.headers['tenant-id'] = 'localhost';
+      }
+      next();
+      return;
+    }
 
     if (!token) {
       this.logger.error('No token provided');
