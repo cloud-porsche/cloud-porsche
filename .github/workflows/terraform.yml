@@ -1,0 +1,211 @@
+name: Terraform
+on:
+  workflow_dispatch:
+    inputs:
+      run_type:
+        type: choice
+        default: 'apply'
+        options:
+          - apply
+          - destroy
+          - tenant-create
+          - tenant-delete
+        description: 'Type of Terraform operation to perform'
+      tenant_id:
+        type: string
+        description: 'Tenant ID'
+      tenant_type:
+        type: choice
+        default: 'enterprise'
+        options:
+          - free
+          - pro
+          - enterprise
+        description: 'Type of tenant (e.g. pricing plan); free, pro, or enterprise'
+jobs:
+  tf-apply:
+    if: inputs.run_type == 'apply'
+    name: Terraform apply 🏗️
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: 'write'
+      contents: 'read'
+    steps:
+      - uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          github-token: ${{ secrets.A_GITHUB_TOKEN }}
+          timeout: 2000000
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+      - name: Docker auth
+        run: |-
+          gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - name: Terraform init
+        working-directory: ./tf
+        run: terraform init -input=false
+      - name: Terraform apply
+        working-directory: ./tf
+        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+
+  tf-destroy:
+    if: inputs.run_type == 'destroy'
+    name: Terraform destroy 🏗️
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: 'write'
+      contents: 'read'
+    steps:
+      - uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          github-token: ${{ secrets.A_GITHUB_TOKEN }}
+          timeout: 2000000
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Configure Docker to use the gcloud command-line tool as a credential helper
+        run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - name: Terraform init
+        working-directory: ./tf
+        run: terraform init -input=false
+      - name: Terraform destroy
+        working-directory: ./tf
+        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+
+  tf-tenant-create:
+    if: inputs.run_type == 'tenant-create'
+    name: Terraform create tenant 🚮
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: 'write'
+      contents: 'write'
+    steps:
+      - uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          github-token: ${{ secrets.A_GITHUB_TOKEN }}
+          timeout: 2000000
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Configure Docker to use the gcloud command-line tool as a credential helper
+        run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - uses: danielr1996/envsubst-action@1.0.0
+        env:
+          TENANT_ID: ${{ inputs.tenant_id }}
+        with:
+          input: ./tf/${{ inputs.tenant_type }}-tenant.template
+          output: ./tf/${{ inputs.tenant_id }}.tf
+      - uses: danielr1996/envsubst-action@1.0.0
+        env:
+          TENANT_ID: ${{ inputs.tenant_id }}
+        with:
+          input: ./k8s/helm/cloud-porsche-default/${{ inputs.tenant_type }}-template.yaml
+          output: ./k8s/helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+      - name: Terraform init
+        working-directory: ./tf
+        run: terraform init -input=false
+      - name: Terraform create tenant
+        working-directory: ./tf
+        run: |
+          terraform apply \
+              -input=false \
+              -compact-warnings \
+              -auto-approve \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+      - name: Delete on Terraform fail
+        if: failure()
+        working-directory: ./tf
+        run: |
+          terraform destroy \
+              -target helm.${{ inputs.tenant_id }} \
+              -target module.${{ inputs.tenant_id }} \
+              -input=false \
+              -compact-warnings \
+              -auto-approve \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'Tenant Creation Bot'
+          git config --global user.email 'tenant-bot@noreply.com'
+          git pull --rebase --strategy-option=theirs
+          git add ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+          git commit -am "Created tenant: ${{ inputs.tenant_id }}"
+          git push
+
+  tf-tenant-delete:
+    if: inputs.run_type == 'tenant-delete'
+    name: Terraform delete tenant 🚮
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: 'write'
+      contents: 'write'
+    steps:
+      - uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          github-token: ${{ secrets.A_GITHUB_TOKEN }}
+          timeout: 2000000
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: 'cloud-porsche'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Configure Docker to use the gcloud command-line tool as a credential helper
+        run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - name: Terraform init
+        working-directory: ./tf
+        run: terraform init -input=false
+      - name: Terraform plan tenant destruction
+        working-directory: ./tf
+        id: plan
+        run: |
+          trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
+          terraform plan \
+              -destroy \
+              -target helm.${{ inputs.tenant_id }} \
+              -target module.${{ inputs.tenant_id }} \
+              -input=false \
+              -compact-warnings \
+              -detailed-exitcode \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+      - name: Terraform destroy tenant
+        working-directory: ./tf
+        if: ${{ steps.plan.outputs.exit_code }} == 2
+        run: |
+          terraform destroy \
+              -target helm.${{ inputs.tenant_id }} \
+              -target module.${{ inputs.tenant_id }} \
+              -input=false \
+              -compact-warnings \
+              -auto-approve \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+      - name: Delete tenant files
+        if: ${{ steps.plan.outputs.exit_code }} == 2
+        run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+      - name: Commit and push changes
+        if: ${{ steps.plan.outputs.exit_code }} == 2
+        run: |
+          git config --global user.name 'Tenant Deletion Bot'
+          git config --global user.email 'tenant-bot@noreply.com'
+          git commit -am "Deleted tenant: ${{ inputs.tenant_id }}"
+          git pull --rebase --strategy-option=theirs
+          git push
