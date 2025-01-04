@@ -7,6 +7,7 @@ import {
 import { Server } from 'socket.io';
 import { Firestore, getFirestore } from 'firebase-admin/firestore';
 import { ParkingProperty } from './entities/parking-property.entity';
+import * as admin from 'firebase-admin';
 
 @WebSocketGateway({
   cors: {
@@ -62,10 +63,36 @@ export class ParkingPropertiesGateway {
   }
 
   handleConnection(client: any) {
-    this.logger.log(`Client id: ${client.id} connected`);
+    // console.log(client);
+    const token = client.handshake.headers['authorization'];
+    const tenantId = client.handshake.headers['tenant-id'];
 
-    
-    this.client_tenantIds.set(client.id, client.handshake.headers['tenant-id']);
+    console.log(token);
+    console.log(tenantId);
+    this.logger.log(`Client id: ${client.id} connected`);
+    if (!token) {
+      this.logger.error('No token provided');
+      client.disconnect();
+      return;
+    }
+
+
+    const verifyToken = tenantId
+      ? admin
+          .auth()
+          .tenantManager()
+          .authForTenant(tenantId)
+          .verifyIdToken(token)
+      : admin.auth().verifyIdToken(token);
+
+    verifyToken
+      .then(() => {
+        this.client_tenantIds.set(client.id, tenantId);
+      })
+      .catch((error: any) => {
+        this.logger.error(error);
+        client.disconnect();
+      });
     console.log(this.client_tenantIds);
   }
 
