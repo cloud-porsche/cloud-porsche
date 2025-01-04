@@ -27,7 +27,7 @@ on:
         description: 'Type of tenant (e.g. pricing plan); free, pro, or enterprise'
 jobs:
   tf-apply:
-    if: inputs.run_type == 'apply'
+    #if: inputs.run_type == 'apply'
     name: Terraform apply 🏗️
     runs-on: ubuntu-22.04
     permissions:
