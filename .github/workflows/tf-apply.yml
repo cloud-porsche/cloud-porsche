@@ -1,9 +1,9 @@
-name: Terraform destroy
+name: Terraform apply
 on: workflow_dispatch
 jobs:
-  tf-destroy:
+  tf-apply:
     #if: github.ref == 'refs/heads/develop'
-    name: Terraform destroy 🏗️
+    name: Terraform apply 🏗️
     runs-on: ubuntu-22.04
     permissions:
       id-token: 'write'
@@ -22,11 +22,14 @@ jobs:
           project_id: 'cloud-porsche'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
-      - name: Configure Docker to use the gcloud command-line tool as a credential helper
-        run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+      - name: Docker auth
+        run: |-
+          gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
-      - name: Terraform destroy
+      - name: Terraform apply
         working-directory: ./tf
-        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
