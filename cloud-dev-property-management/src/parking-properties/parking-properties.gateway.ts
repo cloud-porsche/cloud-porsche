@@ -1,76 +1,78 @@
-import { Inject, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import {
-  ParkingPropertiesService,
-  ParkingPropertySubscriber,
-} from './parking-properties.service';
+import { Firestore, getFirestore } from 'firebase-admin/firestore';
 import { ParkingProperty } from './entities/parking-property.entity';
 
-// pain: https://github.com/nestjs/nest/issues/7649#issuecomment-964873444
 @WebSocketGateway({
   cors: {
-    origin: ['https://cloud-porsche.github.io', 'https://cloud-dev.ostabo.com', 'http://localhost:3000'],
+    origin: [
+      'https://cloud-porsche.github.io',
+      'https://cloud-dev.ostabo.com',
+      'http://localhost:3000',
+    ],
   },
 })
-export class ParkingPropertiesGateway
-  implements
-    OnGatewayInit,
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-    ParkingPropertySubscriber
-{
+export class ParkingPropertiesGateway {
   private readonly logger = new Logger(ParkingPropertiesGateway.name);
 
   @WebSocketServer() io: Server;
 
-  constructor(
-    private readonly parkingPropertyService: ParkingPropertiesService,
-    //@Inject('SIMULATION_PARKING_PROPERTIES_SERVICE')
-    //private readonly simParkingPropertyService: ParkingPropertiesService,
-  ) {
-    parkingPropertyService.addListener(this);
-    //simParkingPropertyService.addListener(this);
+  private db: Firestore;
+  private client_tenantIds: Map<string, string> = new Map();
+
+  constructor() {
+    this.db = getFirestore();
+    this.initializeFirestoreListener();
   }
 
-  // TODO: improve performance
-  async changedParkingProperty(
-    sender: ParkingPropertiesService,
-    parkingProperties: ParkingProperty[],
-  ) {
-    // if (sender === this.simParkingPropertyService) {
-    //   parkingProperties = [
-    //     ...parkingProperties,
-    //     ...(await this.parkingPropertyService.findAll()).filter(
-    //       (property) =>
-    //         parkingProperties.find((p) => p.id === property.id) === undefined,
-    //     ),
-    //   ];
-    // }
-    this.logger.debug('Parking property changed - Sending to clients');
-    this.io.emit('parking-properties', parkingProperties);
+  private initializeFirestoreListener() {
+    const collectionRef = this.db.collection('ParkingProperties'); // Replace with your Firestore collection name
+
+    // Listen for real-time updates
+    collectionRef.onSnapshot(
+      (snapshot) => {
+
+        this.client_tenantIds.forEach((tenantId, clientId) => {
+          const parkingProperties: ParkingProperty[] = [];
+          snapshot.forEach((doc) => {
+            if (doc.data().tenantId === tenantId) {
+              parkingProperties.push({
+                id: doc.id,
+                ...doc.data(),
+              } as ParkingProperty);
+            }
+          })
+          this.logger.debug('Parking property changed - Sending to clients');
+          this.io.to(clientId).emit('parking-properties', parkingProperties); // Emit the changes to connected clients
+        });
+      },
+      (error) => {
+        this.logger.error('Error listening to Firestore changes:', error);
+      },
+    );
   }
 
   afterInit() {
     this.logger.log('WS Initialized');
   }
 
-  handleConnection(client: any, ..._: any[]) {
-    const { sockets } = this.io.sockets;
-
+  handleConnection(client: any) {
     this.logger.log(`Client id: ${client.id} connected`);
-    this.logger.debug(`Number of connected clients: ${sockets.size}`);
+
+    
+    this.client_tenantIds.set(client.id, client.handshake.headers['tenant-id']);
+    console.log(this.client_tenantIds);
   }
 
   handleDisconnect(client: any) {
-    this.logger.log(`Cliend id: ${client.id} disconnected`);
+    this.logger.log(`Client id: ${client.id} disconnected`);
+    this.client_tenantIds.delete(client.id);
+    console.log(this.client_tenantIds);
   }
 
   @SubscribeMessage('ping')

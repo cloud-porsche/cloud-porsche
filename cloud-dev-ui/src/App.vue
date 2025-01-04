@@ -132,6 +132,7 @@ import Login from "@/components/Login.vue";
 import { connectAuthEmulator } from "firebase/auth";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { usePropertyStore } from "@/stores/properties";
+import { initWs } from "./stores/ws";
 
 const { mobile } = useDisplay();
 
@@ -160,9 +161,11 @@ const tenantId = computed(() => {
   return determineCurrentTenantId();
 });
 
-auth?.authStateReady().then(() => {
+auth?.authStateReady().then(async () => {
   appStore.setAuthLoading(false);
-  determineCurrentTenantId();
+  await determineCurrentTenantId();
+  const token = await useCurrentUser().value?.getIdToken(true)!
+  initWs(token, (router.currentRoute.value.params as any)['tenantId'])
 });
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
