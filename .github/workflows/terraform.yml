@@ -1,5 +1,8 @@
 name: Terraform
 on:
+  push:
+    branches:
+      - feat/automated-tenant-creation
   workflow_dispatch:
     inputs:
       run_type:
