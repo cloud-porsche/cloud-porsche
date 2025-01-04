@@ -27,7 +27,7 @@ on:
         description: 'Type of tenant (e.g. pricing plan); free, pro, or enterprise'
 jobs:
   tf-apply:
-    if: github.event.push.branch == 'feat/automated-tenant-creation' #inputs.run_type == 'apply'
+    if: inputs.run_type == 'apply'
     name: Terraform apply 🏗️
     runs-on: ubuntu-22.04
     permissions:
@@ -59,7 +59,7 @@ jobs:
         run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
 
   tf-destroy:
-    if: inputs.run_type == 'destroy'
+    if: github.event.push.branch == 'feat/automated-tenant-creation' #inputs.run_type == 'destroy'
     name: Terraform destroy 🏗️
     runs-on: ubuntu-22.04
     permissions:
