@@ -1,4 +1,4 @@
-name: Google Cloud
+name: Google Cloud Tenant Management
 on:
   push:
     branches:

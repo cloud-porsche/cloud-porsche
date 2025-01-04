@@ -5,7 +5,6 @@ import { ParkingService } from '../parking.service';
 import { ConfigService } from '@nestjs/config';
 import { IParkingProperty, ParkingSpotState } from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
-import * as admin from 'firebase-admin';
 
 const SIMULATION_INTERVAL = 10000;
 
@@ -34,7 +33,7 @@ export class SimulationService {
 
     this.simulationIds.add(propertyId);
     this.schedulerRegistry.addInterval(
-      'simulation',
+      propertyId,
       setInterval(
         async () => this.runSimulation(token, tenantId, propertyId),
         SIMULATION_INTERVAL,
@@ -44,7 +43,7 @@ export class SimulationService {
   }
 
   async stopSimulation(token: string, tenantId: string, propertyId: string) {
-    this.schedulerRegistry.deleteInterval('simulation');
+    this.schedulerRegistry.deleteInterval(propertyId);
 
     await this.removeSimulationCars(token, tenantId, propertyId);
 

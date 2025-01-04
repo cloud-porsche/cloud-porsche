@@ -23,6 +23,11 @@ jobs:
       id-token: 'write'
       contents: 'write'
     steps:
+      - uses: devkeydet/action-environment-queue@v1
+        with:
+          environment: cloud-porsche-terraform
+          github-token: ${{ secrets.A_GITHUB_TOKEN }}
+          timeout: 2000000
       - uses: actions/checkout@v4
       - name: Authenticate to Google Cloud
         id: auth
