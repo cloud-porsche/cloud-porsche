@@ -32,9 +32,8 @@ export class ParkingPropertiesGateway {
   }
 
   private initializeFirestoreListener() {
-    const collectionRef = this.db.collection('ParkingProperties'); // Replace with your Firestore collection name
+    const collectionRef = this.db.collection('ParkingProperties');
 
-    // Listen for real-time updates
     collectionRef.onSnapshot(
       (snapshot) => {
 
@@ -49,7 +48,7 @@ export class ParkingPropertiesGateway {
             }
           })
           this.logger.debug('Parking property changed - Sending to clients');
-          this.io.to(clientId).emit('parking-properties', parkingProperties); // Emit the changes to connected clients
+          this.io.to(clientId).emit('parking-properties', parkingProperties);
         });
       },
       (error) => {
@@ -65,7 +64,12 @@ export class ParkingPropertiesGateway {
   handleConnection(client: any) {
     // console.log(client);
     const token = client.handshake.headers['authorization'];
-    const tenantId = client.handshake.headers['tenant-id'];
+    let tenantId = client.handshake.headers['tenant-id'];
+
+    if(client.handshake.headers['origin'].includes('localhost')) {
+      this.client_tenantIds.set(client.id, 'localhost');
+      return;
+    }
 
     this.logger.log(`Client id: ${client.id} connected`);
     if (!token) {
@@ -73,7 +77,6 @@ export class ParkingPropertiesGateway {
       client.disconnect();
       return;
     }
-
 
     const verifyToken = tenantId
       ? admin
