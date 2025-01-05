@@ -22,17 +22,23 @@ router.beforeEach(async (to) => {
   const isLoggedIn = !!currentUser;
   const tenantId = (to.params as any)["tenantId"];
 
-  if (!tenantId && to.path !== "/free/") {
+  if (!tenantId && to.name !== "/[tenantId]/") {
     return {
-      path: "/free/",
+      name: "/[tenantId]/",
+      params: {
+        tenantId: "free",
+      },
     };
   }
   if (
     (!isLoggedIn || verifiedIfPassword(currentUser)) &&
-    to.path !== `/${tenantId}/profile`
+    to.name !== `/[tenantId]/profile`
   ) {
     return {
-      path: `${tenantId}/profile`,
+      name: `/[tenantId]/profile`,
+      params: {
+        tenantId: tenantId,
+      },
       query: {
         // Store the intended path to redirect after successful login and verification
         redirect: to.fullPath,
