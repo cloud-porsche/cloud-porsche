@@ -79,10 +79,31 @@ export class TenantsService {
       .auth()
       .tenantManager()
       .deleteTenant(tenantId)
-      .then(() => {
-        return tenantId;
+      .then(async () => {
+        const ghResponse = await this.octokit.request(
+          `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
+          {
+            ref: this.targetBranch,
+            inputs: {
+              run_type: 'tenant-delete',
+              tenant_id: tenantId,
+            },
+            headers: {
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
+          },
+        );
+        return {
+          res: {
+            tenantId: tenantId,
+          },
+          ghResponse: await this.octokit.request(
+            'GET ' + ghResponse.url.replace('/dispatches', ''),
+          ),
+        };
       })
       .catch((error) => {
+        this.logger.error(error);
         return error;
       });
   }

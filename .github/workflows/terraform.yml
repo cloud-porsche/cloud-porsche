@@ -60,7 +60,7 @@ jobs:
         run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
 
   tf-destroy:
-    #if: inputs.run_type == 'destroy'
+    if: inputs.run_type == 'destroy'
     name: Terraform destroy 🏗️
     runs-on: ubuntu-22.04
     permissions:
@@ -90,7 +90,7 @@ jobs:
 
   tf-tenant-create:
     if: inputs.run_type == 'tenant-create'
-    name: Terraform create tenant 🚮
+    name: Terraform create tenant 🆕
     runs-on: ubuntu-22.04
     permissions:
       id-token: 'write'
