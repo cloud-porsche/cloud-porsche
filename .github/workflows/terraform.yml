@@ -1,4 +1,5 @@
 name: Terraform
+run-name: ${{ inputs.run_type }} ${{ inputs.tenant_id }}
 on:
   push:
     branches:
