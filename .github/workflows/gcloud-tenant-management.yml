@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - develop
-      - feat/automated-tenant-creation
 jobs:
   build-and-push-to-gcr:
     name: Build and Push image to GCR 📦

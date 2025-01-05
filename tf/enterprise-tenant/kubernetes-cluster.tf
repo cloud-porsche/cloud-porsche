@@ -22,11 +22,11 @@ resource "helm_release" "enterprise_tenant" {
   timeout    = 900
 
   values = compact([
-    file("${path.module}/../../k8s/helm/cloud-porsche-default/values.yaml"),
-      fileexists("${path.module}/../../k8s/helm/cloud-porsche-default/values-secrets.yaml") ?
-      file("${path.module}/../../k8s/helm/cloud-porsche-default/values-secrets.yaml") : null,
-      fileexists("${path.module}/../../k8s/helm/cloud-porsche-default/values-${var.tenant_id}.yaml") ?
-      file("${path.module}/../../k8s/helm/cloud-porsche-default/values-${var.tenant_id}.yaml") : null,
+    file("${path.module}/../../helm/cloud-porsche-default/values.yaml"),
+      fileexists("${path.module}/../../helm/cloud-porsche-default/values-secrets.yaml") ?
+      file("${path.module}/../../helm/cloud-porsche-default/values-secrets.yaml") : null,
+      fileexists("${path.module}/../../helm/cloud-porsche-default/values-${var.tenant_id}.yaml") ?
+      file("${path.module}/../../helm/cloud-porsche-default/values-${var.tenant_id}.yaml") : null,
   ])
 
   set {

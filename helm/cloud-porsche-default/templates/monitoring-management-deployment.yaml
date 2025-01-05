@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-management
+  namespace: {{ .Release.Namespace}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: monitoring-management
+  template:
+    metadata:
+      labels:
+        name: monitoring-management
+    spec:
+      containers:
+        - env:
+            - name: FIREBASE_PROJECT_ID
+              value: cloud-porsche
+            - name: FIRESTORE_DB
+              value: {{ .Values.monitoringManagement.envs.FIRESTORE_DB }}
+            - name: CORS_ORIGINS
+              value: {{ .Values.sharedEnvs.CORS_ORIGINS }}
+            - name: FIREBASE_OVERWRITE_CREDENTIALS
+              value: {{ .Values.sharedEnvs.FIREBASE_OVERWRITE_CREDENTIALS | quote }}
+            - name: FIREBASE_CLIENT_EMAIL
+              value: {{ .Values.secrets.FIREBASE_CLIENT_EMAIL }}
+            - name: FIREBASE_PRIVATE_KEY
+              value: {{ .Values.secrets.FIREBASE_PRIVATE_KEY | quote }}
+            - name: FIREBASE_TOKEN
+              value: {{ .Values.secrets.FIREBASE_TOKEN }}
+            - name: PORT
+              value: {{ .Values.monitoringManagement.port | quote }}
+          image: {{ .Values.images.monitoringManagement }}
+          imagePullPolicy: IfNotPresent
+          name: monitoring-management
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+          ports:
+            - containerPort: {{ .Values.monitoringManagement.port }}
+              protocol: TCP
+          {{- if .Values.monitoringManagement.livelinessProbe }}
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.monitoringManagement.port }}
+              path: /v1/
+          {{- end }}
+      restartPolicy: Always

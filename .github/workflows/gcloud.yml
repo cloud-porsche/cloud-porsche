@@ -4,7 +4,6 @@ on:
     branches:
       - master
       - develop
-      - feat/automated-tenant-creation
 jobs:
   build-and-push-to-gcr:
     strategy:
@@ -56,7 +55,7 @@ jobs:
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - name: Package helm tarball
         run: |
-          echo HELM_TARBALL=$(helm package ./k8s/helm/cloud-porsche-default | grep -oP '(?<=Successfully packaged chart and saved it to: ).*') >> $GITHUB_ENV
+          echo HELM_TARBALL=$(helm package ./helm/cloud-porsche-default | grep -oP '(?<=Successfully packaged chart and saved it to: ).*') >> $GITHUB_ENV
       - name: Push helm tarball to GCR
         run: |
           helm push ${{ env.HELM_TARBALL }} oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/

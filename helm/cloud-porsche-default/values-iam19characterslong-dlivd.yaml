@@ -1,0 +1,19 @@
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+
+propertyManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-iam19characterslong-dlivd
+    FIRESTORE_DB: property-management-iam19characterslong-dlivd
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-iam19characterslong-dlivd
+    FIRESTORE_DB: property-management-iam19characterslong-dlivd
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-iam19characterslong-dlivd

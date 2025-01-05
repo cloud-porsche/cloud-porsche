@@ -20,4 +20,18 @@ spec:
                 name: property-management
                 port:
                   number: {{ .Values.propertyManagement.port }}
+          - path: /parking-management(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: parking-management
+                port:
+                  number: {{ .Values.parkingManagement.port }}
+          - path: /monitoring-management(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: monitoring-management
+                port:
+                  number: {{ .Values.monitoringManagement.port }}
 

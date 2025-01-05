@@ -1,9 +1,6 @@
 name: Terraform
 run-name: ${{ inputs.run_type }} ${{ inputs.tenant_id }}
 on:
-  push:
-    branches:
-      - feat/automated-tenant-creation
   workflow_dispatch:
     inputs:
       run_type:
@@ -120,8 +117,8 @@ jobs:
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
         with:
-          input: ./k8s/helm/cloud-porsche-default/${{ inputs.tenant_type }}-template.yaml
-          output: ./k8s/helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+          input: ./helm/cloud-porsche-default/${{ inputs.tenant_type }}-template.yaml
+          output: ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
@@ -149,7 +146,7 @@ jobs:
           git config --global user.name 'Tenant Creation Bot'
           git config --global user.email 'tenant-bot@noreply.com'
           git pull --rebase --strategy-option=theirs
-          git add ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+          git add ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
           git commit -am "Created tenant: ${{ inputs.tenant_id }}"
           git push
 
@@ -204,7 +201,7 @@ jobs:
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Delete tenant files
         if: ${{ steps.plan.outputs.exit_code }} == 2
-        run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./k8s/helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+        run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
       - name: Commit and push changes
         if: ${{ steps.plan.outputs.exit_code }} == 2
         run: |

@@ -16,10 +16,18 @@ autoscaling:
 
 envs:
   FIREBASE_OVERWRITE_CREDENTIALS: true
-  CORS_ORIGIN: localhost
+  CORS_ORIGINS: https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
   FIREBASE_STORAGE_BUCKET: property-management-free-tier
   FIRESTORE_DB: property-management-free-tier
- 
+
 propertyManagement:
-  port: 8080
-  livelinessProbe: true
+  envs:
+    FIREBASE_STORAGE_BUCKET: cloud-porsche-prod
+    FIRESTORE_DB: prod
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: cloud-porsche-prod
+    FIRESTORE_DB: prod
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-prod

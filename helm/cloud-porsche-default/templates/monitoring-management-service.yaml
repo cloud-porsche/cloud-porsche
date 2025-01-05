@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-management
+  namespace: {{ .Release.Namespace}}
+spec:
+  ports:
+    - name: {{ .Values.monitoringManagement.port | quote }}
+      port: {{ .Values.monitoringManagement.port }}
+      targetPort: {{ .Values.monitoringManagement.port }}
+  type: LoadBalancer
+  selector:
+    name: monitoring-management

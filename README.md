@@ -18,7 +18,7 @@ services that are part of the Cloud Porsche Management Solution.
 - The context of the Dockerfiles (for each directory) needs to be set to the root  
   (e.g. `.` instead of `./cloud-dev-ui`). Check the provided IntelliJ run configurations for an example.
 
-## Kubernetes
+## Kubernetes (Deprecated: use helm)
 
 Ensure you have up-to-date images by running
 
@@ -38,7 +38,7 @@ kubectl get all
 ```
 
 and it should look something like this:
-![example-get-all](./k8s/example-get-all.png)
+![example-get-all](./helm/example-get-all.png)
 
 ## Helm
 
@@ -54,7 +54,7 @@ and it should look something like this:
 To package the Helm chart, run
 
 ```
-helm package ./k8s/helm/cloud-porsche-default 
+helm package ./helm/cloud-porsche-default 
 ```
 
 #### Install
@@ -62,5 +62,5 @@ helm package ./k8s/helm/cloud-porsche-default
 To install the Helm chart, run
 
 ```
-helm install cloud-porsche ./k8s/helm/cloud-porsche-default-0.1.0.tgz --values ./k8s/helm/cloud-porsche-default/values.yaml,./k8s/helm/cloud-porsche-default/values-secrets.yaml
+helm install cloud-porsche ./helm/cloud-porsche-default-0.1.0.tgz --values ./helm/cloud-porsche-default/values.yaml,./helm/cloud-porsche-default/values-secrets.yaml
 ```

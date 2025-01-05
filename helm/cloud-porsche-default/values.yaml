@@ -4,6 +4,8 @@
 
 images:
   propertyManagement: cloud-porsche/property-management:latest
+  parkingManagement: cloud-porsche/parking-management:latest
+  monitoringManagement: cloud-porsche/monitoring-management:latest
 
 ingress:
   sslRedirect: false
@@ -22,17 +24,32 @@ resources:
 autoscaling:
   enabled:
     - property-management
+    - parking-management
+    - monitoring-management
   minReplicas: 1
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
 
-envs:
+sharedEnvs:
   FIREBASE_OVERWRITE_CREDENTIALS: true
-  CORS_ORIGIN: localhost
-  FIREBASE_STORAGE_BUCKET: cloud-porsche-staging
-  FIRESTORE_DB: staging
+  CORS_ORIGINS: https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
 
 propertyManagement:
   port: 8080
   livelinessProbe: true
+  envs:
+    FIREBASE_STORAGE_BUCKET: cloud-porsche-staging
+    FIRESTORE_DB: staging
+parkingManagement:
+  port: 8084
+  livelinessProbe: true
+  envs:
+    FIREBASE_STORAGE_BUCKET: cloud-porsche-staging
+    FIRESTORE_DB: staging
+    PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
+monitoringManagement:
+  port: 8083
+  livelinessProbe: true
+  envs:
+    FIRESTORE_DB: monitoring-staging

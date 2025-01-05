@@ -1,0 +1,29 @@
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+
+#This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 20
+
+
+shared-envs:
+  FIREBASE_OVERWRITE_CREDENTIALS: true
+  CORS_ORIGINS: https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
+
+propertyManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-pro-tier
+    FIRESTORE_DB: property-management-pro-tier
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-pro-tier
+    FIRESTORE_DB: property-management-pro-tier
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-pro-tier
