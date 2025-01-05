@@ -41,6 +41,7 @@
       <v-divider vertical inset></v-divider>
       <v-spacer></v-spacer>
       <v-btn
+        :disabled="!useAppStore().wsStatus"
         density="comfortable"
         :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
         text="Simulation"
@@ -260,6 +261,7 @@ import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
 import { useRoute } from "vue-router";
 import CounterCard from "@/components/CounterCard.vue";
 import { useFullscreen, useStorage } from "@vueuse/core";
+import { useAppStore } from "@/stores/app";
 
 const ParkingSpotComponent = defineAsyncComponent(
   () => import("@/components/ParkingSpotComponent.vue"),
