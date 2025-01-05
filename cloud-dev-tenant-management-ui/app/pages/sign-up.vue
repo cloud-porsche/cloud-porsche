@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from "#ui/types";
 
+const toast = useToast();
+
 const router = useRouter();
 const initialPlan = computed(
   () => router.currentRoute.value.query.plan || "free",
@@ -11,6 +13,7 @@ const state = reactive({
   name: undefined,
   email: undefined,
   confirmEmail: undefined,
+  acceptTerms: false,
 });
 
 watch(state, (_) => {
@@ -25,6 +28,8 @@ const validate = (state: any): FormError[] => {
   if (!state.plan) errors.push({ path: "plan", message: "Required" });
   if (!state.name) errors.push({ path: "name", message: "Required" });
   if (!state.email) errors.push({ path: "email", message: "Required" });
+  if (!state.acceptTerms)
+    errors.push({ path: "acceptTerms", message: "Terms need to be accepted" });
   if (!state.confirmEmail)
     errors.push({ path: "confirmEmail", message: "Required" });
   if (state.email !== state.confirmEmail)
@@ -38,7 +43,6 @@ const validate = (state: any): FormError[] => {
     });
   if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(state.email))
     errors.push({ path: "email", message: "Not a valid email address" });
-
   return errors;
 };
 
@@ -46,19 +50,35 @@ const loading = ref(false);
 
 async function onSubmit(_: FormSubmitEvent<any>) {
   loading.value = true;
-  const res = await fetch(
-    (import.meta.dev ? "http://localhost:8081" : "") + "/v1/tenants/",
-    {
-      method: "POST",
-      body: JSON.stringify(state),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-  loading.value = false;
-  // TODO: Do something with res
-  await router.push("/sign-up-done");
+  try {
+    const res = await (
+      await fetch(
+        (import.meta.dev ? "http://localhost:8081" : "") + "/v1/tenants/",
+        {
+          method: "POST",
+          body: JSON.stringify(state),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      )
+    ).json();
+    if (!res.res.tenantId)
+      throw new Error("Tenant creation failed, missing or wrong tenant id.");
+    await router.push(
+      `/sign-up-done?plan=${state.plan}&tenantId=${res.res.tenantId}&badgeUrl=${res.ghResponse.data.badge_url}`,
+    );
+    loading.value = false;
+  } catch (e) {
+    console.error(e);
+    toast.add({
+      color: "red",
+      title: "Error",
+      description: "Something went wrong, please try again later.",
+      timeout: 15000,
+    });
+    loading.value = false;
+  }
 }
 </script>
 
@@ -82,7 +102,7 @@ async function onSubmit(_: FormSubmitEvent<any>) {
         class="space-y-4"
         @submit="onSubmit"
       >
-        <UFormGroup label="Plan" name="plan" class="py-4">
+        <UFormGroup label="Plan" name="plan" class="py-4" required>
           <USelect
             :options="['pro', 'enterprise']"
             v-model="state.plan"
@@ -90,18 +110,26 @@ async function onSubmit(_: FormSubmitEvent<any>) {
           ></USelect>
         </UFormGroup>
 
-        <UFormGroup label="Company Name" name="name">
+        <UFormGroup label="Company Name" name="name" required>
           <UInput v-model="state.name" required />
         </UFormGroup>
 
-        <UFormGroup label="Email" name="email">
+        <UFormGroup label="Email" name="email" required>
           <UInput v-model="state.email" required />
         </UFormGroup>
 
-        <UFormGroup label="Confirm Email" name="confirm-email">
+        <UFormGroup label="Confirm Email" name="confirm-email" required>
           <UInput v-model="state.confirmEmail" required />
         </UFormGroup>
         <UDivider></UDivider>
+        <span class="flex justify-center">
+          <UCheckbox
+            input-class="hover:cursor-pointer"
+            v-model="state.acceptTerms"
+            label="I agree to the terms and conditions"
+            required
+          ></UCheckbox>
+        </span>
         <span class="flex justify-center">
           <UButton
             type="submit"
