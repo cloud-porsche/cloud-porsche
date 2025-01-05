@@ -1,4 +1,5 @@
 // Utilities
+import { Firestore } from "firebase/firestore";
 import { defineStore } from "pinia";
 import { Socket } from "socket.io-client";
 
@@ -29,6 +30,9 @@ export const useAppStore = defineStore("app", {
       auth: {
         loading: true,
       },
+      firebase: {
+        db: {} as Firestore,
+      }
     };
   },
   getters: {
@@ -62,6 +66,9 @@ export const useAppStore = defineStore("app", {
     setAuthLoading(loading: boolean) {
       this.auth.loading = loading;
     },
+    setFirestore(firestore: Firestore) {
+      this.firebase.db = firestore;
+    }
   },
 });
 

@@ -22,6 +22,8 @@ import {
 import Dashboards from "@highcharts/dashboards";
 import Highcharts from "highcharts";
 import LayoutModule from "@highcharts/dashboards/modules/layout";
+import { initializeFirestore } from "firebase/firestore";
+import { useAppStore } from "./stores/app";
 
 const app = createApp(App);
 registerPlugins(app);
@@ -32,12 +34,17 @@ Dashboards.HighchartsPlugin.custom.connectHighcharts(Highcharts);
 Dashboards.PluginHandler.addPlugin(Dashboards.HighchartsPlugin);
 LayoutModule(Dashboards);
 
+const firebaseApp = initializeApp({
+  projectId: "cloud-porsche",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+});
+const firestore = initializeFirestore(firebaseApp, {}, 'staging');
+
+useAppStore().setFirestore(firestore);
+
 app.use(VueFire, {
-  firebaseApp: initializeApp({
-    projectId: "cloud-porsche",
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  }),
+  firebaseApp: firebaseApp,
   modules: [
     VueFireAuthWithDependencies({
       dependencies: {
