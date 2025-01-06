@@ -1,4 +1,5 @@
 // Utilities
+import { ITenant } from "@cloud-porsche/types";
 import { defineStore } from "pinia";
 import { Socket } from "socket.io-client";
 
@@ -28,6 +29,9 @@ export const useAppStore = defineStore("app", {
       },
       auth: {
         loading: true,
+      },
+      tenant: {
+        info: null as null | ITenant,
       },
     };
   },
@@ -61,6 +65,9 @@ export const useAppStore = defineStore("app", {
     },
     setAuthLoading(loading: boolean) {
       this.auth.loading = loading;
+    },
+    setTenantInfo(info: ITenant) {
+      this.tenant.info = info;
     },
   },
 });

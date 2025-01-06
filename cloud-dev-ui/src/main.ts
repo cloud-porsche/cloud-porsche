@@ -32,12 +32,14 @@ Dashboards.HighchartsPlugin.custom.connectHighcharts(Highcharts);
 Dashboards.PluginHandler.addPlugin(Dashboards.HighchartsPlugin);
 LayoutModule(Dashboards);
 
+const firebaseApp = initializeApp({
+  projectId: "cloud-porsche",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+});
+
 app.use(VueFire, {
-  firebaseApp: initializeApp({
-    projectId: "cloud-porsche",
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  }),
+  firebaseApp: firebaseApp,
   modules: [
     VueFireAuthWithDependencies({
       dependencies: {

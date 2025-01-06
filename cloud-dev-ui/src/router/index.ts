@@ -10,6 +10,8 @@ import { routes } from "vue-router/auto-routes";
 import { createWebHashHistory } from "vue-router";
 import { getCurrentUser } from "vuefire";
 import { verifiedIfPassword } from "@/plugins/verify-user";
+import { signOut } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -17,7 +19,7 @@ const router = createRouter({
 });
 
 // Redirect to login page if the user is not logged in or their email is not verified
-router.beforeEach(async (to) => {
+router.beforeEach(async (to, from) => {
   const currentUser = await getCurrentUser();
   const isLoggedIn = !!currentUser;
   const tenantId = (to.params as any)["tenantId"];
@@ -45,6 +47,18 @@ router.beforeEach(async (to) => {
       },
     };
   }
+  if (isLoggedIn && (from.params as any)["tenantId"] && tenantId !== (from.params as any)["tenantId"]) {
+    const auth = getAuth();
+    console.log(auth);
+    signOut(auth!)
+      // useAppStore().removeTenantId();
+    return {
+      name: "/[tenantId]/",
+      params: {
+        tenantId: tenantId,
+      },
+    }
+    }
 });
 
 // Workaround for https://github.com/vitejs/vite/issues/11804

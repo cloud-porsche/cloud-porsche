@@ -92,7 +92,6 @@
             <KeepAlive>
               <Suspense>
                 <component :is="Component"></component>
-
                 <template #fallback>
                   <v-progress-linear
                     indeterminate
@@ -133,6 +132,8 @@ import { connectAuthEmulator } from "firebase/auth";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { usePropertyStore } from "@/stores/properties";
 import { initWs } from "./stores/ws";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { ITenant } from "@cloud-porsche/types";
 
 const { mobile } = useDisplay();
 
@@ -149,23 +150,22 @@ const route = useRoute();
 const determineCurrentTenantId = () => {
   const tenantId = (route.params as any)["tenantId"];
   if (!tenantId || !auth) return null;
-  auth.tenantId =
-    tenantId === "free"
-      ? null
-      : tenantId.includes(":")
-        ? tenantId.split(":")[1]
-        : tenantId;
+  auth.tenantId = tenantId === "free" ? null : tenantId;
   return tenantId;
 };
 const tenantId = computed(() => {
   return determineCurrentTenantId();
 });
 
-auth?.authStateReady().then(async () => {
+auth?.onAuthStateChanged(async (user) => {
   appStore.setAuthLoading(false);
+  await router.isReady();
   await determineCurrentTenantId();
-  const token = await useCurrentUser().value?.getIdToken(true)!
-  initWs(token, (router.currentRoute.value.params as any)['tenantId'])
+  if (user) {
+    const token = await useCurrentUser().value?.getIdToken(true)!;
+    initWs(token, tenantId.value);
+    fetchTenantInfo(tenantId.value);
+  }
 });
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
@@ -179,6 +179,13 @@ onMounted(async () => {
   await router.isReady();
   await propertyStore.fetchProperties();
 });
+
+const fetchTenantInfo = async (tenantId: string) => {
+  const db = getFirestore();
+  const docRef = doc(db, "Tenants", tenantId);
+  const docData = (await getDoc(docRef)).data() as ITenant;
+  appStore.setTenantInfo(docData);
+};
 </script>
 
 <style lang="scss">
