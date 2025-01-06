@@ -41,20 +41,18 @@
               class="pa-5"
             >
               <v-list-item-title>User Management</v-list-item-title>
-              <v-list>
-                <v-list-item>
-                  <v-btn @click="fetchUsers" color="primary" small>Fetch</v-btn>
-                  <v-list>
-                    <v-list-item
-                      v-for="user in users"
-                      :key="user.id"
-                      class="pa-5"
-                    >
-                      <v-list-item-title>{{ user.email }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-list-item>
-              </v-list>
+              <v-data-table
+                :items="users"
+                :headers="userTableHeaders"
+                item-value="email"
+                class="elevation-1"
+              >
+                <template #item.action="{ item }">
+                  <v-btn color="red" @click="deleteUser(item.email)">
+                    Delete
+                  </v-btn>
+                </template>
+              </v-data-table>
             </v-list-item>
             <v-list-item v-else class="pa-5">
               <v-list-item-title>No settings available.</v-list-item-title>
@@ -69,8 +67,9 @@
 <script setup lang="ts">
 import { useAppStore } from "@/stores/app";
 import { MaterialVersion } from "@/plugins/vuetify";
-import { get, post } from "@/http/http";
+import { del, get } from "@/http/http";
 import router from "@/router";
+import { onMounted } from "vue";
 
 const appStore = useAppStore();
 const tabs = computed(() => [
@@ -151,6 +150,11 @@ const activeTab = ref(tabs.value[0]);
 const tenantId = (router.currentRoute.value.params as any)["tenantId"];
 let users = ref([]);
 
+const userTableHeaders = [
+  { text: "Email", value: "email" },
+  { text: "Action", value: "action", sortable: false },
+];
+
 // Fetch users for the tenant
 const fetchUsers = async () => {
   console.log("Tenant ID:", tenantId);
@@ -164,14 +168,25 @@ const fetchUsers = async () => {
   }
 };
 
-watch(
-  () => activeTab.value,
-  (newTab) => {
-    if (newTab.title === "User Management") {
-      fetchUsers();
-    }
-  },
-);
+// Delete user by email
+const deleteUser = async (email: string) => {
+  try {
+    await del(
+      `/v1/tenants/${tenantId}/users/${email}`,
+      undefined,
+      "tenantManagement",
+    );
+    users.value = users.value.filter((user) => user.email !== email);
+  } catch (error) {
+    console.error("Error deleting user:", error);
+  }
+};
+
+onMounted(() => {
+  if (tabs.value.some((tab) => tab.title === "User Management")) {
+    fetchUsers();
+  }
+});
 </script>
 
 <style scoped></style>
