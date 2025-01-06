@@ -8,7 +8,7 @@
 import { createRouter } from "vue-router/auto";
 import { routes } from "vue-router/auto-routes";
 import { createWebHashHistory } from "vue-router";
-import { getCurrentUser, useFirebaseAuth } from "vuefire";
+import { getCurrentUser } from "vuefire";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { useAppStore } from "@/stores/app";
 import { signOut } from "firebase/auth";
@@ -49,7 +49,6 @@ router.beforeEach(async (to) => {
     };
   }
   if (isLoggedIn && useAppStore().currentTenantId && tenantId !== useAppStore().currentTenantId) {
-    console.log("Tenant ID mismatch, signing out");
     const auth = getAuth();
     console.log(auth);
     signOut(auth!)

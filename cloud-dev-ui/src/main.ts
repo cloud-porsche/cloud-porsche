@@ -22,8 +22,6 @@ import {
 import Dashboards from "@highcharts/dashboards";
 import Highcharts from "highcharts";
 import LayoutModule from "@highcharts/dashboards/modules/layout";
-import { initializeFirestore } from "firebase/firestore";
-import { useAppStore } from "./stores/app";
 
 const app = createApp(App);
 registerPlugins(app);
@@ -39,9 +37,6 @@ const firebaseApp = initializeApp({
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
 });
-const firestore = initializeFirestore(firebaseApp, {}, 'staging');
-
-useAppStore().setFirestore(firestore);
 
 app.use(VueFire, {
   firebaseApp: firebaseApp,

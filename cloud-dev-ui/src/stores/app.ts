@@ -33,9 +33,6 @@ export const useAppStore = defineStore("app", {
       auth: {
         loading: true,
       },
-      firebase: {
-        db: {} as Firestore,
-      },
       currentUser: {
         tenantId: tenantId,
       }
@@ -74,9 +71,6 @@ export const useAppStore = defineStore("app", {
     },
     setAuthLoading(loading: boolean) {
       this.auth.loading = loading;
-    },
-    setFirestore(firestore: Firestore) {
-      this.firebase.db = firestore;
     },
     setTenantId(tenantId: string) {
       this.currentUser.tenantId = tenantId;

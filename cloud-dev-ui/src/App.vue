@@ -133,7 +133,7 @@ import { connectAuthEmulator } from "firebase/auth";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { usePropertyStore } from "@/stores/properties";
 import { initWs } from "./stores/ws";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, getFirestore, query, where } from "firebase/firestore";
 
 const { mobile } = useDisplay();
 
@@ -169,7 +169,7 @@ auth?.authStateReady().then(async () => {
   const token = await useCurrentUser().value?.getIdToken(true)!
   initWs(token, tenantId.value);
 
-  fetchTenantInfo(tenantId.value, auth.currentUser!.uid);
+  fetchTenantInfo(tenantId.value);
 });
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
@@ -184,9 +184,8 @@ onMounted(async () => {
   await propertyStore.fetchProperties();
 });
 
-const fetchTenantInfo = async (tenantId: string, uid: string) => {
-  console.log(auth!.currentUser?.tenantId);
-  const db = useAppStore().firebase.db;
+const fetchTenantInfo = async (tenantId: string) => {
+  const db = getFirestore();
   const tenantRef = collection(db, 'Tenants');
   const tenantQuery = query(tenantRef, where('tenantId', '==', tenantId));
   const tenantSnapshot = await getDocs(tenantQuery);
