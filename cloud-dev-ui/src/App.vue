@@ -92,7 +92,6 @@
             <KeepAlive>
               <Suspense>
                 <component :is="Component"></component>
-
                 <template #fallback>
                   <v-progress-linear
                     indeterminate
@@ -151,10 +150,7 @@ const route = useRoute();
 const determineCurrentTenantId = () => {
   const tenantId = (route.params as any)["tenantId"];
   if (!tenantId || !auth) return null;
-  auth.tenantId =
-    tenantId === "free"
-      ? null
-      : tenantId;
+  auth.tenantId = tenantId === "free" ? null : tenantId;
   return tenantId;
 };
 const tenantId = computed(() => {
@@ -166,7 +162,7 @@ auth?.onAuthStateChanged(async (user) => {
   await router.isReady();
   await determineCurrentTenantId();
   if (user) {
-    const token = await useCurrentUser().value?.getIdToken(true)!
+    const token = await useCurrentUser().value?.getIdToken(true)!;
     initWs(token, tenantId.value);
     fetchTenantInfo(tenantId.value);
   }
@@ -186,7 +182,7 @@ onMounted(async () => {
 
 const fetchTenantInfo = async (tenantId: string) => {
   const db = getFirestore();
-  const docRef = doc(db, 'Tenants', tenantId);
+  const docRef = doc(db, "Tenants", tenantId);
   const docData = (await getDoc(docRef)).data() as ITenant;
   appStore.setTenantInfo(docData);
 };
