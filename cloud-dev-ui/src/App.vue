@@ -164,10 +164,12 @@ const tenantId = computed(() => {
 
 auth?.authStateReady().then(async () => {
   appStore.setAuthLoading(false);
+  await router.isReady();
   await determineCurrentTenantId();
   const token = await useCurrentUser().value?.getIdToken(true)!
   initWs(token, tenantId.value);
-  fetchTenantInfo(tenantId.value, auth.currentUser.uid);
+
+  fetchTenantInfo(tenantId.value, auth.currentUser!.uid);
 });
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
@@ -183,14 +185,11 @@ onMounted(async () => {
 });
 
 const fetchTenantInfo = async (tenantId: string, uid: string) => {
-  if(tenantId === 'free') {
-    tenantId = uid
-  }
+  console.log(auth!.currentUser?.tenantId);
   const db = useAppStore().firebase.db;
   const tenantRef = collection(db, 'Tenants');
   const tenantQuery = query(tenantRef, where('tenantId', '==', tenantId));
   const tenantSnapshot = await getDocs(tenantQuery);
-  
   const tenantData = tenantSnapshot.docs[0].data();
   console.log(tenantData);
 };

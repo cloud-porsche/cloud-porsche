@@ -8,8 +8,11 @@
 import { createRouter } from "vue-router/auto";
 import { routes } from "vue-router/auto-routes";
 import { createWebHashHistory } from "vue-router";
-import { getCurrentUser } from "vuefire";
+import { getCurrentUser, useFirebaseAuth } from "vuefire";
 import { verifiedIfPassword } from "@/plugins/verify-user";
+import { useAppStore } from "@/stores/app";
+import { signOut } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -45,6 +48,19 @@ router.beforeEach(async (to) => {
       },
     };
   }
+  if (isLoggedIn && useAppStore().currentTenantId && tenantId !== useAppStore().currentTenantId) {
+    console.log("Tenant ID mismatch, signing out");
+    const auth = getAuth();
+    console.log(auth);
+    signOut(auth!)
+      // useAppStore().removeTenantId();
+    return {
+      name: "/[tenantId]/",
+      params: {
+        tenantId: tenantId,
+      },
+    }
+    }
 });
 
 // Workaround for https://github.com/vitejs/vite/issues/11804

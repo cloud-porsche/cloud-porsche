@@ -13,6 +13,9 @@ export const parkingManagementUrl =
   import.meta.env.VITE_PARKING_MANAGEMENT_API_URL ??
   "";
 
+export const tenantId =
+  localStorage.getItem("tenantId") ?? null;
+
 export const useAppStore = defineStore("app", {
   state: () => {
     return {
@@ -32,6 +35,9 @@ export const useAppStore = defineStore("app", {
       },
       firebase: {
         db: {} as Firestore,
+      },
+      currentUser: {
+        tenantId: tenantId,
       }
     };
   },
@@ -45,6 +51,9 @@ export const useAppStore = defineStore("app", {
     wsStatus(state) {
       return state.api.ws.connected;
     },
+    currentTenantId(state) {
+      return state.currentUser.tenantId;
+    }
   },
   actions: {
     updateWsConnection(socket: Socket) {
@@ -68,6 +77,14 @@ export const useAppStore = defineStore("app", {
     },
     setFirestore(firestore: Firestore) {
       this.firebase.db = firestore;
+    },
+    setTenantId(tenantId: string) {
+      this.currentUser.tenantId = tenantId;
+      localStorage.setItem("tenantId", tenantId);
+    },
+    removeTenantId() {
+      this.currentUser.tenantId = null;
+      localStorage.removeItem("tenantId");
     }
   },
 });
