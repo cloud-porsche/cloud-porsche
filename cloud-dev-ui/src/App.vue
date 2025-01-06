@@ -133,7 +133,8 @@ import { connectAuthEmulator } from "firebase/auth";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { usePropertyStore } from "@/stores/properties";
 import { initWs } from "./stores/ws";
-import { collection, getDocs, getFirestore, query, where } from "firebase/firestore";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { ITenant } from "@cloud-porsche/types";
 
 const { mobile } = useDisplay();
 
@@ -153,23 +154,22 @@ const determineCurrentTenantId = () => {
   auth.tenantId =
     tenantId === "free"
       ? null
-      : tenantId.includes(":")
-        ? tenantId.split(":")[1]
-        : tenantId;
+      : tenantId;
   return tenantId;
 };
 const tenantId = computed(() => {
   return determineCurrentTenantId();
 });
 
-auth?.authStateReady().then(async () => {
+auth?.onAuthStateChanged(async (user) => {
   appStore.setAuthLoading(false);
   await router.isReady();
   await determineCurrentTenantId();
-  const token = await useCurrentUser().value?.getIdToken(true)!
-  initWs(token, tenantId.value);
-
-  fetchTenantInfo(tenantId.value);
+  if (user) {
+    const token = await useCurrentUser().value?.getIdToken(true)!
+    initWs(token, tenantId.value);
+    fetchTenantInfo(tenantId.value);
+  }
 });
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
@@ -186,11 +186,9 @@ onMounted(async () => {
 
 const fetchTenantInfo = async (tenantId: string) => {
   const db = getFirestore();
-  const tenantRef = collection(db, 'Tenants');
-  const tenantQuery = query(tenantRef, where('tenantId', '==', tenantId));
-  const tenantSnapshot = await getDocs(tenantQuery);
-  const tenantData = tenantSnapshot.docs[0].data();
-  console.log(tenantData);
+  const docRef = doc(db, 'Tenants', tenantId);
+  const docData = (await getDoc(docRef)).data() as ITenant;
+  appStore.setTenantInfo(docData);
 };
 </script>
 

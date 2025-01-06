@@ -156,7 +156,6 @@ function signIn() {
       } else {
         successMessage.value = "Successfully logged in!";
       }
-      useAppStore().setTenantId(tenantId.value);
     })
     .catch((reason) => {
       console.error("Failed sign-in", reason);

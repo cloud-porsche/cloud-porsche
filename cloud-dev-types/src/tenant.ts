@@ -8,7 +8,7 @@ export enum TenantTier {
     id: string;
     tenantId: string;
     tenantName: string;
-    type: TenantTier;
+    tier: TenantTier;
     adminEmail: string;
   }
   

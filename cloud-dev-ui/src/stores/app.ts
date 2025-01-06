@@ -1,4 +1,5 @@
 // Utilities
+import { ITenant } from "@cloud-porsche/types";
 import { Firestore } from "firebase/firestore";
 import { defineStore } from "pinia";
 import { Socket } from "socket.io-client";
@@ -12,9 +13,6 @@ export const parkingManagementUrl =
   localStorage.getItem("parkingManagement") ??
   import.meta.env.VITE_PARKING_MANAGEMENT_API_URL ??
   "";
-
-export const tenantId =
-  localStorage.getItem("tenantId") ?? null;
 
 export const useAppStore = defineStore("app", {
   state: () => {
@@ -33,8 +31,8 @@ export const useAppStore = defineStore("app", {
       auth: {
         loading: true,
       },
-      currentUser: {
-        tenantId: tenantId,
+      tenant: {
+        info: null as null | ITenant
       }
     };
   },
@@ -48,9 +46,6 @@ export const useAppStore = defineStore("app", {
     wsStatus(state) {
       return state.api.ws.connected;
     },
-    currentTenantId(state) {
-      return state.currentUser.tenantId;
-    }
   },
   actions: {
     updateWsConnection(socket: Socket) {
@@ -72,14 +67,9 @@ export const useAppStore = defineStore("app", {
     setAuthLoading(loading: boolean) {
       this.auth.loading = loading;
     },
-    setTenantId(tenantId: string) {
-      this.currentUser.tenantId = tenantId;
-      localStorage.setItem("tenantId", tenantId);
+    setTenantInfo(info: ITenant) {
+      this.tenant.info = info;
     },
-    removeTenantId() {
-      this.currentUser.tenantId = null;
-      localStorage.removeItem("tenantId");
-    }
   },
 });
 

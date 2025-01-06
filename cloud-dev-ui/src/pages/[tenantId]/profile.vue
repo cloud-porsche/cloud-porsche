@@ -118,7 +118,7 @@
             <v-col>
               <v-btn
                 color="error"
-                @click="signOut(auth!).then(() => appStore.removeTenantId())"
+                @click="signOut(auth!)"
                 variant="tonal"
                 append-icon="mdi-logout"
                 >Log Out
