@@ -36,6 +36,26 @@
               >
               </v-select>
             </v-list-item>
+            <v-list-item
+              v-else-if="tab.title === 'User Management'"
+              class="pa-5"
+            >
+              <v-list-item-title>User Management</v-list-item-title>
+              <v-list>
+                <v-list-item>
+                  <v-btn @click="fetchUsers" color="primary" small>Fetch</v-btn>
+                  <v-list>
+                    <v-list-item
+                      v-for="user in users"
+                      :key="user.id"
+                      class="pa-5"
+                    >
+                      <v-list-item-title>{{ user.email }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-list-item>
+              </v-list>
+            </v-list-item>
             <v-list-item v-else class="pa-5">
               <v-list-item-title>No settings available.</v-list-item-title>
             </v-list-item>
@@ -49,6 +69,8 @@
 <script setup lang="ts">
 import { useAppStore } from "@/stores/app";
 import { MaterialVersion } from "@/plugins/vuetify";
+import { get, post } from "@/http/http";
+import router from "@/router";
 
 const appStore = useAppStore();
 const tabs = computed(() => [
@@ -73,6 +95,10 @@ const tabs = computed(() => [
         },
       },
     ],
+  },
+  {
+    title: "User Management",
+    text: "Manage users for the current tenant.",
   },
   {
     title: "Property Management",
@@ -122,6 +148,30 @@ const tabs = computed(() => [
   },
 ]);
 const activeTab = ref(tabs.value[0]);
+const tenantId = (router.currentRoute.value.params as any)["tenantId"];
+let users = ref([]);
+
+// Fetch users for the tenant
+const fetchUsers = async () => {
+  console.log("Tenant ID:", tenantId);
+  try {
+    users = await (
+      await get(`/v1/tenants/${tenantId}/users`, undefined, "tenantManagement")
+    ).json();
+    console.log("Users fetched:", users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+};
+
+watch(
+  () => activeTab.value,
+  (newTab) => {
+    if (newTab.title === "User Management") {
+      fetchUsers();
+    }
+  },
+);
 </script>
 
 <style scoped></style>
