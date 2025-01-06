@@ -50,7 +50,7 @@ const filters = [
   { value: "yearly", label: "Last year" },
   { value: "total", label: "Total" },
 ];
-const selectedFilter = ref("weekly");
+const selectedFilter = ref(monitoringStore.timeframe);
 const error = ref(false);
 
 // Create Custom HTML for Cards
@@ -263,7 +263,7 @@ watch(isDark, (newVal) => {
 });
 
 async function onFilterChange() {
-  monitoringStore.timeframe = selectedFilter.value;
+  monitoringStore.setTimeframe(selectedFilter.value);
   monitoringStore.fetchMonitoringData();
 }
 

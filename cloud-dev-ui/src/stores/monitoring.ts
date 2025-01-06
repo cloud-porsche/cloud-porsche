@@ -2,6 +2,9 @@ import { get } from "@/http/http";
 import { defineStore } from "pinia";
 
 
+export const timeframe =
+  localStorage.getItem("timeframe") ?? "weekly";
+
 interface MonitoringStoreState {
   data: any;
   timeframe: string;
@@ -28,7 +31,7 @@ export const useMonitoringStore = defineStore("monitoring", {
         percent_change: 0,
       },
     },
-    timeframe: "weekly",
+    timeframe: timeframe,
     loading: false, 
     error: null as any,
   }),
@@ -48,5 +51,9 @@ export const useMonitoringStore = defineStore("monitoring", {
         this.$state.error = null
       }
     },
+    setTimeframe(timeframe: string) {
+      this.$state.timeframe = timeframe;
+      localStorage.setItem("timeframe", timeframe);
+    }
   },
 });
