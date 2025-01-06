@@ -41,6 +41,9 @@
               class="pa-5"
             >
               <v-list-item-title>User Management</v-list-item-title>
+              <v-btn color="primary" @click="openAddUserDialog" class="mb-4">
+                Add User
+              </v-btn>
               <v-data-table
                 :items="users"
                 :headers="userTableHeaders"
@@ -48,9 +51,11 @@
                 class="elevation-1"
               >
                 <template #item.action="{ item }">
-                  <v-btn color="red" @click="deleteUser(item.email)" small>
-                    Delete
-                  </v-btn>
+                  <v-list-item-action class="d-flex justify-end">
+                    <v-btn color="red" @click="deleteUser(item.email)">
+                      Delete
+                    </v-btn>
+                  </v-list-item-action>
                 </template>
               </v-data-table>
             </v-list-item>
@@ -58,6 +63,27 @@
               <v-list-item-title>No settings available.</v-list-item-title>
             </v-list-item>
           </v-list>
+          <v-dialog v-model="dialog" max-width="500px">
+            <v-card>
+              <v-card-title>
+                <span class="headline">Add New User</span>
+              </v-card-title>
+
+              <v-card-text>
+                <v-text-field
+                  v-model="newUserEmail"
+                  label="User Email"
+                  outlined
+                  required
+                ></v-text-field>
+              </v-card-text>
+
+              <v-card-actions>
+                <v-btn color="blue" @click="dialog = false"> Cancel </v-btn>
+                <v-btn color="green" @click="addUser">Add User</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-responsive>
       </v-tabs-window-item>
     </v-tabs-window>
@@ -67,7 +93,7 @@
 <script setup lang="ts">
 import { useAppStore } from "@/stores/app";
 import { MaterialVersion } from "@/plugins/vuetify";
-import { del, get } from "@/http/http";
+import { del, get, post, postJSON } from "@/http/http";
 import router from "@/router";
 import { onMounted } from "vue";
 
@@ -149,6 +175,9 @@ const tabs = computed(() => [
 const activeTab = ref(tabs.value[0]);
 const tenantId = (router.currentRoute.value.params as any)["tenantId"];
 let users = ref<Array<{ email: string; uid: string }>>([]);
+// Dialog-related variables
+const dialog = ref(false);
+const newUserEmail = ref("");
 
 const userTableHeaders = [
   { text: "Email", value: "email" },
@@ -174,6 +203,31 @@ const fetchUsers = async () => {
     }
   } catch (error) {
     console.error("Error fetching users:", error);
+  }
+};
+
+const addUser = async () => {
+  if (!newUserEmail.value) {
+    console.error("Email is required.");
+    return;
+  }
+
+  try {
+    const newUser = {
+      email: newUserEmail.value,
+    };
+
+    await postJSON(
+      `/v1/tenants/${tenantId}/users`,
+      newUser,
+      undefined,
+      "tenantManagement",
+    );
+
+    dialog.value = false;
+    await fetchUsers();
+  } catch (error) {
+    console.error("Error adding user:", error);
   }
 };
 
@@ -206,6 +260,12 @@ onMounted(() => {
     fetchUsers();
   }
 });
+
+// Open dialog for adding a new user
+const openAddUserDialog = () => {
+  newUserEmail.value = "";
+  dialog.value = true;
+};
 </script>
 
 <style scoped></style>
