@@ -13,7 +13,7 @@ module "${TENANT_ID}" {
   source         = "./enterprise-tenant"
   tenant_id      = "${TENANT_ID}"
   firebase_token = var.firebase_token
-  location = ${LOCATION}
+  location = "${LOCATION}"
   image_tag = var.image_tag
   providers = {
     helm = helm.${TENANT_ID}
