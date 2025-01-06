@@ -264,21 +264,27 @@ watch(isDark, (newVal) => {
 
 async function onFilterChange() {
   monitoringStore.setTimeframe(selectedFilter.value);
-  monitoringStore.fetchMonitoringData();
+  await monitoringStore.fetchMonitoringData();
 }
 
-watch(() => monitoringStore.loading, async() => {
-  if (!monitoringStore.loading) {
-    try {
-      initDashBoard();
-    } catch (e) {
-      console.log(e);
-    }
-    document.getElementById("dashboard_container")!.className = `highcharts-${
-    isDark.value ? "dark" : "light"
-  }`;
-  }
-})
+onMounted(() => {
+  watch(
+    () => monitoringStore.loading,
+    async () => {
+      if (!monitoringStore.loading) {
+        try {
+          initDashBoard();
+        } catch (e) {
+          console.log(e);
+        }
+        const container = document.getElementById("dashboard_container");
+        if (container) {
+          container.className = `highcharts-${isDark.value ? "dark" : "light"}`;
+        }
+      }
+    },
+  );
+});
 </script>
 
 <style>

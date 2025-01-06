@@ -253,6 +253,11 @@ export class MonitoringService {
     return avgUtilization;
   }
 
+  private async getLeftFreeApiCalls(timeframe: string) {
+    const tenantTierFreeLimit = process.env.TENANT_TIER_FREE_LIMIT
+    console.log(tenantTierFreeLimit)
+  }
+
   private generateDateRange(startDate: Date, endDate: Date): string[] {
     const range: string[] = [];
     let currentDate = startDate;
@@ -289,6 +294,7 @@ export class MonitoringService {
       customerCount,
       parkingIncome,
       avgUtilization,
+      getLeftFreeApiCalls,
     ] = await Promise.all([
       this.getCustomerData(timeframe, allParkingActions),
       this.getCustomerDistribution(timeframe, allParkingActions),
@@ -296,6 +302,7 @@ export class MonitoringService {
       this.getCustomerCount(timeframe, allParkingActions),
       this.getParkingIncome(timeframe, allParkingActions),
       this.getDailyAvgUtilization(timeframe, allParkingActions),
+      this.getLeftFreeApiCalls('weekly'),
     ]);
 
     const data = {
