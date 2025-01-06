@@ -76,4 +76,9 @@ export class TenantsController {
   ): Promise<any> {
     return this.tenantsService.addTenantUser(tenantId, email);
   }
+
+  @Delete(':tenantId')
+  async deleteTenantUser(@Param('tenantId') tenantId: string) {
+    return await this.tenantsService.deleteTenantUser(tenantId);
+  }
 }
