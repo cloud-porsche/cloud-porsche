@@ -135,6 +135,7 @@ import { usePropertyStore } from "@/stores/properties";
 import { initWs } from "./stores/ws";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { ITenant } from "@cloud-porsche/types";
+import { useMonitoringStore } from "./stores/monitoring";
 
 const { mobile } = useDisplay();
 
@@ -142,6 +143,7 @@ const drawerOpen = ref(true);
 const openNavigations = ref([]);
 
 const appStore = useAppStore();
+const monitoringStore = useMonitoringStore();
 const isDark = computed(() => appStore.isDark);
 
 const user = useCurrentUser();
@@ -169,6 +171,8 @@ auth?.onAuthStateChanged(async (user) => {
     const token = await useCurrentUser().value?.getIdToken(true)!
     initWs(token, tenantId.value);
     fetchTenantInfo(tenantId.value);
+
+    await monitoringStore.fetchMonitoringData();
   }
 });
 

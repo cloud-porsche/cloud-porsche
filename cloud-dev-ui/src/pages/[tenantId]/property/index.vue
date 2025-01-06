@@ -488,12 +488,15 @@ import {
 import { useDisplay } from "vuetify";
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
+import { useMonitoringStore } from "@/stores/monitoring";
 
 const route = useRoute();
 const tenantId = computed(() => (route.params as any)["tenantId"]);
 
 const mobile = useDisplay().mobile;
 const propertyStore = usePropertyStore();
+const monitoringStore = useMonitoringStore();
+await monitoringStore.fetchMonitoringData();
 const { parkingSpots } = storeToRefs(propertyStore);
 const required = (v: string | undefined) => !!v || "This field is required.";
 const minimumOneLayerExists = computed(() => {

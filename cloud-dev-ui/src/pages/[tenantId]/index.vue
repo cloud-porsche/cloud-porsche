@@ -15,7 +15,7 @@
       />
     </v-toolbar>
     <v-progress-linear
-      :indeterminate="loading"
+      :indeterminate="monitoringStore.loading"
       :color="error ? 'error' : undefined"
     ></v-progress-linear>
 
@@ -29,29 +29,18 @@
 <script setup lang="ts">
 import * as Dashboards from "@highcharts/dashboards";
 import Highcharts from "highcharts";
-import { computed, onMounted, ref, watch } from "vue";
-import { get } from "@/http/http";
+import { computed, ref, watch } from "vue";
 import { useAppStore } from "@/stores/app";
+import { useMonitoringStore } from "@/stores/monitoring";
 
 // Highcharts Configuration
 Highcharts.setOptions({
   chart: { styledMode: true },
 });
 
-// Reactive Variables
-const categories = ref<string[]>([]);
-const lineChartData = ref<number[]>([]);
-const pieChartData = ref<number[]>([0, 0, 0, 0]);
-const pieChartLabels = ref<string[]>([]);
-const avgUtilizationData = ref<any>({});
-const stats = ref({
-  customers: { value: 0, percentChange: 0 },
-  apiCalls: { value: 0, percentChange: 0 },
-  parkingIncome: { value: 0, percentChange: 0 },
-});
-
 // App Store for Theme
 const appStore = useAppStore();
+const monitoringStore = useMonitoringStore();
 const isDark = computed(() => appStore.isDark);
 
 // Filter Options
@@ -62,49 +51,7 @@ const filters = [
   { value: "total", label: "Total" },
 ];
 const selectedFilter = ref("weekly");
-
-const loading = ref(false);
 const error = ref(false);
-
-async function fetchData(timeframe: string) {
-  try {
-    loading.value = true;
-    const response = await get(
-      (import.meta.env.VITE_MONITORING_API_URL ?? "http://localhost:8083") +
-        `/v1/monitoring/data?timeframe=${timeframe}`,
-    );
-    const data = await response.json();
-    processData(data.data);
-    error.value = false;
-  } catch (err) {
-    console.error("Error fetching data:", err);
-    error.value = true;
-  }
-  loading.value = false;
-}
-
-// Process API Data
-function processData(data: Record<string, any>) {
-  categories.value = Object.keys(data.customers);
-  lineChartData.value = Object.values(data.customers);
-  pieChartData.value = Object.values(data.customer_distribution);
-  pieChartLabels.value = Object.keys(data.customer_distribution);
-  avgUtilizationData.value = data.avg_utilization;
-  stats.value = {
-    customers: {
-      value: data.customer_count_change.current_period_customers,
-      percentChange: data.customer_count_change.percent_change,
-    },
-    apiCalls: {
-      value: data.api_calls.current_period_api_calls,
-      percentChange: data.api_calls.percent_change,
-    },
-    parkingIncome: {
-      value: data.parking_income.current_period_income,
-      percentChange: data.parking_income.percent_change,
-    },
-  };
-}
 
 // Create Custom HTML for Cards
 function createCardHTML(title: string, value: number, percentChange: number) {
@@ -196,8 +143,8 @@ async function initDashBoard() {
         renderTo: "card-api-calls",
         html: createCardHTML(
           "API Calls",
-          stats.value.apiCalls.value,
-          stats.value.apiCalls.percentChange,
+          monitoringStore.data.customer_count_change.current_period_customers,
+          monitoringStore.data.customer_count_change.percent_change,
         ),
       },
       {
@@ -205,8 +152,8 @@ async function initDashBoard() {
         renderTo: "card-customers",
         html: createCardHTML(
           "Customers",
-          stats.value.customers.value,
-          stats.value.customers.percentChange,
+          monitoringStore.data.api_calls.current_period_api_calls,
+          monitoringStore.data.api_calls.percent_change,
         ),
       },
       {
@@ -214,8 +161,8 @@ async function initDashBoard() {
         renderTo: "card-income",
         html: createCardHTML(
           "Income",
-          stats.value.parkingIncome.value,
-          stats.value.parkingIncome.percentChange,
+          monitoringStore.data.parking_income.current_period_income,
+          monitoringStore.data.parking_income.percent_change,
         ),
       },
       {
@@ -229,10 +176,10 @@ async function initDashBoard() {
         chartOptions: {
           chart: { type: "line" },
           title: { text: "Customer Trends" },
-          xAxis: { categories: categories.value, title: { text: "Timeframe" } },
+          xAxis: { categories: Object.keys(monitoringStore.data.customers), title: { text: "Timeframe" } },
           yAxis: { title: { text: "Number of Customers" } },
           series: [
-            { type: "line", name: "Customers", data: lineChartData.value },
+            { type: "line", name: "Customers", data: Object.values(monitoringStore.data.customers)},
           ],
         },
       },
@@ -251,9 +198,9 @@ async function initDashBoard() {
             {
               type: "pie",
               name: "Customers",
-              data: pieChartLabels.value.map((label, index) => ({
+              data: Object.keys(monitoringStore.data.customer_distribution).map((label, index) => ({
                 name: label,
-                y: pieChartData.value[index],
+                y: Number(Object.values(monitoringStore.data.customer_distribution)[index]),
               })),
             },
           ],
@@ -267,20 +214,20 @@ async function initDashBoard() {
           title: { text: "Average Daily Utilization" },
           xAxis: {
             categories:
-              (Object.keys(avgUtilizationData.value).length > 0)
+              (Object.keys(monitoringStore.data.avg_utilization).length > 0)
                 ? Object.keys(
-                    avgUtilizationData.value[
-                      Object.keys(avgUtilizationData.value)[0]
+                    monitoringStore.data.avg_utilization[
+                      Object.keys(monitoringStore.data.avg_utilization)[0]
                     ],
                   )
-                : categories.value,
+                : Object.keys(monitoringStore.data.customers),
             title: { text: "Date" },
           },
           yAxis: { title: { text: "Utilization in %" } },
-          series: Object.keys(avgUtilizationData.value).map((key) => ({
+          series: Object.keys(monitoringStore.data.avg_utilization).map((key) => ({
             type: "line",
             name: key,
-            data: Object.values(avgUtilizationData.value[key]),
+            data: Object.values(monitoringStore.data.avg_utilization[key]),
           })),
         },
       },
@@ -291,7 +238,7 @@ async function initDashBoard() {
           chart: { type: "line" },
           title: { text: "MOCK" },
           xAxis: {
-            categories: categories.value,
+            categories: Object.keys(monitoringStore.data.customers),
             title: { text: "Date" },
           },
           yAxis: { title: { text: "MOCK" } },
@@ -315,19 +262,23 @@ watch(isDark, (newVal) => {
   }`;
 });
 
-// Handle Filter Change
-function onFilterChange() {
-  fetchData(selectedFilter.value).then(initDashBoard);
+async function onFilterChange() {
+  monitoringStore.timeframe = selectedFilter.value;
+  monitoringStore.fetchMonitoringData();
 }
 
-// Fetch Data and Initialize Dashboard on Mount
-onMounted(async () => {
-  await fetchData(selectedFilter.value);
-  await initDashBoard();
-  document.getElementById("dashboard_container")!.className = `highcharts-${
+watch(() => monitoringStore.loading, async() => {
+  if (!monitoringStore.loading) {
+    try {
+      initDashBoard();
+    } catch (e) {
+      console.log(e);
+    }
+    document.getElementById("dashboard_container")!.className = `highcharts-${
     isDark.value ? "dark" : "light"
   }`;
-});
+  }
+})
 </script>
 
 <style>

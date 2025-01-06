@@ -1,6 +1,5 @@
 // Utilities
 import { ITenant } from "@cloud-porsche/types";
-import { Firestore } from "firebase/firestore";
 import { defineStore } from "pinia";
 import { Socket } from "socket.io-client";
 
