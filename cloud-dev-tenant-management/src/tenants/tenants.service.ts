@@ -133,4 +133,18 @@ export class TenantsService {
         return error;
       });
   }
+
+  async deleteTenantUser(tenantId: string, uid: string) {
+    const tenantAuth = admin.auth().tenantManager().authForTenant(tenantId);
+    return tenantAuth
+      .deleteUser(uid)
+      .then(() => {
+        return {
+          uid: uid,
+        };
+      })
+      .catch((error) => {
+        return error;
+      });
+  }
 }

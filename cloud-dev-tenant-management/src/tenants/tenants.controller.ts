@@ -77,8 +77,11 @@ export class TenantsController {
     return this.tenantsService.addTenantUser(tenantId, email);
   }
 
-  @Delete(':tenantId')
-  async deleteTenantUser(@Param('tenantId') tenantId: string) {
-    return await this.tenantsService.deleteTenantUser(tenantId);
+  @Delete(':tenantId/users/:uid')
+  async deleteTenantUser(
+    @Param('tenantId') tenantId: string,
+    @Param('uid') uid: string,
+  ) {
+    return await this.tenantsService.deleteTenantUser(tenantId, uid);
   }
 }
