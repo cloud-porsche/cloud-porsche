@@ -1,5 +1,6 @@
 export class Tenant {
-  plan: 'free' | 'pro' | 'enterprise';
+  plan: 'pro' | 'enterprise';
   name: string;
   email: string;
+  location: string;
 }

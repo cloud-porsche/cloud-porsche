@@ -55,6 +55,7 @@ export class TenantsService {
               run_type: 'tenant-create',
               tenant_id: newTenant.tenantId,
               tenant_type: tenant.plan,
+              location: tenant.location,
             },
             headers: {
               'X-GitHub-Api-Version': '2022-11-28',

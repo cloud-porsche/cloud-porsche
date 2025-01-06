@@ -10,3 +10,17 @@ variable "firebase_token" {
   sensitive   = true
   nullable    = false
 }
+
+variable "location" {
+  type        = string
+  description = "The location of the resources"
+  default     = "europe-west4"
+  nullable    = false
+}
+
+variable "image_tag" {
+  type        = string
+  description = "The image tag"
+  default     = "latest"
+  nullable    = false
+}

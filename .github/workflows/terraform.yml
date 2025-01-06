@@ -19,10 +19,13 @@ on:
         type: choice
         default: 'enterprise'
         options:
-          - free
           - pro
           - enterprise
         description: 'Type of tenant (e.g. pricing plan); free, pro, or enterprise'
+      location:
+        type: string
+        description: 'Location of the tenant'
+        default: 'europe-west4'
 jobs:
   tf-apply:
     if: inputs.run_type == 'apply'
@@ -110,6 +113,7 @@ jobs:
       - uses: danielr1996/envsubst-action@1.0.0
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
+          LOCATION: ${{ inputs.location }}
         with:
           input: ./tf/${{ inputs.tenant_type }}-tenant.template
           output: ./tf/${{ inputs.tenant_id }}.tf

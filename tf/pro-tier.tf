@@ -13,6 +13,8 @@ module "pro-tier" {
   source         = "./enterprise-tenant"
   tenant_id      = "pro-tier"
   firebase_token = var.firebase_token
+  location       = "europe-west4"
+  image_tag      = var.image_tag
   providers = {
     helm = helm.pro-tier
   }

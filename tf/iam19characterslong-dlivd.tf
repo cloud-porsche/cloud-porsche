@@ -13,6 +13,8 @@ module "iam19characterslong-dlivd" {
   source         = "./enterprise-tenant"
   tenant_id      = "iam19characterslong-dlivd"
   firebase_token = var.firebase_token
+  location       = "europe-west4"
+  image_tag      = var.image_tag
   providers = {
     helm = helm.iam19characterslong-dlivd
   }

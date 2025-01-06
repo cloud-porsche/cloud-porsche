@@ -1,5 +1,5 @@
-resource "google_firestore_database" "enterprise_tenant" {
-  location_id      = "europe-west4"
+resource "google_firestore_database" "enterprise_tenant_property_management" {
+  location_id      = var.location
   name             = "property-management-${var.tenant_id}"
   type             = "FIRESTORE_NATIVE"
   concurrency_mode = "PESSIMISTIC"
@@ -7,7 +7,16 @@ resource "google_firestore_database" "enterprise_tenant" {
   deletion_policy  = "DELETE"
 }
 
+resource "google_firestore_database" "enterprise_tenant_monitoring" {
+  location_id      = var.location
+  name             = "monitoring-${var.tenant_id}"
+  type             = "FIRESTORE_NATIVE"
+  concurrency_mode = "PESSIMISTIC"
+  project          = "cloud-porsche"
+  deletion_policy  = "DELETE"
+}
+
 resource "google_storage_bucket" "enterprise_tenant" {
-  location = "europe-west4"
+  location = var.location
   name     = "property-management-${var.tenant_id}"
 }
