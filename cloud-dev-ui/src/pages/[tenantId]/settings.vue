@@ -48,7 +48,7 @@
                 class="elevation-1"
               >
                 <template #item.action="{ item }">
-                  <v-btn color="red" @click="deleteUser(item.email)">
+                  <v-btn color="red" @click="deleteUser(item.email)" small>
                     Delete
                   </v-btn>
                 </template>
@@ -148,35 +148,54 @@ const tabs = computed(() => [
 ]);
 const activeTab = ref(tabs.value[0]);
 const tenantId = (router.currentRoute.value.params as any)["tenantId"];
-let users = ref([]);
+let users = ref<Array<{ email: string; uid: string }>>([]);
 
 const userTableHeaders = [
   { text: "Email", value: "email" },
   { text: "Action", value: "action", sortable: false },
 ];
 
-// Fetch users for the tenant
 const fetchUsers = async () => {
-  console.log("Tenant ID:", tenantId);
   try {
-    users = await (
-      await get(`/v1/tenants/${tenantId}/users`, undefined, "tenantManagement")
-    ).json();
-    console.log("Users fetched:", users);
+    const response = await get(
+      `/v1/tenants/${tenantId}/users`,
+      undefined,
+      "tenantManagement",
+    );
+    const fetchedUsers = await response.json();
+
+    if (Array.isArray(fetchedUsers)) {
+      users.value = fetchedUsers.map((user) => ({
+        email: user.email,
+        uid: user.uid,
+      }));
+    } else {
+      console.error("Fetched users data is not an array.");
+    }
   } catch (error) {
     console.error("Error fetching users:", error);
   }
 };
 
-// Delete user by email
 const deleteUser = async (email: string) => {
+  if (!Array.isArray(users.value)) {
+    console.error("Users is not an array or not loaded yet.");
+    return;
+  }
+
+  const userToDelete = users.value.find((user) => user.email === email);
+  if (!userToDelete || !userToDelete.uid) {
+    console.error("User not found or missing UID");
+    return;
+  }
+
   try {
     await del(
-      `/v1/tenants/${tenantId}/users/${email}`,
+      `/v1/tenants/${tenantId}/users/${userToDelete.uid}`,
       undefined,
       "tenantManagement",
     );
-    users.value = users.value.filter((user) => user.email !== email);
+    await fetchUsers();
   } catch (error) {
     console.error("Error deleting user:", error);
   }
