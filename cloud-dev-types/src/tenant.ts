@@ -10,5 +10,6 @@ export enum TenantTier {
     tenantName: string;
     tier: TenantTier;
     adminEmail: string;
+    ip: string;
   }
   

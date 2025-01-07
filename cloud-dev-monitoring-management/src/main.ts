@@ -30,6 +30,25 @@ async function bootstrap() {
     projectId: process.env.FIREBASE_PROJECT_ID,
   });
 
+  admin.initializeApp({
+    credential:
+      process.env.FIREBASE_OVERWRITE_CREDENTIALS === 'true'
+        ? admin.credential.cert(
+            process.env.FIREBASE_CLIENT_EMAIL
+              ? {
+                  projectId: process.env.FIREBASE_PROJECT_ID,
+                  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                  privateKey: process.env.FIREBASE_PRIVATE_KEY.split(
+                    String.raw`\n`,
+                  ).join('\n'),
+                }
+              : require('cloud-porsche.json'),
+          )
+        : admin.credential.applicationDefault(),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+  }, 'tenant');
+
   const firestore = admin.firestore();
   firestore.settings({
     databaseId: process.env.FIRESTORE_DB,

@@ -32,6 +32,7 @@ import Highcharts from "highcharts";
 import { computed, ref, watch } from "vue";
 import { useAppStore } from "@/stores/app";
 import { useMonitoringStore } from "@/stores/monitoring";
+import router from "@/router";
 
 // Highcharts Configuration
 Highcharts.setOptions({
@@ -54,27 +55,34 @@ const selectedFilter = ref(monitoringStore.timeframe);
 const error = ref(false);
 
 // Create Custom HTML for Cards
-function createCardHTML(title: string, value: number, percentChange: number) {
-  const color = percentChange >= 0 ? "green" : "red";
+function createCardHTML(title: string, value: number, percentChange: number, showChange = true) {
+  let color = percentChange >= 0 ? "green" : "red";
+  if (!showChange) {
+    color = "transparent";
+  }
+
+  const formatNumber = (num: number) => {
+    return num.toFixed(0);
+  };
+
   const changeText =
     percentChange >= 0
-      ? `+${percentChange.toFixed(2)}%`
-      : `${percentChange.toFixed(2)}%`;
+      ? `+${formatNumber(percentChange)}%`
+      : `${formatNumber(percentChange)}%`;
 
   return `
     <div class="custom_card">
       <div class="custom_card-header">${title}</div>
-      <span class="custom_card-value">${
-        value >= 1 ? value.toFixed(0) : value.toFixed(2)
-      }</span>
+      <span class="custom_card-value">${formatNumber(value)}</span>
       <span class="custom_card-subtext" style="color: ${color};">
         ${changeText} vs ${
-          filters.find((f) => f.value === selectedFilter.value)?.label
+          filters.find((f) => f.value === selectedFilter.value)?.label || "N/A"
         }
       </span>
     </div>
   `;
 }
+
 
 // Initialize Dashboard
 async function initDashBoard() {
@@ -106,7 +114,7 @@ async function initDashBoard() {
                                   id: "row-1-1B",
                                   cells: [
                                     { id: "card-income" },
-                                    { id: "card-expenses" },
+                                    { id: "free-api-calls" },
                                   ],
                                 },
                               ],
@@ -143,8 +151,8 @@ async function initDashBoard() {
         renderTo: "card-api-calls",
         html: createCardHTML(
           "API Calls",
-          monitoringStore.data.customer_count_change.current_period_customers,
-          monitoringStore.data.customer_count_change.percent_change,
+          monitoringStore.data.api_calls.current_period_api_calls,
+          monitoringStore.data.api_calls.percent_change,
         ),
       },
       {
@@ -152,8 +160,8 @@ async function initDashBoard() {
         renderTo: "card-customers",
         html: createCardHTML(
           "Customers",
-          monitoringStore.data.api_calls.current_period_api_calls,
-          monitoringStore.data.api_calls.percent_change,
+          monitoringStore.data.customer_count_change.current_period_customers,
+          monitoringStore.data.customer_count_change.percent_change,
         ),
       },
       {
@@ -167,8 +175,13 @@ async function initDashBoard() {
       },
       {
         type: "HTML",
-        renderTo: "card-expenses",
-        html: createCardHTML("Expenses", 1000, -20),
+        renderTo: "free-api-calls",
+        html: createCardHTML(
+          "Free API Calls this month", 
+          monitoringStore.data.left_free_api_calls, 
+          0,
+          false,
+        ),
       },
       {
         type: "Highcharts",
@@ -255,35 +268,35 @@ async function initDashBoard() {
   });
 }
 
-// Watch for Theme Changes
-watch(isDark, (newVal) => {
-  document.getElementById("dashboard_container")!.className = `highcharts-${
-    newVal ? "dark" : "light"
-  }`;
-});
-
 async function onFilterChange() {
   monitoringStore.setTimeframe(selectedFilter.value);
   await monitoringStore.fetchMonitoringData();
 }
 
-onMounted(() => {
+onMounted(async () => {
   watch(
     () => monitoringStore.loading,
     async () => {
-      if (!monitoringStore.loading) {
+      if (
+        !monitoringStore.loading &&
+        router.currentRoute.value.name === "/[tenantId]/"
+      ) {
         try {
-          initDashBoard();
+          await initDashBoard();
         } catch (e) {
           console.log(e);
-        }
-        const container = document.getElementById("dashboard_container");
-        if (container) {
-          container.className = `highcharts-${isDark.value ? "dark" : "light"}`;
         }
       }
     },
   );
+
+  watch(isDark, (newVal) => {
+    document.getElementById("dashboard_container")!.className = `highcharts-${
+      newVal ? "dark" : "light"
+    }`;
+  });
+
+  await monitoringStore.fetchMonitoringData();
 });
 </script>
 

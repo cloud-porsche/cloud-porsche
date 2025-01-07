@@ -30,6 +30,7 @@ export const useMonitoringStore = defineStore("monitoring", {
         current_period_income: 0,
         percent_change: 0,
       },
+      left_free_api_calls: Infinity,
     },
     timeframe: timeframe,
     loading: false, 
