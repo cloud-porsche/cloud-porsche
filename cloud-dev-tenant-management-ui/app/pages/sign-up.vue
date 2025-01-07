@@ -96,6 +96,16 @@ const locations = [
   { value: "northamerica-northeast1", label: "Montreal" },
   { value: "northamerica-northeast2", label: "Toronto" },
 ];
+
+watch(
+  () => state.plan,
+  (newVal) => {
+    if (newVal === "pro") {
+      state.location = "europe-west4";
+    }
+  },
+  { deep: true },
+);
 </script>
 
 <template>
@@ -136,6 +146,7 @@ const locations = [
 
         <UFormGroup label="Location" name="location" required>
           <USelect
+            :disabled="state.plan !== 'enterprise'"
             v-model="state.location"
             required
             :options="locations"
