@@ -21,6 +21,10 @@
             <v-list-item
               v-if="tab.selections"
               v-for="selection in tab.selections"
+              :disabled="selection.advanced"
+              v-tooltip:center="
+                selection.advanced ? 'Advanced Setting blocked' : ''
+              "
               :key="selection.title"
               class="pa-5"
             >
@@ -58,6 +62,7 @@ const tabs = computed(() => [
     selections: [
       {
         title: "Material Design",
+        advanced: false,
         text: "You can choose between the 3 Material Design variants of Googles Material Design.",
         chips: true,
         options: [
@@ -80,6 +85,7 @@ const tabs = computed(() => [
     selections: [
       {
         title: "API Endpoint",
+        advanced: import.meta.env.PROD,
         text: "This will be the communication endpoint for Defects.",
         options: [
           ...new Set<string>([
@@ -103,6 +109,7 @@ const tabs = computed(() => [
     selections: [
       {
         title: "API Endpoint",
+        advanced: import.meta.env.PROD,
         text: "This will be the communication endpoint for Parking spots.",
         options: [
           ...new Set<string>([
@@ -126,6 +133,7 @@ const tabs = computed(() => [
     selections: [
       {
         title: "API Endpoint",
+        advanced: import.meta.env.PROD,
         text: "This will be the communication endpoint for the Monitoring.",
         options: [
           ...new Set<string>([

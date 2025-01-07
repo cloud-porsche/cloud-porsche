@@ -77,6 +77,17 @@ export const useAppStore = defineStore("app", {
       this.auth.loading = loading;
     },
     setTenantInfo(info: ITenant) {
+      if (import.meta.env.PROD) {
+        this.changePropertyManagementApiURL(
+          `http://${info.ip}/property-management`,
+        );
+        this.changeParkingManagementApiURL(
+          `http://${info.ip}/parking-management`,
+        );
+        this.changeMonitoringManagementApiURL(
+          `http://${info.ip}/monitoring-management`,
+        );
+      }
       this.tenant.info = info;
     },
   },
