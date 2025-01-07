@@ -4,6 +4,12 @@ variable "tenant_id" {
   nullable    = false
 }
 
+variable "tenant_name" {
+  type        = string
+  description = "The tenant display name"
+  nullable    = false
+}
+
 variable "firebase_token" {
   type        = string
   description = "The firebase token"
@@ -15,6 +21,12 @@ variable "location" {
   type        = string
   description = "The location of the resources"
   default     = "europe-west4"
+  nullable    = false
+}
+
+variable "admin_email" {
+  type        = string
+  description = "The email of the admin"
   nullable    = false
 }
 

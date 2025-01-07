@@ -12,9 +12,11 @@ provider "helm" {
 module "${TENANT_ID}" {
   source         = "./enterprise-tenant"
   tenant_id      = "${TENANT_ID}"
+  tenant_name    = "${TENANT_NAME}"
   firebase_token = var.firebase_token
-  location = "${LOCATION}"
-  image_tag = var.image_tag
+  location       = "${LOCATION}"
+  admin_email    = "${ADMIN_EMAIL}"
+  image_tag      = var.image_tag
   providers = {
     helm = helm.${TENANT_ID}
   }

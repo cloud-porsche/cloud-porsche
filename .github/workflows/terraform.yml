@@ -15,6 +15,9 @@ on:
       tenant_id:
         type: string
         description: 'Tenant ID'
+      tenant_name:
+        type: string
+        description: 'Tenant Display Name'
       tenant_type:
         type: choice
         default: 'enterprise'
@@ -26,6 +29,10 @@ on:
         type: string
         description: 'Location of the tenant'
         default: 'europe-west4'
+      admin_email:
+        type: string
+        description: 'Admin email for the tenant'
+
 jobs:
   tf-apply:
     if: inputs.run_type == 'apply'
@@ -113,7 +120,9 @@ jobs:
       - uses: danielr1996/envsubst-action@1.0.0
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
+          TENANT_NAME: ${{ inputs.tenant_name }}
           LOCATION: ${{ inputs.location }}
+          ADMIN_EMAIL: ${{ inputs.admin_email }}
         with:
           input: ./tf/${{ inputs.tenant_type }}-tenant.template
           output: ./tf/${{ inputs.tenant_id }}.tf
