@@ -66,7 +66,7 @@ jobs:
           export EXISTING_TAGS=$(gcloud container images list-tags --filter="tags:${{ github.sha }}" --format json europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/parking-management)
           export IMAGE_TAG=$([[ $EXISTING_TAGS == '[]' ]] && echo 'latest' || echo '${{ github.sha }}')
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-          echo "Using IMAGE_TAG: ${{ env.IMAGE_TAG }}"
+          echo "Using IMAGE_TAG: $IMAGE_TAG"
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
@@ -138,7 +138,7 @@ jobs:
           export EXISTING_TAGS=$(gcloud container images list-tags --filter="tags:${{ github.sha }}" --format json europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/parking-management)
           export IMAGE_TAG=$([[ $EXISTING_TAGS == '[]' ]] && echo 'latest' || echo '${{ github.sha }}')
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-          echo "Using IMAGE_TAG: ${{ env.IMAGE_TAG }}"
+          echo "Using IMAGE_TAG: $IMAGE_TAG"
       - uses: danielr1996/envsubst-action@1.0.0
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
