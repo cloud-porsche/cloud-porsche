@@ -64,7 +64,7 @@ jobs:
         run: terraform init -input=false
       - name: Terraform apply
         working-directory: ./tf
-        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ github.sha }}
 
   tf-destroy:
     if: inputs.run_type == 'destroy'
@@ -93,7 +93,7 @@ jobs:
         run: terraform init -input=false
       - name: Terraform destroy
         working-directory: ./tf
-        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ github.sha }}
 
   tf-tenant-create:
     if: inputs.run_type == 'tenant-create'
@@ -142,7 +142,8 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ github.sha }}
       - name: Delete on Terraform fail
         if: failure()
         working-directory: ./tf
@@ -154,7 +155,8 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ github.sha }}
       - name: Commit and push changes
         run: |
           git config --global user.name 'Tenant Creation Bot'
@@ -202,7 +204,8 @@ jobs:
               -input=false \
               -compact-warnings \
               -detailed-exitcode \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ github.sha }}
       - name: Terraform destroy tenant
         working-directory: ./tf
         if: ${{ steps.plan.outputs.exit_code }} == 2
@@ -214,7 +217,8 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ github.sha }}
       - name: Delete tenant files
         if: ${{ steps.plan.outputs.exit_code }} == 2
         run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
