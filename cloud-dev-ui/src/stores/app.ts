@@ -37,8 +37,8 @@ export const useAppStore = defineStore("app", {
         loading: true,
       },
       tenant: {
-        info: null as null | ITenant
-      }
+        info: null as null | ITenant,
+      },
     };
   },
   getters: {

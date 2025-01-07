@@ -1,0 +1,7 @@
+module "${TENANT_ID}" {
+  source      = "./pro-tenant"
+  tenant_id   = "${TENANT_ID}"
+  tenant_name = "${TENANT_NAME}"
+  admin_email = "${ADMIN_EMAIL}"
+  pro_ip      = module.pro-tier.ingress_ip
+}

@@ -28,6 +28,11 @@ export class TenantsController {
           description: 'The email of the tenant creator',
           example: 'user@example.com',
         },
+        location: {
+          type: 'string',
+          description: 'The location of the created cluster',
+          example: 'europe-west4',
+        },
       },
       required: ['email', 'plan', 'name'],
     },

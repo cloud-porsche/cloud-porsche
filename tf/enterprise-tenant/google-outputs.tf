@@ -17,3 +17,10 @@ output "client_key" {
   depends_on = [google_container_cluster.enterprise_tenant]
   value = google_container_cluster.enterprise_tenant.master_auth[0].client_key
 }
+
+output "ingress_ip" {
+  depends_on = [
+    helm_release.enterprise_tenant, data.kubernetes_service.ingress, google_container_cluster.enterprise_tenant
+  ]
+  value = data.kubernetes_service.ingress.status[0].load_balancer[0].ingress[0].ip
+}

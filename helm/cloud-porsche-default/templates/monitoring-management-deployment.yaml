@@ -49,5 +49,9 @@ spec:
             httpGet:
               port: {{ .Values.monitoringManagement.port }}
               path: /v1/
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.monitoringManagement.port }}
+              path: /v1/
           {{- end }}
       restartPolicy: Always

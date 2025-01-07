@@ -125,57 +125,59 @@
             >{{ property.name }}
             <v-spacer></v-spacer>
             <v-divider vertical inset class="ma-4"></v-divider>
-            <v-switch
-              label="Isometric"
-              flat
-              :color="isometric ? 'primary' : 'default'"
-              v-model="isometric"
-              v-tooltip="'Toggle Isometric View'"
-              hide-details
-            ></v-switch>
-            <v-btn
-              class="ml-2"
-              icon="mdi-backup-restore"
-              density="comfortable"
-              flat
-              v-tooltip:bottom="'Reset View Settings to defaults'"
-              @click="resetViewSettings()"
-            ></v-btn>
-            <v-divider vertical inset class="ma-4"></v-divider>
-            <v-slider
-              v-model="zoom"
-              :min="20"
-              :max="120"
-              :step="1"
-              prepend-icon="mdi-magnify-minus"
-              append-icon="mdi-magnify-plus"
-              :disabled="!isometric"
-              density="comfortable"
-              thumb-label
-              hide-details
-            ></v-slider>
-            <v-slider
-              v-model="xTranslate"
-              :min="xMin"
-              :max="xMax"
-              :step="1"
-              prepend-icon="mdi-axis-x-arrow"
-              :disabled="!isometric"
-              density="comfortable"
-              thumb-label
-              hide-details
-            ></v-slider>
-            <v-slider
-              v-model="yTranslate"
-              :min="yMin"
-              :max="yMax"
-              :step="1"
-              prepend-icon="mdi-axis-z-arrow"
-              :disabled="!isometric"
-              density="comfortable"
-              thumb-label
-              hide-details
-            ></v-slider>
+            <ProTier class="d-flex align-center" v-model="isometric">
+              <v-switch
+                label="Isometric"
+                flat
+                :color="isometric ? 'primary' : 'default'"
+                v-model="isometric"
+                v-tooltip="'Toggle Isometric View'"
+                hide-details
+              ></v-switch>
+              <v-btn
+                class="ml-2"
+                icon="mdi-backup-restore"
+                density="comfortable"
+                flat
+                v-tooltip:bottom="'Reset View Settings to defaults'"
+                @click="resetViewSettings()"
+              ></v-btn>
+              <v-divider vertical inset class="ma-4"></v-divider>
+              <v-slider
+                v-model="zoom"
+                :min="20"
+                :max="120"
+                :step="1"
+                prepend-icon="mdi-magnify-minus"
+                append-icon="mdi-magnify-plus"
+                :disabled="!isometric"
+                density="comfortable"
+                thumb-label
+                hide-details
+              ></v-slider>
+              <v-slider
+                v-model="xTranslate"
+                :min="xMin"
+                :max="xMax"
+                :step="1"
+                prepend-icon="mdi-axis-x-arrow"
+                :disabled="!isometric"
+                density="comfortable"
+                thumb-label
+                hide-details
+              ></v-slider>
+              <v-slider
+                v-model="yTranslate"
+                :min="yMin"
+                :max="yMax"
+                :step="1"
+                prepend-icon="mdi-axis-z-arrow"
+                :disabled="!isometric"
+                density="comfortable"
+                thumb-label
+                hide-details
+              ></v-slider>
+            </ProTier>
             <v-divider vertical inset class="ma-4"></v-divider>
             <v-pagination
               v-model="page"

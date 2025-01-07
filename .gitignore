@@ -6,3 +6,4 @@
 /tf/.terraform.lock.hcl
 /helm/cloud-porsche-default/values-secrets.yaml
 /helm/*.tgz
+/tf/.auto.tfvars

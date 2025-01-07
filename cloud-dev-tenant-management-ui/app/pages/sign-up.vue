@@ -12,6 +12,7 @@ const state = reactive({
   plan: initialPlan.value,
   name: undefined,
   email: undefined,
+  location: "europe-west4",
   confirmEmail: undefined,
   acceptTerms: false,
 });
@@ -27,6 +28,7 @@ const validate = (state: any): FormError[] => {
   const errors = [];
   if (!state.plan) errors.push({ path: "plan", message: "Required" });
   if (!state.name) errors.push({ path: "name", message: "Required" });
+  if (!state.location) errors.push({ path: "location", message: "Required" });
   if (!state.email) errors.push({ path: "email", message: "Required" });
   if (!state.acceptTerms)
     errors.push({ path: "acceptTerms", message: "Terms need to be accepted" });
@@ -35,7 +37,7 @@ const validate = (state: any): FormError[] => {
   if (state.email !== state.confirmEmail)
     errors.push({ path: "confirmEmail", message: "Emails do not match" });
 
-  if (!/^[a-z][a-z0-9-]{3,19}$/.test(state.name))
+  if (!/^[a-zA-Z][a-zA-Z0-9- ]{3,19}$/.test(state.name))
     errors.push({
       path: "name",
       message:
@@ -53,7 +55,7 @@ async function onSubmit(_: FormSubmitEvent<any>) {
   try {
     const res = await (
       await fetch(
-        (import.meta.dev ? "http://localhost:8081" : "") + "/v1/tenants/",
+        (import.meta.dev ? "http://localhost:8082" : "") + "/v1/tenants/",
         {
           method: "POST",
           body: JSON.stringify(state),
@@ -80,6 +82,30 @@ async function onSubmit(_: FormSubmitEvent<any>) {
     loading.value = false;
   }
 }
+
+const locations = [
+  { value: "europe-north1", label: "Finland" },
+  { value: "europe-west1", label: "Belgium" },
+  { value: "europe-west4", label: "Netherlands" },
+  { value: "asia-east1", label: "Taiwan" },
+  { value: "us-west1", label: "Oregon" },
+  { value: "us-west4", label: "Las Vegas" },
+  { value: "us-east1", label: "South Carolina" },
+  { value: "us-east4", label: "Northern Virginia" },
+  { value: "us-central1", label: "Iowa" },
+  { value: "northamerica-northeast1", label: "Montreal" },
+  { value: "northamerica-northeast2", label: "Toronto" },
+];
+
+watch(
+  () => state.plan,
+  (newVal) => {
+    if (newVal === "pro") {
+      state.location = "europe-west4";
+    }
+  },
+  { deep: true },
+);
 </script>
 
 <template>
@@ -104,14 +130,28 @@ async function onSubmit(_: FormSubmitEvent<any>) {
       >
         <UFormGroup label="Plan" name="plan" class="py-4" required>
           <USelect
-            :options="['pro', 'enterprise']"
+            :options="[
+              { value: 'pro', label: 'Pro' },
+              { value: 'enterprise', label: 'Enterprise' },
+            ]"
             v-model="state.plan"
+            option-attribute="label"
             required
           ></USelect>
         </UFormGroup>
 
         <UFormGroup label="Company Name" name="name" required>
           <UInput v-model="state.name" required />
+        </UFormGroup>
+
+        <UFormGroup label="Location" name="location" required>
+          <USelect
+            :disabled="state.plan !== 'enterprise'"
+            v-model="state.location"
+            required
+            :options="locations"
+            option-attribute="label"
+          />
         </UFormGroup>
 
         <UFormGroup label="Email" name="email" required>

@@ -15,14 +15,24 @@ on:
       tenant_id:
         type: string
         description: 'Tenant ID'
+      tenant_name:
+        type: string
+        description: 'Tenant Display Name'
       tenant_type:
         type: choice
         default: 'enterprise'
         options:
-          - free
           - pro
           - enterprise
         description: 'Type of tenant (e.g. pricing plan); free, pro, or enterprise'
+      location:
+        type: string
+        description: 'Location of the tenant'
+        default: 'europe-west4'
+      admin_email:
+        type: string
+        description: 'Admin email for the tenant'
+
 jobs:
   tf-apply:
     if: inputs.run_type == 'apply'
@@ -45,7 +55,9 @@ jobs:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: kubectl
       - name: Docker auth
         run: |-
           gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
@@ -54,7 +66,7 @@ jobs:
         run: terraform init -input=false
       - name: Terraform apply
         working-directory: ./tf
-        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ github.sha }}
 
   tf-destroy:
     if: inputs.run_type == 'destroy'
@@ -76,6 +88,10 @@ jobs:
           project_id: 'cloud-porsche'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: kubectl
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - name: Terraform init
@@ -83,7 +99,7 @@ jobs:
         run: terraform init -input=false
       - name: Terraform destroy
         working-directory: ./tf
-        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ github.sha }}
 
   tf-tenant-create:
     if: inputs.run_type == 'tenant-create'
@@ -105,19 +121,27 @@ jobs:
           project_id: 'cloud-porsche'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: kubectl
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - uses: danielr1996/envsubst-action@1.0.0
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
+          TENANT_NAME: ${{ inputs.tenant_name }}
+          LOCATION: ${{ inputs.location }}
+          ADMIN_EMAIL: ${{ inputs.admin_email }}
         with:
           input: ./tf/${{ inputs.tenant_type }}-tenant.template
           output: ./tf/${{ inputs.tenant_id }}.tf
       - uses: danielr1996/envsubst-action@1.0.0
+        if: inputs.tenant_type == 'enterprise'
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
         with:
-          input: ./helm/cloud-porsche-default/${{ inputs.tenant_type }}-template.yaml
+          input: ./helm/cloud-porsche-default/enterprise-template.yaml
           output: ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
       - name: Terraform init
         working-directory: ./tf
@@ -129,25 +153,38 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ github.sha }}
       - name: Delete on Terraform fail
         if: failure()
         working-directory: ./tf
         run: |
           terraform destroy \
               -target helm.${{ inputs.tenant_id }} \
+              -target kubernetes.${{ inputs.tenant_id }} \
               -target module.${{ inputs.tenant_id }} \
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
-      - name: Commit and push changes
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ github.sha }}
+      - name: Commit and push changes (enterprise)
+        if: inputs.tenant_type == 'enterprise'
         run: |
           git config --global user.name 'Tenant Creation Bot'
           git config --global user.email 'tenant-bot@noreply.com'
           git pull --rebase --strategy-option=theirs
           git add ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
-          git commit -am "Created tenant: ${{ inputs.tenant_id }}"
+          git commit -am "Created enterprise tenant: ${{ inputs.tenant_id }}"
+          git push
+      - name: Commit and push changes (pro)
+        if: inputs.tenant_type == 'pro'
+        run: |
+          git config --global user.name 'Tenant Creation Bot'
+          git config --global user.email 'tenant-bot@noreply.com'
+          git pull --rebase --strategy-option=theirs
+          git add ./tf/${{ inputs.tenant_id }}.tf
+          git commit -am "Created pro tenant: ${{ inputs.tenant_id }}"
           git push
 
   tf-tenant-delete:
@@ -170,6 +207,10 @@ jobs:
           project_id: 'cloud-porsche'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: kubectl
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - name: Terraform init
@@ -183,22 +224,26 @@ jobs:
           terraform plan \
               -destroy \
               -target helm.${{ inputs.tenant_id }} \
+              -target kubernetes.${{ inputs.tenant_id }} \
               -target module.${{ inputs.tenant_id }} \
               -input=false \
               -compact-warnings \
               -detailed-exitcode \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ github.sha }}
       - name: Terraform destroy tenant
         working-directory: ./tf
         if: ${{ steps.plan.outputs.exit_code }} == 2
         run: |
           terraform destroy \
               -target helm.${{ inputs.tenant_id }} \
+              -target kubernetes.${{ inputs.tenant_id }} \
               -target module.${{ inputs.tenant_id }} \
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ github.sha }}
       - name: Delete tenant files
         if: ${{ steps.plan.outputs.exit_code }} == 2
         run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml

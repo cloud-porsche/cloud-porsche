@@ -39,7 +39,7 @@ export class TenantsService {
       .auth()
       .tenantManager()
       .createTenant({
-        displayName: tenant.name,
+        displayName: tenant.name.replace(/ /g, '-').toLowerCase(),
         anonymousSignInEnabled: false,
         emailSignInConfig: {
           enabled: true,
@@ -54,7 +54,10 @@ export class TenantsService {
             inputs: {
               run_type: 'tenant-create',
               tenant_id: newTenant.tenantId,
+              tenant_name: tenant.name,
               tenant_type: tenant.plan,
+              location: tenant.location,
+              admin_email: tenant.email,
             },
             headers: {
               'X-GitHub-Api-Version': '2022-11-28',

@@ -2,7 +2,7 @@
 resource "google_container_cluster" "enterprise_tenant" {
   name = var.tenant_id
 
-  location                 = "europe-west4"
+  location                 = var.location
   enable_autopilot         = true
   enable_l4_ilb_subsetting = true
 
@@ -31,7 +31,15 @@ resource "helm_release" "enterprise_tenant" {
 
   set {
     name  = "images.propertyManagement"
-    value = "europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:latest"
+    value = "europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:${var.image_tag}"
+  }
+  set {
+    name  = "images.parkingManagement"
+    value = "europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/parking-management:${var.image_tag}"
+  }
+  set {
+    name  = "images.monitoringManagement"
+    value = "europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/monitoring-management:${var.image_tag}"
   }
   set_sensitive {
     name  = "secrets.FIREBASE_CLIENT_EMAIL"
@@ -44,5 +52,12 @@ resource "helm_release" "enterprise_tenant" {
   set_sensitive {
     name  = "secrets.FIREBASE_TOKEN"
     value = var.firebase_token
+  }
+}
+
+data "kubernetes_service" "ingress" {
+  depends_on = [helm_release.enterprise_tenant, google_container_cluster.enterprise_tenant]
+  metadata {
+    name = "${var.tenant_id}-ingress-nginx-controller"
   }
 }

@@ -10,29 +10,14 @@ variable "tenant_name" {
   nullable    = false
 }
 
-variable "firebase_token" {
-  type        = string
-  description = "The firebase token"
-  sensitive   = true
-  nullable    = false
-}
-
-variable "location" {
-  type        = string
-  description = "The location of the resources"
-  default     = "europe-west4"
-  nullable    = false
-}
-
 variable "admin_email" {
   type        = string
   description = "The email of the admin"
   nullable    = false
 }
 
-variable "image_tag" {
+variable "pro_ip" {
   type        = string
-  description = "The image tag"
-  default     = "latest"
+  description = "The ip address of pro-tier tenant cluster"
   nullable    = false
 }

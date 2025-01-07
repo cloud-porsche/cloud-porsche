@@ -1,15 +1,13 @@
 export enum TenantTier {
-    FREE,
-    PRO,
-    ENTERPRISE,
-  }
-  
-  export abstract class ITenant {
-    id: string;
-    tenantId: string;
-    tenantName: string;
-    tier: TenantTier;
-    adminEmail: string;
-    ip: string;
-  }
-  
+  FREE,
+  PRO,
+  ENTERPRISE,
+}
+
+export abstract class ITenant {
+  tenantId: string;
+  tenantName: string;
+  tier: TenantTier;
+  adminEmail: string;
+  ip: string;
+}
