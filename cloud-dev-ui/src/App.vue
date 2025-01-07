@@ -105,7 +105,7 @@
         </template>
       </RouterView>
     </v-main>
-    <AppFooter />
+    <AppFooter/>
 
     <v-bottom-sheet
       :model-value="
@@ -120,6 +120,20 @@
     >
       <Login />
     </v-bottom-sheet>
+    <v-bottom-sheet
+    :model-value="
+      monitoringStore.data.left_free_api_calls === 0 &&
+        !user?.tenantId
+    "
+    fullscreen
+    :close-on-content-click="false"
+    :close-on-back="false"
+    persistent
+    retain-focus
+    :scrim="true"
+  >
+    <FreeLock/>
+  </v-bottom-sheet>
   </v-app>
 </template>
 

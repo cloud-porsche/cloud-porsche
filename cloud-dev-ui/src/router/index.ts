@@ -49,7 +49,6 @@ router.beforeEach(async (to, from) => {
   }
   if (isLoggedIn && (from.params as any)["tenantId"] && tenantId !== (from.params as any)["tenantId"]) {
     const auth = getAuth();
-    console.log(auth);
     signOut(auth!)
       // useAppStore().removeTenantId();
     return {

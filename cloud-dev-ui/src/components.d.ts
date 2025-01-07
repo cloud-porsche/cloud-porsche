@@ -10,6 +10,7 @@ declare module 'vue' {
     AddDefectPopup: typeof import('./components/AddDefectPopup.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     CounterCard: typeof import('./components/CounterCard.vue')['default']
+    FreeLock: typeof import('./components/FreeLock.vue')['default']
     Login: typeof import('./components/Login.vue')['default']
     ParkingSpotComponent: typeof import('./components/ParkingSpotComponent.vue')['default']
     Register: typeof import('./components/Register.vue')['default']

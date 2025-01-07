@@ -290,6 +290,7 @@ onMounted(async () => {
     },
   );
 
+
   watch(isDark, (newVal) => {
     document.getElementById("dashboard_container")!.className = `highcharts-${
       newVal ? "dark" : "light"
@@ -297,6 +298,7 @@ onMounted(async () => {
   });
 
   await monitoringStore.fetchMonitoringData();
+  console.log(monitoringStore.data.left_free_api_calls);
 });
 </script>
 
