@@ -19,6 +19,7 @@ resource "helm_release" "enterprise_tenant" {
   chart      = "cloud-porsche-default"
   name       = var.tenant_id
   repository = "oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/"
+  timeout    = 900
 
   values = compact([
     file("${path.module}/../../helm/cloud-porsche-default/values.yaml"),
