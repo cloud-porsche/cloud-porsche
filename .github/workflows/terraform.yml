@@ -173,7 +173,7 @@ jobs:
           git config --global user.name 'Tenant Creation Bot'
           git config --global user.email 'tenant-bot@noreply.com'
           git pull --rebase --strategy-option=theirs
-          git add ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+          git add -A
           git commit -am "Created tenant: ${{ inputs.tenant_id }}"
           git push
 
