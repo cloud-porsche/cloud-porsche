@@ -137,10 +137,11 @@ jobs:
           input: ./tf/${{ inputs.tenant_type }}-tenant.template
           output: ./tf/${{ inputs.tenant_id }}.tf
       - uses: danielr1996/envsubst-action@1.0.0
+        if: inputs.tenant_type == 'enterprise'
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
         with:
-          input: ./helm/cloud-porsche-default/${{ inputs.tenant_type }}-template.yaml
+          input: ./helm/cloud-porsche-default/enterprise-template.yaml
           output: ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
       - name: Terraform init
         working-directory: ./tf
