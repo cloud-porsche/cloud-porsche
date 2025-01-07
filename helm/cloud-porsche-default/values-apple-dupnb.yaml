@@ -1,0 +1,19 @@
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+
+propertyManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-apple-dupnb
+    FIRESTORE_DB: property-management-apple-dupnb
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-apple-dupnb
+    FIRESTORE_DB: property-management-apple-dupnb
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-apple-dupnb
