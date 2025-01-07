@@ -168,13 +168,23 @@ jobs:
               -auto-approve \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
               -var image_tag=${{ github.sha }}
-      - name: Commit and push changes
+      - name: Commit and push changes (enterprise)
+        if: inputs.tenant_type == 'enterprise'
         run: |
           git config --global user.name 'Tenant Creation Bot'
           git config --global user.email 'tenant-bot@noreply.com'
           git pull --rebase --strategy-option=theirs
           git add ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
-          git commit -am "Created tenant: ${{ inputs.tenant_id }}"
+          git commit -am "Created enterprise tenant: ${{ inputs.tenant_id }}"
+          git push
+      - name: Commit and push changes (pro)
+        if: inputs.tenant_type == 'pro'
+        run: |
+          git config --global user.name 'Tenant Creation Bot'
+          git config --global user.email 'tenant-bot@noreply.com'
+          git pull --rebase --strategy-option=theirs
+          git add ./tf/${{ inputs.tenant_id }}.tf
+          git commit -am "Created pro tenant: ${{ inputs.tenant_id }}"
           git push
 
   tf-tenant-delete:
