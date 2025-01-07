@@ -1,26 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiCall } from './entities/api-call.entity';
-import { BaseFirestoreRepository, getRepository, initialize } from 'fireorm';
+import { getRepository } from 'fireorm';
 import { ParkingAction } from './entities/parking-action-entity';
 import { Tenant } from './entities/tenant.entity';
 import { addDays, subDays } from 'date-fns';
 import { PubSub } from '@google-cloud/pubsub';
-import * as admin from 'firebase-admin';
-import { getFirestore } from 'firebase-admin/firestore'
-import { getApp } from 'firebase-admin/app'
+import { getFirestore } from 'firebase-admin/firestore';
+import { getApp } from 'firebase-admin/app';
 import { TenantTier } from '@cloud-porsche/types';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MonitoringService {
   private readonly logger = new Logger(MonitoringService.name);
-  
+
   private tenantDb = getFirestore(getApp('tenant'));
   private apiCallRepository = getRepository(ApiCall);
   private parkingActionRepository = getRepository(ParkingAction);
   private pubSubClient: PubSub;
   private subscriptionName = 'monitoring_subscription';
 
-  constructor() {
+  constructor(private config: ConfigService) {
     this.pubSubClient = new PubSub({
       projectId: process.env.FIREBASE_PROJECT_ID,
       credentials: {
@@ -259,21 +259,26 @@ export class MonitoringService {
     return avgUtilization;
   }
 
-  private async getLeftFreeApiCalls(timeframe: string, tenant: Tenant, apiCalls: ApiCall[]) {
+  private async getLeftFreeApiCalls(
+    timeframe: string,
+    tenant: Tenant,
+    apiCalls: ApiCall[],
+  ) {
     const tenantTierLimit = (() => {
       switch (tenant.tier) {
         case TenantTier.FREE:
-          return process.env.TENANT_TIER_FREE_LIMIT;
+          return this.config.get('TENANT_TIER_FREE_LIMIT', 1000);
         case TenantTier.PRO:
-          return process.env.TENANT_TIER_PRO_LIMIT;
+          return this.config.get('TENANT_TIER_PRO_LIMIT', 100000);
         case TenantTier.ENTERPRISE:
-          return process.env.TENANT_TIER_ENTERPRISE_LIMIT;
+          return this.config.get('TENANT_TIER_ENTERPRISE_LIMIT', 1000000);
         default:
           throw new Error('Invalid tenant tier');
       }
     })();
     const currApiCalls = await this.getApiCalls(timeframe, apiCalls);
-    const leftApiCalls = parseInt(tenantTierLimit, 10) - currApiCalls.current_period_api_calls;
+    const leftApiCalls =
+      parseInt(tenantTierLimit, 10) - currApiCalls.current_period_api_calls;
     return leftApiCalls > 0 ? leftApiCalls : 0;
   }
 
@@ -303,11 +308,19 @@ export class MonitoringService {
   }
 
   async getAllData(tenantId: string, timeframe: string) {
-    const allParkingActions = await this.parkingActionRepository.whereEqualTo('tenantId', tenantId).find();
-    const allApiCalls = await this.apiCallRepository.whereEqualTo('tenantId', tenantId).find();
-    let tenant = (await this.tenantDb.collection('Tenants').doc(tenantId).get()).data() as Tenant;
-    if(!tenant) {
-      tenant = (await this.tenantDb.collection('Tenants').doc('free').get()).data() as Tenant;
+    const allParkingActions = await this.parkingActionRepository
+      .whereEqualTo('tenantId', tenantId)
+      .find();
+    const allApiCalls = await this.apiCallRepository
+      .whereEqualTo('tenantId', tenantId)
+      .find();
+    let tenant = (
+      await this.tenantDb.collection('Tenants').doc(tenantId).get()
+    ).data() as Tenant;
+    if (!tenant) {
+      tenant = (
+        await this.tenantDb.collection('Tenants').doc('free').get()
+      ).data() as Tenant;
     }
 
     const [
@@ -328,7 +341,7 @@ export class MonitoringService {
       this.getLeftFreeApiCalls('monthly', tenant, allApiCalls),
     ]);
 
-    const data = {
+    return {
       data: {
         customers: customers,
         customer_distribution: customerDistribution,
@@ -339,7 +352,5 @@ export class MonitoringService {
         left_free_api_calls: getLeftFreeApiCalls,
       },
     };
-    return data;
   }
-  
 }
