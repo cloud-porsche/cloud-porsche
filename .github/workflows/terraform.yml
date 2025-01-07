@@ -61,12 +61,17 @@ jobs:
       - name: Docker auth
         run: |-
           gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - name: Determine Image Tag
+        run: |
+          gcloud container images describe europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/parking-management:${{ github.sha }} > /dev/null ; export IMAGE_EXISTS=$?
+          echo "IMAGE_EXISTS=$IMAGE_EXISTS" >> $GITHUB_ENV
+          echo "Using IMAGE_EXISTS: ${{ env.IMAGE_EXISTS }}"
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
       - name: Terraform apply
         working-directory: ./tf
-        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ github.sha }}
+        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ env.IMAGE_EXISTS === 'True' && github.sha || 'latest' }}
 
   tf-destroy:
     if: inputs.run_type == 'destroy'
@@ -99,7 +104,7 @@ jobs:
         run: terraform init -input=false
       - name: Terraform destroy
         working-directory: ./tf
-        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ github.sha }}
+        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
 
   tf-tenant-create:
     if: inputs.run_type == 'tenant-create'
@@ -127,6 +132,11 @@ jobs:
           install_components: kubectl
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - name: Determine Image Tag
+        run: |
+          gcloud container images describe europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/parking-management:${{ github.sha }} > /dev/null ; export IMAGE_EXISTS=$?
+          echo "IMAGE_EXISTS=$IMAGE_EXISTS" >> $GITHUB_ENV
+          echo "Using IMAGE_EXISTS: ${{ env.IMAGE_EXISTS }}"
       - uses: danielr1996/envsubst-action@1.0.0
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
@@ -157,7 +167,7 @@ jobs:
               -compact-warnings \
               -auto-approve \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
-              -var image_tag=${{ github.sha }}
+              -var image_tag=${{ env.IMAGE_EXISTS === 'True' && github.sha || 'latest' }}
       - name: Delete on Terraform fail
         if: failure()
         working-directory: ./tf
@@ -169,8 +179,7 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
-              -var image_tag=${{ github.sha }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Commit and push changes (enterprise)
         if: inputs.tenant_type == 'enterprise'
         run: |
@@ -232,8 +241,7 @@ jobs:
               -input=false \
               -compact-warnings \
               -detailed-exitcode \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
-              -var image_tag=${{ github.sha }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Terraform destroy tenant
         working-directory: ./tf
         if: ${{ steps.plan.outputs.exit_code }} == 2
@@ -245,8 +253,7 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
-              -var image_tag=${{ github.sha }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Delete tenant files
         if: ${{ steps.plan.outputs.exit_code }} == 2
         run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
