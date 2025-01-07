@@ -150,6 +150,9 @@ jobs:
         working-directory: ./tf
         run: |
           terraform apply \
+              -target helm.${{ inputs.tenant_id }} \
+              -target kubernetes.${{ inputs.tenant_id }} \
+              -target module.${{ inputs.tenant_id }} \
               -input=false \
               -compact-warnings \
               -auto-approve \
