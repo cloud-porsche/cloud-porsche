@@ -40,9 +40,7 @@ export const useMonitoringStore = defineStore("monitoring", {
     async fetchMonitoringData() {
       this.$state.loading = true;
       try {
-        const res = await (await get(
-          (import.meta.env.VITE_MONITORING_API_URL ?? "http://localhost:8083") +
-            `/v1/monitoring/data?timeframe=${this.$state.timeframe}`)).json();
+        const res = await (await get(`/v1/monitoring/data?timeframe=${this.$state.timeframe}`, undefined, "monitoringManagement")).json();
         this.$state.data = res.data;
       } catch (error) {
         this.$state.loading = false;

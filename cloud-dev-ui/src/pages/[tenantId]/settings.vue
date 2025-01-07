@@ -120,6 +120,29 @@ const tabs = computed(() => [
       },
     ],
   },
+  {
+    title: "Monitoring Management",
+    text: "Settings for the Monitoring Management Module.",
+    selections: [
+      {
+        title: "API Endpoint",
+        text: "This will be the communication endpoint for the Monitoring.",
+        options: [
+          ...new Set<string>([
+            ...(
+              import.meta.env.VITE_MONITORING_MANAGEMENT_API_OPTIONS ?? ""
+            ).split(","),
+            import.meta.env.VITE_MONITORING_MANAGEMENT_API_URL,
+            appStore.api.monitoringManagement,
+          ]),
+        ],
+        initial: appStore.api.monitoringManagement,
+        valueChange: (value: string) => {
+          appStore.changeMonitoringManagementApiURL(value);
+        },
+      },
+    ],
+  },
 ]);
 const activeTab = ref(tabs.value[0]);
 </script>

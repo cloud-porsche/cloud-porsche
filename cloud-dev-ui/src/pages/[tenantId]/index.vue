@@ -298,7 +298,6 @@ onMounted(async () => {
   });
 
   await monitoringStore.fetchMonitoringData();
-  console.log(monitoringStore.data.left_free_api_calls);
 });
 </script>
 

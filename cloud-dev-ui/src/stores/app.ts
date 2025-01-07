@@ -13,6 +13,11 @@ export const parkingManagementUrl =
   import.meta.env.VITE_PARKING_MANAGEMENT_API_URL ??
   "";
 
+export const monitoringManagementUrl =
+  localStorage.getItem("monitoringManagement") ??
+  import.meta.env.VITE_MONITORING_MANAGEMENT_API_URL ??
+  "";
+
 export const useAppStore = defineStore("app", {
   state: () => {
     return {
@@ -22,6 +27,7 @@ export const useAppStore = defineStore("app", {
       api: {
         propertyManagement: propertyManagementUrl,
         parkingManagement: parkingManagementUrl,
+        monitoringManagement: monitoringManagementUrl,
         ws: {
           socket: {} as Socket,
           connected: false,
@@ -62,6 +68,10 @@ export const useAppStore = defineStore("app", {
     changeParkingManagementApiURL(url: string) {
       this.api.parkingManagement = url;
       localStorage.setItem("parkingManagement", url);
+    },
+    changeMonitoringManagementApiURL(url: string) {
+      this.api.monitoringManagement = url;
+      localStorage.setItem("monitoringManagement", url);
     },
     setAuthLoading(loading: boolean) {
       this.auth.loading = loading;

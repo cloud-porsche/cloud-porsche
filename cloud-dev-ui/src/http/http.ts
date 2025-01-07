@@ -3,6 +3,7 @@
 import { HttpError } from "@/http/http-error";
 import router from "@/router";
 import { useAppStore } from "@/stores/app";
+import { useMonitoringStore } from "@/stores/monitoring";
 import { useCurrentUser } from "vuefire";
 
 /**
@@ -94,16 +95,24 @@ function request<T extends BodyInit>(
   init: Omit<Init, "headers"> | undefined,
   method: Method,
   body?: T,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement", // Standard: Property Management
+  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" = "propertyManagement", // Standard: Property Management
 ) {
   // ADJUSTED PART
   // if input is not a full url, prepend the base url in env
 
-  const api_url =
-    api === "propertyManagement"
-      ? useAppStore().api.propertyManagement
-      : useAppStore().api.parkingManagement;
-  if (
+  let api_url;
+  switch (api) {
+    case "propertyManagement":
+      api_url = useAppStore().api.propertyManagement;
+      break;
+    case "parkingManagement":
+      api_url = useAppStore().api.parkingManagement;
+      break;
+    case "monitoringManagement":
+      api_url = useAppStore().api.monitoringManagement;
+      break;
+  }
+  if(
     typeof input === "string" &&
     api_url !== undefined &&
     api_url !== "undefined" &&
@@ -133,7 +142,9 @@ function request<T extends BodyInit>(
       method,
       body,
     });
-
+    if (useMonitoringStore().data.left_free_api_calls === 0 && api !== "monitoringManagement") {
+      throw new HttpError(req, new Response("No free API calls left", { status: 429 }));
+    }
     const res = await fetch(req);
 
     if (!res.ok) throw new HttpError(req, res);
@@ -165,7 +176,7 @@ function getJSONHeaders(init?: Init) {
 export function get(
   input: RequestInfo | URL,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" = "propertyManagement",
 ) {
   return request(input, getHeaders(init), init, "GET", undefined, api);
 }
