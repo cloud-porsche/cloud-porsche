@@ -71,7 +71,7 @@ jobs:
         run: terraform init -input=false
       - name: Terraform apply
         working-directory: ./tf
-        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ env.IMAGE_EXISTS === 'True' && github.sha || 'latest' }}
+        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ env.IMAGE_EXISTS == 'True' && github.sha || 'latest' }}
 
   tf-destroy:
     if: inputs.run_type == 'destroy'
@@ -167,7 +167,7 @@ jobs:
               -compact-warnings \
               -auto-approve \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
-              -var image_tag=${{ env.IMAGE_EXISTS === 'True' && github.sha || 'latest' }}
+              -var image_tag=${{ env.IMAGE_EXISTS == 'True' && github.sha || 'latest' }}
       - name: Delete on Terraform fail
         if: failure()
         working-directory: ./tf
