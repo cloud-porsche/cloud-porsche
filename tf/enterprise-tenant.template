@@ -9,6 +9,15 @@ provider "helm" {
   }
 }
 
+provider "kubernetes" {
+  alias = "${TENANT_ID}"
+  host  = "https://${module.${TENANT_ID}.cluster_endpoint}"
+  token = data.google_client_config.default.access_token
+  client_certificate = base64decode(module.${TENANT_ID}.client_certificate)
+  client_key = base64decode(module.${TENANT_ID}.client_key)
+  cluster_ca_certificate = base64decode(module.${TENANT_ID}.cluster_ca_certificate)
+}
+
 module "${TENANT_ID}" {
   source         = "./enterprise-tenant"
   tenant_id      = "${TENANT_ID}"
@@ -18,6 +27,7 @@ module "${TENANT_ID}" {
   admin_email    = "${ADMIN_EMAIL}"
   image_tag      = var.image_tag
   providers = {
-    helm = helm.${TENANT_ID}
+    helm       = helm.${TENANT_ID}
+    kubernetes = kubernetes.${TENANT_ID}
   }
 }

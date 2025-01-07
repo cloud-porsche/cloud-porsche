@@ -54,3 +54,10 @@ resource "helm_release" "enterprise_tenant" {
     value = var.firebase_token
   }
 }
+
+data "kubernetes_service" "ingress" {
+  depends_on = [helm_release.enterprise_tenant, google_container_cluster.enterprise_tenant]
+  metadata {
+    name = "${var.tenant_id}-ingress-nginx-controller"
+  }
+}

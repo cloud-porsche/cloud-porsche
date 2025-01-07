@@ -37,7 +37,7 @@ const validate = (state: any): FormError[] => {
   if (state.email !== state.confirmEmail)
     errors.push({ path: "confirmEmail", message: "Emails do not match" });
 
-  if (!/^[a-z][a-z0-9-]{3,19}$/.test(state.name))
+  if (!/^[a-zA-Z][a-zA-Z0-9- ]{3,19}$/.test(state.name))
     errors.push({
       path: "name",
       message:
@@ -55,7 +55,7 @@ async function onSubmit(_: FormSubmitEvent<any>) {
   try {
     const res = await (
       await fetch(
-        (import.meta.dev ? "http://localhost:8081" : "") + "/v1/tenants/",
+        (import.meta.dev ? "http://localhost:8082" : "") + "/v1/tenants/",
         {
           method: "POST",
           body: JSON.stringify(state),

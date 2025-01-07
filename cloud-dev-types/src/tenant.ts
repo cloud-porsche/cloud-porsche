@@ -5,9 +5,9 @@ export enum TenantTier {
 }
 
 export abstract class ITenant {
-  id: string;
   tenantId: string;
   tenantName: string;
   tier: TenantTier;
   adminEmail: string;
+  ip: string;
 }

@@ -29,6 +29,6 @@ module "free-tier" {
   admin_email    = "osi.borkenhagen@gmail.com"
   providers = {
     helm       = helm.free-tier
-    kubernetes = kubernetes
+    kubernetes = kubernetes.free-tier
   }
 }
