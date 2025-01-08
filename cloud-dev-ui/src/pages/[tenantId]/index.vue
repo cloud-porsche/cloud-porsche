@@ -21,7 +21,7 @@
 
     <!-- Dashboard Container -->
     <v-responsive>
-      <div id="dashboard_container"></div>
+        <div id="dashboard_container"></div>
     </v-responsive>
   </div>
 </template>
@@ -115,7 +115,7 @@ async function initDashBoard() {
                                   id: "row-1-1B",
                                   cells: [
                                     { id: "card-income" },
-                                    { id: "free-api-calls" },
+                                    { id: "card-free-api-calls" },
                                   ],
                                 },
                               ],
@@ -176,7 +176,7 @@ async function initDashBoard() {
       },
       {
         type: "HTML",
-        renderTo: "free-api-calls",
+        renderTo: "card-free-api-calls",
         html: createCardHTML(
           "Free API Calls this month", 
           monitoringStore.data.left_free_api_calls, 
