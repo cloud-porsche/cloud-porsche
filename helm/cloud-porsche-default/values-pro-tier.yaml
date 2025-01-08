@@ -20,10 +20,13 @@ propertyManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-pro-tier
     FIRESTORE_DB: property-management-pro-tier
+    MONITORING_QUEUE: pro-tier-queue
 parkingManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-pro-tier
     FIRESTORE_DB: property-management-pro-tier
+    MONITORING_QUEUE: pro-tier-queue
 monitoringManagement:
   envs:
     FIRESTORE_DB: monitoring-pro-tier
+    QUEUE_SUBSCRIPTION: pro-tier-subscription

@@ -10,10 +10,13 @@ propertyManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-apple-dupnb
     FIRESTORE_DB: property-management-apple-dupnb
+    MONITORING_QUEUE: apple-dupnb-queue
 parkingManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-apple-dupnb
     FIRESTORE_DB: property-management-apple-dupnb
+    MONITORING_QUEUE: apple-dupnb-queue
 monitoringManagement:
   envs:
     FIRESTORE_DB: monitoring-apple-dupnb
+    QUEUE_SUBSCRIPTION: apple-dupnb-subscription

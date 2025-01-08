@@ -24,10 +24,13 @@ propertyManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: cloud-porsche-prod
     FIRESTORE_DB: prod
+    MONITORING_QUEUE: free-tier-queue
 parkingManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: cloud-porsche-prod
     FIRESTORE_DB: prod
+    MONITORING_QUEUE: free-tier-queue
 monitoringManagement:
   envs:
     FIRESTORE_DB: monitoring-prod
+    QUEUE_SUBSCRIPTION: free-tier-subscription

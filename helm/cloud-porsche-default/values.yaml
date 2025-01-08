@@ -41,6 +41,7 @@ propertyManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: cloud-porsche-staging
     FIRESTORE_DB: staging
+    MONITORING_QUEUE: monitoring-queue
 parkingManagement:
   port: 8084
   livelinessProbe: true
@@ -48,8 +49,10 @@ parkingManagement:
     FIREBASE_STORAGE_BUCKET: cloud-porsche-staging
     FIRESTORE_DB: staging
     PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
+    MONITORING_QUEUE: monitoring-queue
 monitoringManagement:
   port: 8083
   livelinessProbe: true
   envs:
     FIRESTORE_DB: monitoring-staging
+    QUEUE_SUBSCRIPTION: monitoring-subscription

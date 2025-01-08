@@ -20,3 +20,12 @@ resource "google_storage_bucket" "enterprise_tenant" {
   location = var.location
   name     = "property-management-${var.tenant_id}"
 }
+
+resource "google_pubsub_topic" "enterprise_queue" {
+  name = "${var.tenant_id}-queue"
+}
+
+resource "google_pubsub_subscription" "enterprise_subscription" {
+  name  = "${var.tenant_id}-subscription"
+  topic = google_pubsub_topic.enterprise_queue.name
+}
