@@ -5,6 +5,7 @@ import { VersioningType } from '@nestjs/common';
 import { json } from 'express';
 import * as admin from 'firebase-admin';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { initializeApp } from 'firebase/app';
 
 async function bootstrap() {
   require('dotenv').config();
@@ -27,6 +28,13 @@ async function bootstrap() {
     databaseURL: process.env.FIREBASE_DATABASE_URL,
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
     projectId: process.env.FIREBASE_PROJECT_ID,
+  });
+
+  // client npm package needed to create tenant admin user
+  initializeApp({
+    projectId: 'cloud-porsche',
+    apiKey: process.env.VITE_FIREBASE_API_KEY,
+    authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
   });
 
   const app = await NestFactory.create(AppModule);

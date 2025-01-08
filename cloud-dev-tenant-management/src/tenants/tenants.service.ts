@@ -3,6 +3,11 @@ import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { Octokit } from 'octokit';
 import { Tenant } from './dto/tenant.dto';
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendEmailVerification,
+} from 'firebase/auth';
 
 @Injectable()
 export class TenantsService {
@@ -47,6 +52,14 @@ export class TenantsService {
         },
       })
       .then(async (newTenant) => {
+        const a = getAuth();
+        a.tenantId = newTenant.tenantId;
+        const userCredential = await createUserWithEmailAndPassword(
+          a,
+          tenant.email,
+          tenant.password,
+        );
+        await sendEmailVerification(userCredential.user);
         const ghResponse = await this.octokit.request(
           `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
           {

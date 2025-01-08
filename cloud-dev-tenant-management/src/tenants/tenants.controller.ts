@@ -33,8 +33,12 @@ export class TenantsController {
           description: 'The location of the created cluster',
           example: 'europe-west4',
         },
+        password: {
+          type: 'string',
+          description: 'The password for the tenant admin',
+        },
       },
-      required: ['email', 'plan', 'name'],
+      required: ['email', 'plan', 'name', 'location', 'password'],
     },
   })
   async createTenant(@Body() tenant: Tenant) {
