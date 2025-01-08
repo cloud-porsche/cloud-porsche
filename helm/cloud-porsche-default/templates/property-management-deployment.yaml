@@ -34,7 +34,7 @@ spec:
             - name: PORT
               value: {{ .Values.propertyManagement.port | quote }}
             - name: MONITORING_QUEUE
-              value: {{ .Values.monitoringManagement.envs.MONITORING_QUEUE }}
+              value: {{ .Values.propertyManagement.envs.MONITORING_QUEUE }}
           image: {{ .Values.images.propertyManagement }}
           imagePullPolicy: IfNotPresent
           name: property-management

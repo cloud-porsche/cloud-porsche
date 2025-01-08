@@ -34,7 +34,7 @@ spec:
             - name: PORT
               value: {{ .Values.parkingManagement.port | quote }}
             - name: MONITORING_QUEUE
-              value: {{ .Values.monitoringManagement.envs.MONITORING_QUEUE }}
+              value: {{ .Values.parkingManagement.envs.MONITORING_QUEUE }}
           image: {{ .Values.images.parkingManagement }}
           imagePullPolicy: IfNotPresent
           name: parking-management
