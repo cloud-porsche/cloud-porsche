@@ -31,6 +31,7 @@ export const useMonitoringStore = defineStore("monitoring", {
         percent_change: 0,
       },
       left_free_api_calls: Infinity,
+      defect_distribution: {},
     },
     timeframe: timeframe,
     loading: false, 

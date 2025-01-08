@@ -32,6 +32,7 @@ import Highcharts from "highcharts";
 import { computed, ref, watch } from "vue";
 import { useAppStore } from "@/stores/app";
 import { useMonitoringStore } from "@/stores/monitoring";
+import { DefectState } from "@cloud-porsche/types";
 import router from "@/router";
 
 // Highcharts Configuration
@@ -248,20 +249,43 @@ async function initDashBoard() {
         type: "Highcharts",
         renderTo: "row-2B",
         chartOptions: {
-          chart: { type: "line" },
-          title: { text: "MOCK" },
+          chart: { type: "column" }, // Vertical bars
+          title: { text: "Defect Distribution" },
           xAxis: {
-            categories: Object.keys(monitoringStore.data.customers),
-            title: { text: "Date" },
+            categories: Object.keys(monitoringStore.data.defect_distribution), // Property names as categories
+            title: { text: "Properties" },
           },
-          yAxis: { title: { text: "MOCK" } },
-          series: [
-            {
-              type: "line",
-              name: "MOCK",
-              data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          yAxis: {
+            min: 0,
+            title: { text: "Count" },
+            stackLabels: {
+              enabled: true,
+              style: { fontWeight: "bold", color: "gray" },
             },
-          ],
+          },
+          legend: {
+            align: "right",
+            x: -30,
+            verticalAlign: "top",
+            y: 25,
+            floating: true,
+            borderColor: "#CCC",
+            borderWidth: 1,
+            shadow: false,
+          },
+          plotOptions: {
+            column: {
+              stacking: "normal", // Enable stacking
+            },
+          },
+          series: Object.values(DefectState).filter(value => typeof value === 'number').map((key) => ({
+            type: "column",
+            name: DefectState[key],
+            data: Object.keys(monitoringStore.data.defect_distribution).map(
+              (property) =>
+                monitoringStore.data.defect_distribution[property][key],
+            ),
+          })),
         },
       },
     ],

@@ -10,6 +10,7 @@ import { getApp } from 'firebase-admin/app';
 import { TenantTier } from '@cloud-porsche/types';
 import { ConfigService } from '@nestjs/config';
 import { DefectAction } from './entities/defect-action.entity';
+import { DefectState } from '@cloud-porsche/types';
 
 @Injectable()
 export class MonitoringService {
@@ -292,8 +293,40 @@ export class MonitoringService {
   private async getDefectDistribution(
     timeframe: string,
     defectActions: DefectAction[],
-  ) {
-    
+  ): Promise<Record<string, Record<DefectState, number>>> {
+    const startDate = this.calculateDateRanges(timeframe).currentStart;
+  
+    const actionsInTimeframe = defectActions.filter(
+      (action) => new Date(action.date) >= startDate,
+    );
+  
+    const latestActions = actionsInTimeframe.reduce((acc, action) => {
+      const existingAction = acc.get(action.defectId);
+      if (!existingAction || new Date(action.date) > new Date(existingAction.date)) {
+        acc.set(action.defectId, action);
+      }
+      return acc;
+    }, new Map<string, DefectAction>());
+  
+    const defectDistribution: Record<string, Record<DefectState, number>> = {};
+  
+    latestActions.forEach((action) => {
+      const propertyName = action.propertyName;
+      const defectState =
+        action.action === 'delete' ? DefectState.DONE : action.defectState;
+  
+      if (!defectDistribution[propertyName]) {
+        defectDistribution[propertyName] = {
+          [DefectState.OPEN]: 0,
+          [DefectState.IN_WORK]: 0,
+          [DefectState.REJECTED]: 0,
+          [DefectState.DONE]: 0,
+        };
+      }
+  
+      defectDistribution[propertyName][defectState]++;
+    });
+    return defectDistribution;
   }
 
   private generateDateRange(startDate: Date, endDate: Date): string[] {
@@ -368,6 +401,7 @@ export class MonitoringService {
         parking_income: parkingIncome,
         avg_utilization: avgUtilization,
         left_free_api_calls: leftFreeApiCalls,
+        defect_distribution: defectDistribution,
       },
     };
   }
