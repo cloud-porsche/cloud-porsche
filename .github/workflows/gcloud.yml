@@ -28,9 +28,6 @@ jobs:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
-      - uses: actions/setup-node@v4
-        with:
-          cache: 'pnpm'
       - name: Build the Docker image
         run: |
           export IMAGE_URL=europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/${{ matrix.image }}
