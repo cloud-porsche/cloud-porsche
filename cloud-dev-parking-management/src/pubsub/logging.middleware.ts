@@ -20,6 +20,7 @@ export class LoggingMiddleware implements NestMiddleware {
     res.on('finish', async () => {
       // After the request is handled, publish the log messagee
       await this.pubSubService.publishMessage({
+        messageType: 'apiCall',
         method: method,
         url: originalUrl,
         timestamp: new Date(),

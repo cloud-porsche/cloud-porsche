@@ -59,11 +59,12 @@ export class DefectsController {
 
   @Patch(':id')
   async update(
+    @Headers('tenant-id') tenantId: string,
     @Param('id') id: string,
     @Body()
     updateDefectDto: UpdateDefectDto,
   ) {
-    return await this.defectsService.update(id, updateDefectDto);
+    return await this.defectsService.update(id, updateDefectDto, tenantId);
   }
 
   @Delete(':id')

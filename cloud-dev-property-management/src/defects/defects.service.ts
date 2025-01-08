@@ -6,13 +6,14 @@ import { BaseFirestoreRepository, getRepository } from 'fireorm';
 import { ObjectStorageService } from '../object-storage/object-storage.service';
 import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
 import { ParkingProperty } from '../parking-properties/entities/parking-property.entity';
-import * as admin from 'firebase-admin';
+import { PubSubService } from 'src/pubsub/pubsub.service';
 
 @Injectable()
 export class DefectsService {
   defectRepository: BaseFirestoreRepository<Defect> = getRepository(Defect);
   objectStorageService: ObjectStorageService;
   parkingPropertiesService: ParkingPropertiesService;
+  pubSubService: PubSubService;
 
   constructor() {
     this.defectRepository = getRepository(Defect);
@@ -20,6 +21,7 @@ export class DefectsService {
     this.parkingPropertiesService = new ParkingPropertiesService(
       ParkingProperty,
     );
+    this.pubSubService = new PubSubService();
   }
 
   async create(createDefectDto: CreateDefectDto, tenantId: string) {
@@ -37,7 +39,16 @@ export class DefectsService {
         defects: property.defects,
       });
     }
-
+    this.pubSubService.publishMessage({
+      messageType: 'defect',
+      tenantId: tenantId,
+      action: 'create',
+      propertyId: newDefect.propertyId,
+      propertyName: property.name,
+      defectId: newDefect.id,
+      defectState: newDefect.status,
+      date: new Date(),
+    })
     return newDefect;
   }
 
@@ -67,12 +78,26 @@ export class DefectsService {
     return await this.defectRepository.findById(id);
   }
 
-  async update(id: string, updateDefectDto: UpdateDefectDto) {
-    return await this.defectRepository.update({
+  async update(id: string, updateDefectDto: UpdateDefectDto, tenantId: string) {
+    await this.defectRepository.update({
       id: id,
       lastModified: new Date(),
       ...updateDefectDto,
     } as Defect);
+    const updatedDefect = await this.findOne(id);
+    const property = await this.parkingPropertiesService.findOne(
+      updatedDefect.propertyId,
+    );
+    this.pubSubService.publishMessage({
+      messageType: 'defect',
+      tenantId: tenantId,
+      action: 'update',
+      propertyId: updatedDefect.propertyId,
+      propertyName: property.name,
+      defectId: updatedDefect.id,
+      defectState: updatedDefect.status,
+      date: new Date(),
+    })
   }
 
   async remove(tenantId: string, id: string) {
@@ -94,7 +119,16 @@ export class DefectsService {
       });
     }
 
-    // Delete the defect
+    this.pubSubService.publishMessage({
+      messageType: 'defect',
+      tenantId: tenantId,
+      action: 'delete',
+      propertyId: existingDefect.propertyId,
+      propertyName: property.name,
+      defectId: existingDefect.id,
+      defectState: existingDefect.status,
+      date: new Date(),
+    })
     return await this.defectRepository.delete(id);
   }
 }

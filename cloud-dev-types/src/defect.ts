@@ -18,3 +18,14 @@ export interface IDefect {
   image: string;
   lastModified: Date;
 }
+
+
+export interface IDefectAction {
+  tenantId: string;
+  action: string;
+  propertyId: string;
+  propertyName: string;
+  defectId: string;
+  defectState: DefectState;
+  date: Date;
+}

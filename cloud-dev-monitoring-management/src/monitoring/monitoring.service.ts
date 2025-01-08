@@ -9,6 +9,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getApp } from 'firebase-admin/app';
 import { TenantTier } from '@cloud-porsche/types';
 import { ConfigService } from '@nestjs/config';
+import { DefectAction } from './entities/defect-action.entity';
 
 @Injectable()
 export class MonitoringService {
@@ -17,8 +18,9 @@ export class MonitoringService {
   private tenantDb = getFirestore(getApp('tenant'));
   private apiCallRepository = getRepository(ApiCall);
   private parkingActionRepository = getRepository(ParkingAction);
+  private defectActionRepository = getRepository(DefectAction);
   private pubSubClient: PubSub;
-  private subscriptionName = 'monitoring_subscription';
+  private subscriptionName = process.env.QUEUE_SUBSCRIPTION;
 
   constructor(private config: ConfigService) {
     this.pubSubClient = new PubSub({
@@ -38,9 +40,14 @@ export class MonitoringService {
       const data = JSON.parse(message.data.toString());
       const { messageType, ...payload } = data;
 
-      messageType === 'parking'
-        ? this.parkingActionRepository.create(payload)
-        : this.apiCallRepository.create(payload);
+
+      if(messageType === 'parking') {
+        this.parkingActionRepository.create(payload)
+      } else if(messageType === 'apiCall') {
+        this.apiCallRepository.create(payload)
+      } else if(messageType === 'defect') {
+        this.defectActionRepository.create(payload)
+      }
 
       message.ack();
     });
@@ -282,6 +289,13 @@ export class MonitoringService {
     return leftApiCalls > 0 ? leftApiCalls : 0;
   }
 
+  private async getDefectDistribution(
+    timeframe: string,
+    defectActions: DefectAction[],
+  ) {
+    
+  }
+
   private generateDateRange(startDate: Date, endDate: Date): string[] {
     const range: string[] = [];
     let currentDate = startDate;
@@ -314,6 +328,8 @@ export class MonitoringService {
     const allApiCalls = await this.apiCallRepository
       .whereEqualTo('tenantId', tenantId)
       .find();
+    const allDefectActions = await this.defectActionRepository.whereEqualTo('tenantId', tenantId).find();
+    
     let tenant = (
       await this.tenantDb.collection('Tenants').doc(tenantId).get()
     ).data() as Tenant;
@@ -330,7 +346,8 @@ export class MonitoringService {
       customerCount,
       parkingIncome,
       avgUtilization,
-      getLeftFreeApiCalls,
+      leftFreeApiCalls,
+      defectDistribution,
     ] = await Promise.all([
       this.getCustomerData(timeframe, allParkingActions),
       this.getCustomerDistribution(timeframe, allParkingActions),
@@ -339,6 +356,7 @@ export class MonitoringService {
       this.getParkingIncome(timeframe, allParkingActions),
       this.getDailyAvgUtilization(timeframe, allParkingActions),
       this.getLeftFreeApiCalls('monthly', tenant, allApiCalls),
+      this.getDefectDistribution(timeframe, allDefectActions),
     ]);
 
     return {
@@ -349,7 +367,7 @@ export class MonitoringService {
         customer_count_change: customerCount,
         parking_income: parkingIncome,
         avg_utilization: avgUtilization,
-        left_free_api_calls: getLeftFreeApiCalls,
+        left_free_api_calls: leftFreeApiCalls,
       },
     };
   }

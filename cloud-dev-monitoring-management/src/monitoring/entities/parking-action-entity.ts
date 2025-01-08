@@ -3,8 +3,8 @@ import { Collection } from 'fireorm';
 
 @Collection()
 export class ParkingAction implements IParkingAction {
-  tenantId: string;
   id: string;
+  tenantId: string;
   action: string;
   timestamp: Date;
   propertyId: string;

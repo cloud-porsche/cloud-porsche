@@ -15,7 +15,7 @@ export class PubSubService {
         private_key: process.env.FIREBASE_PRIVATE_KEY,
       },
     });
-    this.topicName = 'monitoring_queue';
+    this.topicName = process.env.MONITORING_QUEUE;
   }
 
   async publishMessage(messageData: object): Promise<void> {
