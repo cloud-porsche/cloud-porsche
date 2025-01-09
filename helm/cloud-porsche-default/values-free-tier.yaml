@@ -1,3 +1,5 @@
+tenantId: free-tier
+
 resources:
   limits:
     cpu: 200m

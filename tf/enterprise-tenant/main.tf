@@ -15,6 +15,11 @@ terraform {
   }
 }
 
+resource "google_dns_managed_zone" "cloud-porsche" {
+  name     = "cloud-porsche"
+  dns_name = "cloud-porsche.com"
+}
+
 resource "google_service_account" "tenant_service_account" {
   account_id                   = var.tenant_id
   description                  = "Tenant Service account"

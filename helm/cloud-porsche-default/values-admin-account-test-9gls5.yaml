@@ -1,3 +1,5 @@
+tenantId: admin-account-test-9gls5
+
 resources:
   limits:
     cpu: 500m

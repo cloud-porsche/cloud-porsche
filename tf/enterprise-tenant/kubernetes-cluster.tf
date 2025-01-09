@@ -1,3 +1,20 @@
+resource "google_dns_record_set" "tenant_domain" {
+  name = "${var.tenant_id}.${google_dns_managed_zone.cloud-porsche.dns_name}"
+  type = "A"
+  ttl  = 300
+
+  managed_zone = google_dns_managed_zone.cloud-porsche.name
+
+  rrdatas = [data.kubernetes_service.ingress.status[0].load_balancer[0].ingress[0].ip]
+}
+
+resource "google_compute_managed_ssl_certificate" "tenant_cert" {
+  name = "${var.tenant_id}-cert"
+  managed {
+    domains = ["${var.tenant_id}.ostabo.com"]
+  }
+}
+
 ### Cluster Configuration
 resource "google_container_cluster" "enterprise_tenant" {
   name = var.tenant_id

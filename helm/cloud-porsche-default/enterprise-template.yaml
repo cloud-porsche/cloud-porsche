@@ -1,3 +1,5 @@
+tenantId: ${TENANT_ID}
+
 resources:
   limits:
     cpu: 500m

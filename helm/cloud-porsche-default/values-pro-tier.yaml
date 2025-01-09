@@ -1,3 +1,5 @@
+tenantId: pro-tier
+
 resources:
   limits:
     cpu: 500m
