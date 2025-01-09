@@ -17,7 +17,10 @@ terraform {
 
 resource "google_dns_managed_zone" "cloud-porsche" {
   name     = "cloud-porsche"
-  dns_name = "cloud-porsche.com"
+  dns_name = "cloud-porsche.com."
+  dnssec_config {
+    state = "on"
+  }
 }
 
 resource "google_service_account" "tenant_service_account" {
