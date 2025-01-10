@@ -1,0 +1,24 @@
+tenantId: admin-account-test-9gls5
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+
+propertyManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-admin-account-test-9gls5
+    FIRESTORE_DB: property-management-admin-account-test-9gls5
+    MONITORING_QUEUE: admin-account-test-9gls5-queue
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-admin-account-test-9gls5
+    FIRESTORE_DB: property-management-admin-account-test-9gls5
+    MONITORING_QUEUE: admin-account-test-9gls5-queue
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-admin-account-test-9gls5
+    QUEUE_SUBSCRIPTION: admin-account-test-9gls5-subscription

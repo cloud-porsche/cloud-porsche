@@ -31,6 +31,8 @@ spec:
               value: {{ .Values.secrets.FIREBASE_TOKEN }}
             - name: PORT
               value: {{ .Values.monitoringManagement.port | quote }}
+            - name: QUEUE_SUBSCRIPTION
+              value: {{ .Values.monitoringManagement.envs.QUEUE_SUBSCRIPTION }}
           image: {{ .Values.images.monitoringManagement }}
           imagePullPolicy: IfNotPresent
           name: monitoring-management

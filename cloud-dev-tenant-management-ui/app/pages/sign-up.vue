@@ -15,6 +15,7 @@ const state = reactive({
   location: "europe-west4",
   confirmEmail: undefined,
   acceptTerms: false,
+  password: undefined,
 });
 
 watch(state, (_) => {
@@ -30,12 +31,18 @@ const validate = (state: any): FormError[] => {
   if (!state.name) errors.push({ path: "name", message: "Required" });
   if (!state.location) errors.push({ path: "location", message: "Required" });
   if (!state.email) errors.push({ path: "email", message: "Required" });
+  if (!state.password) errors.push({ path: "password", message: "Required" });
   if (!state.acceptTerms)
     errors.push({ path: "acceptTerms", message: "Terms need to be accepted" });
   if (!state.confirmEmail)
     errors.push({ path: "confirmEmail", message: "Required" });
   if (state.email !== state.confirmEmail)
     errors.push({ path: "confirmEmail", message: "Emails do not match" });
+  if (state.password?.length < 6)
+    errors.push({
+      path: "password",
+      message: "Password must be at least 6 characters",
+    });
 
   if (!/^[a-zA-Z][a-zA-Z0-9- ]{3,19}$/.test(state.name))
     errors.push({
@@ -160,6 +167,10 @@ watch(
 
         <UFormGroup label="Confirm Email" name="confirm-email" required>
           <UInput v-model="state.confirmEmail" required />
+        </UFormGroup>
+
+        <UFormGroup label="Password" name="password" required>
+          <UInput v-model="state.password" required type="password" />
         </UFormGroup>
         <UDivider></UDivider>
         <span class="flex justify-center">

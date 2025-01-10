@@ -1,3 +1,5 @@
+tenantId: ${TENANT_ID}
+
 resources:
   limits:
     cpu: 500m
@@ -10,10 +12,13 @@ propertyManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-${TENANT_ID}
     FIRESTORE_DB: property-management-${TENANT_ID}
+    MONITORING_QUEUE: ${TENANT_ID}-queue
 parkingManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-${TENANT_ID}
     FIRESTORE_DB: property-management-${TENANT_ID}
+    MONITORING_QUEUE: ${TENANT_ID}-queue
 monitoringManagement:
   envs:
     FIRESTORE_DB: monitoring-${TENANT_ID}
+    QUEUE_SUBSCRIPTION: ${TENANT_ID}-subscription

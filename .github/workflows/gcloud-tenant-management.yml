@@ -53,6 +53,8 @@ jobs:
           image: europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/tenant-management:latest
           region: europe-west4
           env_vars: |-
+            VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
+            VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
             GITHUB_TOKEN=${{ secrets.A_GITHUB_TOKEN }}
           flags: |-
             --max-instances=1

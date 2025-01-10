@@ -36,10 +36,8 @@ const baseUrl = "https://cloud-porsche.github.io/cloud-porsche/#/";
           </span>
           Once everything is ready you can access the application at:
           <br />
-          <a
-            :href="`${baseUrl}${plan === 'pro' ? 'pro:' : ''}${tenantId}`"
-            class="underline text-blue-500"
-            >{{ baseUrl }}{{ plan === "pro" ? "pro:" : "" }}{{ tenantId }}</a
+          <a :href="`${baseUrl}${tenantId}`" class="underline text-blue-500"
+            >{{ baseUrl }}{{ tenantId }}</a
           >
         </p>
       </template>

@@ -3,4 +3,5 @@ export class Tenant {
   name: string;
   email: string;
   location: string;
+  password: string;
 }
