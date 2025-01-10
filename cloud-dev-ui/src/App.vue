@@ -165,7 +165,10 @@ const route = useRoute();
 const determineCurrentTenantId = () => {
   const tenantId = (route.params as any)["tenantId"];
   if (!tenantId || !auth) return null;
-  auth.tenantId = tenantId === "free" ? null : tenantId;
+  auth.tenantId =
+    tenantId === (import.meta.env.PROD ? "free-tier" : "free")
+      ? null
+      : tenantId;
   return tenantId;
 };
 const tenantId = computed(() => {

@@ -95,7 +95,10 @@ function request<T extends BodyInit>(
   init: Omit<Init, "headers"> | undefined,
   method: Method,
   body?: T,
-  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" = "propertyManagement", // Standard: Property Management
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "monitoringManagement" = "propertyManagement", // Standard: Property Management
 ) {
   // ADJUSTED PART
   // if input is not a full url, prepend the base url in env
@@ -112,7 +115,7 @@ function request<T extends BodyInit>(
       api_url = useAppStore().api.monitoringManagement;
       break;
   }
-  if(
+  if (
     typeof input === "string" &&
     api_url !== undefined &&
     api_url !== "undefined" &&
@@ -128,7 +131,10 @@ function request<T extends BodyInit>(
     const token = await useCurrentUser().value?.getIdToken(true);
     const tenantId = (router.currentRoute.value.params as any)["tenantId"];
 
-    if (tenantId && tenantId !== "free") {
+    if (
+      tenantId &&
+      tenantId !== (import.meta.env.PROD ? "free-tier" : "free")
+    ) {
       headers.set(
         "tenant-id",
         tenantId.includes(":") ? tenantId.split(":")[1] : tenantId,
@@ -142,8 +148,14 @@ function request<T extends BodyInit>(
       method,
       body,
     });
-    if (useMonitoringStore().data.left_free_api_calls === 0 && api !== "monitoringManagement") {
-      throw new HttpError(req, new Response("No free API calls left", { status: 429 }));
+    if (
+      useMonitoringStore().data.left_free_api_calls === 0 &&
+      api !== "monitoringManagement"
+    ) {
+      throw new HttpError(
+        req,
+        new Response("No free API calls left", { status: 429 }),
+      );
     }
     const res = await fetch(req);
 
@@ -176,7 +188,10 @@ function getJSONHeaders(init?: Init) {
 export function get(
   input: RequestInfo | URL,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "monitoringManagement" = "propertyManagement",
 ) {
   return request(input, getHeaders(init), init, "GET", undefined, api);
 }
