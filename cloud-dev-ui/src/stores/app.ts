@@ -45,6 +45,9 @@ export const useAppStore = defineStore("app", {
       tenant: {
         info: null as null | ITenant,
       },
+      currUser: {
+        role: "",
+      }
     };
   },
   getters: {
@@ -95,6 +98,12 @@ export const useAppStore = defineStore("app", {
         );
       }
       this.tenant.info = info;
+    },
+    setCurrUserRole(role: string) {
+      this.currUser.role = role;
+    },
+    removeCurrUserRole() {
+      this.currUser.role = "";
     },
   },
 });

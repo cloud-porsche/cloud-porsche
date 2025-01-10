@@ -173,15 +173,22 @@ const tenantId = computed(() => {
 });
 
 auth?.onAuthStateChanged(async (user) => {
-  appStore.setAuthLoading(false);
   await router.isReady();
   await determineCurrentTenantId();
   if (user) {
     const token = await useCurrentUser().value?.getIdToken(true)!;
     await fetchTenantInfo(tenantId.value);
-    initWs(token, tenantId.value);
-
+    await user.getIdTokenResult().then((idTokenResult) => {
+      if (idTokenResult.claims.role) {
+        appStore.setCurrUserRole(idTokenResult.claims.role as string);
+      } else {
+        appStore.setCurrUserRole("user");
+      }
+    });
+    initWs(token, tenantId.value);    
+    await propertyStore.fetchProperties();
     await monitoringStore.fetchMonitoringData();
+    appStore.setAuthLoading(false);
   }
 });
 
@@ -191,11 +198,6 @@ if (authDomain && auth && authDomain.includes("localhost")) {
 }
 
 const propertyStore = usePropertyStore();
-
-onMounted(async () => {
-  await router.isReady();
-  await propertyStore.fetchProperties();
-});
 
 const fetchTenantInfo = async (tenantId: string) => {
   const db = getFirestore();
