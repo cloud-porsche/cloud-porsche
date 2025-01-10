@@ -80,8 +80,13 @@ export class TenantsController {
           description: 'The email of the user to be added to the tenant.',
           example: 'user@example.com',
         },
+        role: {
+          type: 'string',
+          description: 'The role of the user to be added to the tenant.',
+          example: 'admin',
+        },
       },
-      required: ['email'],
+      required: ['email', 'role'],
     },
   })
   @Roles(Role.ADMIN)
@@ -89,8 +94,9 @@ export class TenantsController {
   addTenantUser(
     @Param('tenantId') tenantId: string,
     @Body('email') email: string,
+    @Body('role') role: string,
   ): Promise<any> {
-    return this.tenantsService.addTenantUser(tenantId, email);
+    return this.tenantsService.addTenantUser(tenantId, email, role);
   }
 
   @Delete(':tenantId/users/:uid')

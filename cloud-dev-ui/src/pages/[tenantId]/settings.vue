@@ -41,36 +41,39 @@
               </v-select>
             </v-list-item>
             <v-list-item
-              v-else-if="tab.title === 'User Management'"
+              v-else-if="tab.title === 'User Management' && useAppStore().currUser.role === 'admin'"
               class="pa-5"
             >
               <v-list-item-title>User Management</v-list-item-title>
               <v-btn color="primary" @click="openAddUserDialog" class="mb-4">
                 Add User
               </v-btn>
-              <v-btn color="primary" @click="test" class="mb-4">
-                Refresh
-              </v-btn>
               <v-data-table
-                :items="users"
-                :headers="userTableHeaders"
-                item-value="email"
-                class="elevation-1"
-              >
-                <template #item.action="{ item }">
-                  <v-list-item-action class="d-flex justify-end">
-                    <v-select
-                      v-model="item.role"
-                      :items="['admin', 'user', 'manager']"
-                      outlined
-                      dense
-                    ></v-select>
-                    <v-btn color="red" @click="deleteUser(item.email)">
-                      Delete
-                    </v-btn>
-                  </v-list-item-action>
-                </template>
-              </v-data-table>
+              :items="users"
+              :headers="userTableHeaders"
+              :items-per-page-options="[
+                { value: 5, title: '5' },
+                { value: 10, title: '10' },
+                { value: 25, title: '25' },
+                { value: -1, title: 'All' },
+              ]"
+              item-value="email"
+              class="elevation-1"
+              dense
+              outlined
+            >
+              <template #item.role="{ item }">
+                {{ item.role }}
+              </template>
+              <template #item.action="{ item }">
+                <v-icon class="me-3" color="blue" @click="openEditUserDialog(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon color="red" @click="deleteUser(item.email)">
+                  mdi-delete
+                </v-icon>
+              </template>
+            </v-data-table>
             </v-list-item>
             <v-list-item v-else class="pa-5">
               <v-list-item-title>No settings available.</v-list-item-title>
@@ -79,21 +82,37 @@
           <v-dialog v-model="dialog" max-width="500px">
             <v-card>
               <v-card-title>
-                <span class="headline">Add New User</span>
+                <span class="headline">
+                  {{ editingUID ? "Edit User Role" : "Add New User" }}
+                </span>
               </v-card-title>
-
+          
               <v-card-text>
                 <v-text-field
+                  v-if="!editingUID"
                   v-model="newUserEmail"
                   label="User Email"
                   outlined
                   required
+                  editable="true"
                 ></v-text-field>
+                <v-select
+                  v-model="newUserRole"
+                  label="Role"
+                  :items="['admin', 'user', 'manager']"
+                  outlined
+                  required
+                ></v-select>
               </v-card-text>
-
+          
               <v-card-actions>
                 <v-btn color="blue" @click="dialog = false"> Cancel </v-btn>
-                <v-btn color="green" @click="addUser">Add User</v-btn>
+                <v-btn
+                  color="green"
+                  @click="editingUID ? updateUserRole() : addUser()"
+                >
+                  {{ editingUID ? "Update" : "Add User" }}
+                </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -106,12 +125,24 @@
 <script setup lang="ts">
 import { useAppStore } from "@/stores/app";
 import { MaterialVersion } from "@/plugins/vuetify";
-import { del, get, post, postJSON } from "@/http/http";
+import { del, get, postJSON } from "@/http/http";
 import router from "@/router";
-import { onMounted } from "vue";
 import { getAuth } from "firebase/auth";
 
 const appStore = useAppStore();
+const tenantId = (router.currentRoute.value.params as any)["tenantId"];
+const users = ref<Array<{ email: string; uid: string; role: string }>>([]);
+const dialog = ref(false);
+const newUserEmail = ref("");
+const newUserRole = ref("user");
+const editingUID = ref("");
+
+const userTableHeaders = [
+  { text: "Email", value: "email" },
+  { text: "Current Role", value: "role" },
+  { text: "UID", value: "uid"},
+  { text: "Actions", value: "action", sortable: false, maxWidth: "50px", },
+];
 const tabs = computed(() => [
   {
     title: "General",
@@ -214,23 +245,13 @@ const tabs = computed(() => [
   },
 ]);
 const activeTab = ref(tabs.value[0]);
-const tenantId = (router.currentRoute.value.params as any)["tenantId"];
-let users = ref<Array<{ email: string; uid: string; role: string}>>([]);
-// Dialog-related variables
-const dialog = ref(false);
-const newUserEmail = ref("");
-
-const userTableHeaders = [
-  { text: "Email", value: "email" },
-  { text: "Action", value: "action", sortable: false },
-];
 
 const fetchUsers = async () => {
   try {
     const response = await get(
       `/v1/tenants/${tenantId}/users`,
       undefined,
-      "tenantManagement",
+      "tenantManagement"
     );
     const fetchedUsers = await response.json();
 
@@ -248,26 +269,30 @@ const fetchUsers = async () => {
   }
 };
 
-const test = async () => {
-  await get(`/v1/tenants/test`, undefined, "tenantManagement");
-}
+const openEditUserDialog = (user: { uid: string; email: string; role: string }) => {
+  editingUID.value = user.uid;
+  newUserEmail.value = user.email;
+  newUserRole.value = user.role;
+  dialog.value = true;
+};
 
 const addUser = async () => {
-  if (!newUserEmail.value) {
-    console.error("Email is required.");
+  if (!newUserEmail.value || !newUserRole.value) {
+    console.error("Email and Role are required.");
     return;
   }
 
   try {
     const newUser = {
       email: newUserEmail.value,
+      role: newUserRole.value,
     };
 
     await postJSON(
       `/v1/tenants/${tenantId}/users`,
       newUser,
       undefined,
-      "tenantManagement",
+      "tenantManagement"
     );
 
     dialog.value = false;
@@ -277,12 +302,33 @@ const addUser = async () => {
   }
 };
 
-const deleteUser = async (email: string) => {
-  if (!Array.isArray(users.value)) {
-    console.error("Users is not an array or not loaded yet.");
+const updateUserRole = async () => {
+  if (!editingUID.value || !newUserRole.value) {
+    console.error("UID and Role are required.");
     return;
   }
 
+  try {
+    const updatedUser = {
+      uid: editingUID.value,
+      role: newUserRole.value,
+    };
+
+    await postJSON(
+      `/v1/tenants/${tenantId}/users/setRole`,
+      updatedUser,
+      undefined,
+      "tenantManagement"
+    );
+
+    dialog.value = false;
+    await fetchUsers();
+  } catch (error) {
+    console.error("Error updating user role:", error);
+  }
+};
+
+const deleteUser = async (email: string) => {
   const userToDelete = users.value.find((user) => user.email === email);
   if (!userToDelete || !userToDelete.uid) {
     console.error("User not found or missing UID");
@@ -293,7 +339,7 @@ const deleteUser = async (email: string) => {
     await del(
       `/v1/tenants/${tenantId}/users/${userToDelete.uid}`,
       undefined,
-      "tenantManagement",
+      "tenantManagement"
     );
     await fetchUsers();
   } catch (error) {
@@ -304,16 +350,16 @@ const deleteUser = async (email: string) => {
 getAuth().onAuthStateChanged(async (user) => {
   await router.isReady();
   const token = await user?.getIdTokenResult(true);
-  
+
   if (token?.claims?.role === "admin") {
-    console.log("fetching users");
     fetchUsers();
   }
 });
 
-// Open dialog for adding a new user
 const openAddUserDialog = () => {
   newUserEmail.value = "";
+  newUserRole.value = "user";
+  editingUID.value = "";
   dialog.value = true;
 };
 </script>

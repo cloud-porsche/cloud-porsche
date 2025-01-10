@@ -58,7 +58,11 @@
           </v-img>
         </template>
         <template v-slot:item.actions="{ item }">
-          <v-btn icon="mdi-pencil" @click="editDialog(item)" variant="plain">
+          <v-btn 
+          icon="mdi-pencil" 
+          @click="editDialog(item)" 
+          variant="plain" 
+          :disabled="useAppStore().currUser.role === 'user'">
           </v-btn>
         </template>
 
@@ -119,6 +123,7 @@
                     class="me-2"
                     @click="editDialog(item)"
                     variant="tonal"
+                    :disabled="useAppStore().currUser.role === 'user'"
                     >Edit
                   </v-btn>
                   <v-btn
@@ -126,6 +131,7 @@
                     color="error"
                     @click="initiateDeletion(item)"
                     variant="flat"
+                    :disabled="useAppStore().currUser.role === 'user'"
                     >Delete
                   </v-btn>
                 </div>
@@ -208,6 +214,7 @@ import { useDisplay } from "vuetify";
 import { useDateFormat } from "@vueuse/core";
 import { ref } from "vue";
 import { useRoute } from "vue-router";
+import { useAppStore } from "@/stores/app";
 
 export type SignedDefect = IDefect & { signedImage: string };
 

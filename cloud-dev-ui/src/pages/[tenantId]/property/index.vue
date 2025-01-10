@@ -6,10 +6,19 @@
           >Property Management Page
           <v-spacer></v-spacer>
           <v-btn
-            class="ml-4"
-            :icon="'mdi-plus'"
-            v-tooltip="'Add new Property'"
-            @click="newPropertyDialog = true"
+          class="ml-4"
+          :icon="'mdi-plus'"
+          v-tooltip="'Add new Property'"
+          @click="newPropertyDialog = true"
+          :disabled="appStore.currUser.role != 'admin'"
+          />
+          <v-btn
+          class="ml-4"
+          :icon="'mdi-delete'"
+          color="error"
+          v-tooltip="'Delete'"
+          :disabled="propertyStore.properties.length <= 0 || appStore.currUser.role != 'admin'"
+          @click="deleteDialog = true"
           />
           <v-btn
             class="ml-4"
@@ -17,14 +26,6 @@
             :color="propertyStore.error ? 'error' : undefined"
             v-tooltip="'Refresh'"
             @click="propertyStore.fetchProperties()"
-          />
-          <v-btn
-            class="ml-4"
-            :icon="'mdi-delete'"
-            color="error"
-            v-tooltip="'Delete'"
-            :disabled="propertyStore.properties.length <= 0"
-            @click="deleteDialog = true"
           />
         </span>
       </h1>
@@ -484,11 +485,13 @@ import {
   ParkingSpot,
   ParkingSpotLayer,
   ParkingSpotState,
+  Role,
 } from "@cloud-porsche/types";
 import { useDisplay } from "vuetify";
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useMonitoringStore } from "@/stores/monitoring";
+import { useAppStore } from "@/stores/app";
 
 const route = useRoute();
 const tenantId = computed(() => (route.params as any)["tenantId"]);
@@ -496,6 +499,8 @@ const tenantId = computed(() => (route.params as any)["tenantId"]);
 const mobile = useDisplay().mobile;
 const propertyStore = usePropertyStore();
 const monitoringStore = useMonitoringStore();
+const appStore = useAppStore();
+console.log(appStore.currUser.role);
 await monitoringStore.fetchMonitoringData();
 const { parkingSpots } = storeToRefs(propertyStore);
 const required = (v: string | undefined) => !!v || "This field is required.";

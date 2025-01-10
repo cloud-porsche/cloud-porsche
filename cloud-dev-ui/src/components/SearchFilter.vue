@@ -9,6 +9,7 @@
       class="me-2"
       v-tooltip="'Add Defect'"
       :text="mobile ? '' : 'Add Defect'"
+      :disabled="useAppStore().currUser.role === 'user'"
     >
     </v-btn>
     <v-btn
@@ -60,6 +61,7 @@
 </template>
 
 <script lang="ts" setup>
+import { useAppStore } from "@/stores/app";
 import { useDisplay } from "vuetify";
 
 const { mobile } = useDisplay();

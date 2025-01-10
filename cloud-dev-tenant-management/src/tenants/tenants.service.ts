@@ -117,8 +117,8 @@ export class TenantsService {
       });
   }
 
-  async addTenantUser(tenantId: string, email: string) {
-    this.createUserForTenant(tenantId, email, 'password', 'user')
+  async addTenantUser(tenantId: string, email: string, role: string) {
+    this.createUserForTenant(tenantId, email, 'password', role)
       .then((user) => {
         console.log(user.toJSON());
         return user.toJSON();
