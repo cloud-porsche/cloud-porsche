@@ -11,7 +11,6 @@ metadata:
     networking.gke.io/managed-certificates: managed-cert
     kubernetes.io/ingress.class: "gce"
 spec:
-  ingressClassName: nginx
   rules:
     - http:
         paths:
