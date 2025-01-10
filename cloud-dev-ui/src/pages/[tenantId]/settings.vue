@@ -56,6 +56,12 @@
               >
                 <template #item.action="{ item }">
                   <v-list-item-action class="d-flex justify-end">
+                    <v-select
+                      v-model="item.role"
+                      :items="['admin', 'user', 'manager']"
+                      outlined
+                      dense
+                    ></v-select>
                     <v-btn color="red" @click="deleteUser(item.email)">
                       Delete
                     </v-btn>
@@ -100,6 +106,7 @@ import { MaterialVersion } from "@/plugins/vuetify";
 import { del, get, post, postJSON } from "@/http/http";
 import router from "@/router";
 import { onMounted } from "vue";
+import { getAuth } from "firebase/auth";
 
 const appStore = useAppStore();
 const tabs = computed(() => [
@@ -205,7 +212,7 @@ const tabs = computed(() => [
 ]);
 const activeTab = ref(tabs.value[0]);
 const tenantId = (router.currentRoute.value.params as any)["tenantId"];
-let users = ref<Array<{ email: string; uid: string }>>([]);
+let users = ref<Array<{ email: string; uid: string; role: string}>>([]);
 // Dialog-related variables
 const dialog = ref(false);
 const newUserEmail = ref("");
@@ -228,6 +235,7 @@ const fetchUsers = async () => {
       users.value = fetchedUsers.map((user) => ({
         email: user.email,
         uid: user.uid,
+        role: user.customClaims?.role,
       }));
     } else {
       console.error("Fetched users data is not an array.");
@@ -286,8 +294,12 @@ const deleteUser = async (email: string) => {
   }
 };
 
-onMounted(() => {
-  if (tabs.value.some((tab) => tab.title === "User Management")) {
+getAuth().onAuthStateChanged(async (user) => {
+  await router.isReady();
+  const token = await user?.getIdTokenResult(true);
+  
+  if (token?.claims?.role === "admin") {
+    console.log("fetching users");
     fetchUsers();
   }
 });

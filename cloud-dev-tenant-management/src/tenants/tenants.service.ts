@@ -52,42 +52,35 @@ export class TenantsService {
         },
       })
       .then(async (newTenant) => {
-        const a = getAuth();
-        a.tenantId = newTenant.tenantId;
-        const userCredential = await createUserWithEmailAndPassword(
-          a,
-          tenant.email,
-          tenant.password,
-        );
-        await sendEmailVerification(userCredential.user);
-        const ghResponse = await this.octokit.request(
-          `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
-          {
-            ref: this.targetBranch,
-            inputs: {
-              run_type: 'tenant-create',
-              tenant_id: newTenant.tenantId,
-              tenant_name: tenant.name,
-              tenant_type: tenant.plan,
-              location: tenant.location,
-              admin_email: tenant.email,
-            },
-            headers: {
-              'X-GitHub-Api-Version': '2022-11-28',
-            },
-          },
-        );
-        return {
-          res: newTenant.toJSON(),
-          ghResponse: await this.octokit.request(
-            'GET ' + ghResponse.url.replace('/dispatches', ''),
-          ),
-        };
+        await this.createUserForTenant(newTenant.tenantId, tenant.email, tenant.password, 'admin');
+        // const ghResponse = await this.octokit.request(
+        //   `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
+        //   {
+        //     ref: this.targetBranch,
+        //     inputs: {
+        //       run_type: 'tenant-create',
+        //       tenant_id: newTenant.tenantId,
+        //       tenant_name: tenant.name,
+        //       tenant_type: tenant.plan,
+        //       location: tenant.location,
+        //       admin_email: tenant.email,
+        //     },
+        //     headers: {
+        //       'X-GitHub-Api-Version': '2022-11-28',
+        //     },
+        //   },
+        // );
+        // return {
+        //   res: newTenant.toJSON(),
+        //   ghResponse: await this.octokit.request(
+        //     'GET ' + ghResponse.url.replace('/dispatches', ''),
+        //   ),
+        // };
       })
-      .catch((error) => {
-        this.logger.error(error);
-        return error;
-      });
+      // .catch((error) => {
+      //   this.logger.error(error);
+      //   return error;
+      // });
   }
 
   async deleteTenant(tenantId: string) {
@@ -125,12 +118,9 @@ export class TenantsService {
   }
 
   async addTenantUser(tenantId: string, email: string) {
-    const tenantAuth = admin.auth().tenantManager().authForTenant(tenantId);
-    return tenantAuth
-      .createUser({
-        email: email,
-      })
+    this.createUserForTenant(tenantId, email, 'password', 'user')
       .then((user) => {
+        console.log(user.toJSON());
         return user.toJSON();
       })
       .catch((error) => {
@@ -138,11 +128,31 @@ export class TenantsService {
       });
   }
 
+
+  async createUserForTenant(tenantId: string, email: string, password: string, role: string) {
+    try {
+      const a = getAuth();
+      a.tenantId = tenantId;
+      const userCredentials = await createUserWithEmailAndPassword(
+        a,
+        email,
+        password,
+      );
+      const auth = admin.auth().tenantManager().authForTenant(tenantId);        
+      await auth.setCustomUserClaims(userCredentials.user.uid, { role: role });
+      await sendEmailVerification(userCredentials.user);
+      return userCredentials.user;
+    } catch (error) {
+      return error;
+    }
+  }
+
   async getTenantUsers(tenantId: string) {
     const tenantAuth = admin.auth().tenantManager().authForTenant(tenantId);
     return tenantAuth
       .listUsers()
       .then((result) => {
+        console.log(result.users.map((user) => user.toJSON()));
         return result.users.map((user) => user.toJSON());
       })
       .catch((error) => {
@@ -162,5 +172,10 @@ export class TenantsService {
       .catch((error) => {
         return error;
       });
+  }
+
+  async setUserRole(tenantId: string, uid: string, role: string) {
+    const tenantAuth = admin.auth().tenantManager().authForTenant(tenantId);
+    return tenantAuth.setCustomUserClaims(uid, { role: role});
   }
 }

@@ -93,4 +93,36 @@ export class TenantsController {
   ) {
     return await this.tenantsService.deleteTenantUser(tenantId, uid);
   }
+
+  @Post(':tenantId/users/setRole')
+  @ApiParam({
+    name: 'tenantId',
+    description: 'The ID of the tenant to which the user role will be set.',
+    example: 'tenant123',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        uid: {
+          type: 'string',
+          description: 'The ID of the user to set the role for.',
+          example: 'user123',
+        },
+        role: {
+          type: 'string',
+          description: 'The role to set for the user.',
+          example: 'admin',
+        },
+      },
+      required: ['uid', 'role'],
+    },
+  })
+  async setTenantUserRole(
+    @Param('tenantId') tenantId: string,
+    @Body('uid') uid: string,
+    @Body('role') role: string,
+  ) {
+    return await this.tenantsService.setUserRole(tenantId, uid, role);
+  }
 }
