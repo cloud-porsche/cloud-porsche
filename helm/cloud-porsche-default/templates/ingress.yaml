@@ -11,6 +11,10 @@ metadata:
     networking.gke.io/managed-certificates: managed-cert
     kubernetes.io/ingress.class: "gce"
 spec:
+  tls:
+    - hosts:
+        - {{ .Values.tenantId }}.cloud-porsche.com
+  ingressClassName: gce
   rules:
     - http:
         paths:
