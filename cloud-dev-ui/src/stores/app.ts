@@ -18,6 +18,11 @@ export const monitoringManagementUrl =
   import.meta.env.VITE_MONITORING_MANAGEMENT_API_URL ??
   "";
 
+export const tenantManagementUrl =
+  localStorage.getItem("tenantManagement") ??
+  import.meta.env.VITE_TENANT_MANAGEMENT_API_URL ??
+  "";
+
 export const useAppStore = defineStore("app", {
   state: () => {
     return {
@@ -28,6 +33,7 @@ export const useAppStore = defineStore("app", {
         propertyManagement: propertyManagementUrl,
         parkingManagement: parkingManagementUrl,
         monitoringManagement: monitoringManagementUrl,
+        tenantManagement: tenantManagementUrl,
         ws: {
           socket: {} as Socket,
           connected: false,

@@ -95,7 +95,7 @@ function request<T extends BodyInit>(
   init: Omit<Init, "headers"> | undefined,
   method: Method,
   body?: T,
-  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" = "propertyManagement", // Standard: Property Management
+  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" | "tenantManagement" = "propertyManagement", // Standard: Property Management
 ) {
   // ADJUSTED PART
   // if input is not a full url, prepend the base url in env
@@ -111,6 +111,8 @@ function request<T extends BodyInit>(
     case "monitoringManagement":
       api_url = useAppStore().api.monitoringManagement;
       break;
+    case "tenantManagement":
+      api_url = useAppStore().api.tenantManagement;
   }
   if(
     typeof input === "string" &&
@@ -176,7 +178,7 @@ function getJSONHeaders(init?: Init) {
 export function get(
   input: RequestInfo | URL,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" = "propertyManagement",
+  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" | "tenantManagement" = "propertyManagement",
 ) {
   return request(input, getHeaders(init), init, "GET", undefined, api);
 }
@@ -190,7 +192,10 @@ export function post<T extends BodyInit>(
   input: RequestInfo | URL,
   body?: T,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "tenantManagement" = "propertyManagement",
 ) {
   return request(input, getHeaders(init), init, "POST", body, api);
 }
@@ -210,7 +215,10 @@ export function postJSON<T extends object>(
   input: RequestInfo | URL,
   body: T,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "tenantManagement" = "propertyManagement",
 ) {
   return request(
     input,
@@ -234,7 +242,10 @@ export function put<T extends BodyInit>(
   input: RequestInfo | URL,
   body?: T,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "tenantManagement" = "propertyManagement",
 ) {
   return request(input, getHeaders(init), init, "PUT", body, api);
 }
@@ -248,7 +259,10 @@ export function putJSON<T extends object>(
   input: RequestInfo | URL,
   body: T,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "tenantManagement" = "propertyManagement",
 ) {
   return request(
     input,
@@ -269,7 +283,10 @@ export function patch<T extends BodyInit>(
   input: RequestInfo | URL,
   body?: T,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "tenantManagement" = "propertyManagement",
 ) {
   return request(input, getHeaders(init), init, "PATCH", body, api);
 }
@@ -283,7 +300,10 @@ export function patchJSON<T extends object>(
   input: RequestInfo | URL,
   body: T,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "tenantManagement" = "propertyManagement",
 ) {
   return request(
     input,
@@ -302,7 +322,10 @@ export function patchJSON<T extends object>(
 export function del(
   input: RequestInfo | URL,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "tenantManagement" = "propertyManagement",
 ) {
   return request(input, getHeaders(init), init, "DELETE", undefined, api);
 }

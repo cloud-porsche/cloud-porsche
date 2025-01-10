@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
 import { Tenant } from './dto/tenant.dto';
@@ -50,6 +50,16 @@ export class TenantsController {
     return await this.tenantsService.deleteTenant(tenantId);
   }
 
+  @Get(':tenantId/users')
+  @ApiParam({
+    name: 'tenantId',
+    description: 'The ID of the tenant to which the user will be added.',
+    example: 'tenant123',
+  })
+  getTenantUser(@Param('tenantId') tenantId: string): Promise<any> {
+    return this.tenantsService.getTenantUsers(tenantId);
+  }
+
   @Post(':tenantId/users')
   @ApiParam({
     name: 'tenantId',
@@ -74,5 +84,13 @@ export class TenantsController {
     @Body('email') email: string,
   ): Promise<any> {
     return this.tenantsService.addTenantUser(tenantId, email);
+  }
+
+  @Delete(':tenantId/users/:uid')
+  async deleteTenantUser(
+    @Param('tenantId') tenantId: string,
+    @Param('uid') uid: string,
+  ) {
+    return await this.tenantsService.deleteTenantUser(tenantId, uid);
   }
 }

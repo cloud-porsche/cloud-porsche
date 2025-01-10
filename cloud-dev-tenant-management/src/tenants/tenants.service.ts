@@ -137,4 +137,30 @@ export class TenantsService {
         return error;
       });
   }
+
+  async getTenantUsers(tenantId: string) {
+    const tenantAuth = admin.auth().tenantManager().authForTenant(tenantId);
+    return tenantAuth
+      .listUsers()
+      .then((result) => {
+        return result.users.map((user) => user.toJSON());
+      })
+      .catch((error) => {
+        return error;
+      });
+  }
+
+  async deleteTenantUser(tenantId: string, uid: string) {
+    const tenantAuth = admin.auth().tenantManager().authForTenant(tenantId);
+    return tenantAuth
+      .deleteUser(uid)
+      .then(() => {
+        return {
+          uid: uid,
+        };
+      })
+      .catch((error) => {
+        return error;
+      });
+  }
 }
