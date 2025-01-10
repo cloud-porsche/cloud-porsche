@@ -7,11 +7,6 @@ images:
   parkingManagement: cloud-porsche/parking-management:latest
   monitoringManagement: cloud-porsche/monitoring-management:latest
 
-ingress:
-  sslRedirect: false
-  proxyReadTimeout: 3600
-  proxySendTimeout: 3600
-
 resources:
   limits:
     cpu: 500m
