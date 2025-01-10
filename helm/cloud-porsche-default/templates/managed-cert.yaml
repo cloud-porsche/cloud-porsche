@@ -6,6 +6,3 @@ metadata:
 spec:
   domains:
     - {{ .Values.tenantId }}.cloud-porsche.com
-    - property-management.{{ .Values.tenantId }}.cloud-porsche.com
-    - parking-management.{{ .Values.tenantId }}.cloud-porsche.com
-    - monitoring-management.{{ .Values.tenantId }}.cloud-porsche.com
