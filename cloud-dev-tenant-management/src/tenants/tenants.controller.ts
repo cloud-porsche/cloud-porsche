@@ -1,7 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
 import { Tenant } from './dto/tenant.dto';
+import { Roles } from 'src/guards/roles.decorator';
+import { Role } from '@cloud-porsche/types';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 @Controller('tenants')
 export class TenantsController {
@@ -56,6 +59,8 @@ export class TenantsController {
     description: 'The ID of the tenant to which the user will be added.',
     example: 'tenant123',
   })
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   getTenantUser(@Param('tenantId') tenantId: string): Promise<any> {
     return this.tenantsService.getTenantUsers(tenantId);
   }
@@ -79,6 +84,8 @@ export class TenantsController {
       required: ['email'],
     },
   })
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   addTenantUser(
     @Param('tenantId') tenantId: string,
     @Body('email') email: string,
@@ -87,6 +94,8 @@ export class TenantsController {
   }
 
   @Delete(':tenantId/users/:uid')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   async deleteTenantUser(
     @Param('tenantId') tenantId: string,
     @Param('uid') uid: string,
@@ -118,11 +127,20 @@ export class TenantsController {
       required: ['uid', 'role'],
     },
   })
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   async setTenantUserRole(
     @Param('tenantId') tenantId: string,
     @Body('uid') uid: string,
     @Body('role') role: string,
   ) {
     return await this.tenantsService.setUserRole(tenantId, uid, role);
+  }
+
+  @Get('test')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  async test() {
+    return 'test';
   }
 }

@@ -48,6 +48,9 @@
               <v-btn color="primary" @click="openAddUserDialog" class="mb-4">
                 Add User
               </v-btn>
+              <v-btn color="primary" @click="test" class="mb-4">
+                Refresh
+              </v-btn>
               <v-data-table
                 :items="users"
                 :headers="userTableHeaders"
@@ -244,6 +247,10 @@ const fetchUsers = async () => {
     console.error("Error fetching users:", error);
   }
 };
+
+const test = async () => {
+  await get(`/v1/tenants/test`, undefined, "tenantManagement");
+}
 
 const addUser = async () => {
   if (!newUserEmail.value) {

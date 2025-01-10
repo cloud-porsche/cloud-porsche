@@ -7,10 +7,14 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ParkingPropertiesService } from './parking-properties.service';
 import { CreateParkingPropertyDto } from './dto/create-parking-property.dto';
 import { UpdateParkingPropertyDto } from './dto/update-parking-property.dto';
+import { Roles } from 'src/guards/roles.decorator';
+import { Role } from '@cloud-porsche/types';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 @Controller('parking-properties')
 export class ParkingPropertiesController {
@@ -23,6 +27,8 @@ export class ParkingPropertiesController {
   ) {}
 
   @Post()
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   create(
     @Headers('tenant-id') tenantId: string,
     @Body() createParkingPropertyDto: CreateParkingPropertyDto,
@@ -47,6 +53,8 @@ export class ParkingPropertiesController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   update(
     @Headers('tenant-id') tenantId: string,
     @Param('id') id: string,
@@ -60,6 +68,8 @@ export class ParkingPropertiesController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   remove(@Headers('tenant-id') tenantId: string, @Param('id') id: string) {
     return this.parkingPropertiesService.remove(tenantId, id);
   }
