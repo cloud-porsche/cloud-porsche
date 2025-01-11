@@ -118,9 +118,9 @@ export class TenantsService {
   }
 
   async addTenantUser(tenantId: string, email: string, role: string) {
-    this.createUserForTenant(tenantId, email, 'password', role)
+    const otp = Math.random().toString(36).slice(-8);
+    await this.createUserForTenant(tenantId, email, otp, role)
       .then((user) => {
-        console.log(user.toJSON());
         return user.toJSON();
       })
       .catch((error) => {
@@ -147,13 +147,12 @@ export class TenantsService {
     }
   }
 
-  async getTenantUsers(tenantId: string) {
+  async getTenantUsers(tenantId: string, uid: string) {
     const tenantAuth = admin.auth().tenantManager().authForTenant(tenantId);
     return tenantAuth
       .listUsers()
       .then((result) => {
-        console.log(result.users.map((user) => user.toJSON()));
-        return result.users.map((user) => user.toJSON());
+        return result.users.filter((user) => {if (user.uid != uid) return user.toJSON()});
       })
       .catch((error) => {
         return error;

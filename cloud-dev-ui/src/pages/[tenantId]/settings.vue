@@ -66,12 +66,14 @@
                 {{ item.role }}
               </template>
               <template #item.action="{ item }">
-                <v-icon class="me-3" color="blue" @click="openEditUserDialog(item)">
-                  mdi-pencil
-                </v-icon>
-                <v-icon color="red" @click="openDeleteUserDialog(item.uid)">
-                  mdi-delete
-                </v-icon>
+                <div class="d-flex justify-end">
+                  <v-icon class="me-3" color="blue" @click="openEditUserDialog(item)">
+                    mdi-pencil
+                  </v-icon>
+                  <v-icon color="red" @click="openDeleteUserDialog(item.uid)">
+                    mdi-delete
+                  </v-icon>
+                </div>
               </template>
             </v-data-table>
             </v-list-item>
@@ -87,7 +89,7 @@
                 </span>
               </v-card-title>
           
-              <v-card-text>
+                <v-card-text>
                 <v-text-field
                   v-if="!editingUID"
                   v-model="newUserEmail"
@@ -95,6 +97,7 @@
                   outlined
                   required
                   editable="true"
+                  :rules="[v => /.+@.+\..+/.test(v) || 'E-mail must be valid']"
                 ></v-text-field>
                 <v-select
                   v-model="newUserRole"
@@ -103,18 +106,21 @@
                   outlined
                   required
                 ></v-select>
-              </v-card-text>
-          
-              <v-card-actions>
+                </v-card-text>
+              
+                <v-card-actions>
                 <v-btn color="blue" @click="dialog = false"> Cancel </v-btn>
                 <v-btn
                   color="green"
-                  :disabled="!!editingUID && oldUserRole === newUserRole"
+                  :disabled="
+                  (!!editingUID && oldUserRole === newUserRole) ||
+                  (!editingUID && !/.+@.+\..+/.test(newUserEmail))
+                  "
                   @click="editingUID ? updateUserRole() : addUser()"
                 >
                   {{ editingUID ? "Update" : "Add User" }}
                 </v-btn>
-              </v-card-actions>
+                </v-card-actions>
             </v-card>
           </v-dialog>
           <v-dialog v-model="deleteUserDialog" max-width="500px">
@@ -145,7 +151,6 @@ import { useAppStore } from "@/stores/app";
 import { MaterialVersion } from "@/plugins/vuetify";
 import { del, get, postJSON } from "@/http/http";
 import router from "@/router";
-import { getAuth } from "firebase/auth";
 
 const appStore = useAppStore();
 const tenantId = (router.currentRoute.value.params as any)["tenantId"];
@@ -162,7 +167,7 @@ const userTableHeaders = [
   { text: "Email", value: "email" },
   { text: "Current Role", value: "role" },
   { text: "UID", value: "uid"},
-  { text: "Actions", value: "action", sortable: false, maxWidth: "50px", },
+  { text: "Actions", value: "action", sortable: false, maxWidth: "100px", },
 ];
 const tabs = computed(() => [
   {
@@ -270,7 +275,7 @@ const activeTab = ref(tabs.value[0]);
 const fetchUsers = async () => {
   try {
     const response = await get(
-      `/v1/tenants/${tenantId}/users`,
+      `/v1/tenants/${tenantId}/users/${useAppStore().currUser.uid}`,
       undefined,
       "tenantManagement"
     );
@@ -371,12 +376,9 @@ const deleteUser = async () => {
   deleteUserDialog.value = false;
 };
 
-getAuth().onAuthStateChanged(async (user) => {
-  await router.isReady();
-  const token = await user?.getIdTokenResult(true);
-
-  if (token?.claims?.role === "admin") {
-    fetchUsers();
+watch(() => useAppStore().authLoading, async (loading) => {
+  if (!loading && useAppStore().currUser.role === "admin") {
+    await fetchUsers();
   }
 });
 

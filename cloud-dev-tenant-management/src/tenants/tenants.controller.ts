@@ -53,7 +53,7 @@ export class TenantsController {
     return await this.tenantsService.deleteTenant(tenantId);
   }
 
-  @Get(':tenantId/users')
+  @Get(':tenantId/users/:uid')
   @ApiParam({
     name: 'tenantId',
     description: 'The ID of the tenant to which the user will be added.',
@@ -61,8 +61,9 @@ export class TenantsController {
   })
   @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
-  getTenantUser(@Param('tenantId') tenantId: string): Promise<any> {
-    return this.tenantsService.getTenantUsers(tenantId);
+  getTenantUser(@Param('tenantId') tenantId: string, @Param('uid') uid: string): Promise<any> {
+    console.log('getTenantUser');
+    return this.tenantsService.getTenantUsers(tenantId, uid);
   }
 
   @Post(':tenantId/users')

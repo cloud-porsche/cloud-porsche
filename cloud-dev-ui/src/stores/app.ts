@@ -47,6 +47,7 @@ export const useAppStore = defineStore("app", {
       },
       currUser: {
         role: "",
+        uid: "", 
       }
     };
   },
@@ -101,6 +102,9 @@ export const useAppStore = defineStore("app", {
     },
     setCurrUserRole(role: string) {
       this.currUser.role = role;
+    },
+    setCurrUid(uid: string) {
+      this.currUser.uid = uid;
     },
     removeCurrUserRole() {
       this.currUser.role = "";
