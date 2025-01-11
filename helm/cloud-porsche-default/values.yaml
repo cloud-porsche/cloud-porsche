@@ -7,10 +7,9 @@ images:
   parkingManagement: cloud-porsche/parking-management:latest
   monitoringManagement: cloud-porsche/monitoring-management:latest
 
-certs:
-  - property-management
-  - parking-management
-  - monitoring-management
+ingress:
+  proxyReadTimeout: 3600
+  proxySendTimeout: 3600
 
 resources:
   limits:

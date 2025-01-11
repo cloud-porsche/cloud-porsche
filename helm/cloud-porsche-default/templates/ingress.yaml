@@ -4,38 +4,33 @@ metadata:
   name: cloud-porsche-ingress
   namespace: {{ .Release.Namespace}}
   annotations:
-    networking.gke.io/managed-certificates: property-management-cert,parking-management-cert,monitoring-management-cert
-    kubernetes.io/ingress.class: gce
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-read-timeout: {{ .Values.ingress.proxyReadTimeout | quote }}
+    nginx.ingress.kubernetes.io/proxy-send-timeout: {{ .Values.ingress.proxySendTimeout | quote }}
 spec:
-  ingressClassName: gce
+  ingressClassName: nginx
   rules:
-    - host: property-management.{{ .Values.tenantId }}.cloud-porsche.com
-      http:
+    - http:
         paths:
-          - path: /
-            pathType: Prefix
+          - path: /property-management(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: property-management
                 port:
                   number: {{ .Values.propertyManagement.port }}
-    - host: parking-management.{{ .Values.tenantId }}.cloud-porsche.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
+          - path: /parking-management(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: parking-management
                 port:
                   number: {{ .Values.parkingManagement.port }}
-    - host: monitoring-management.{{ .Values.tenantId }}.cloud-porsche.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
+          - path: /monitoring-management(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: monitoring-management
                 port:
                   number: {{ .Values.monitoringManagement.port }}
+
