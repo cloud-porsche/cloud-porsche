@@ -179,7 +179,6 @@ auth?.onAuthStateChanged(async (user) => {
     const token = await useCurrentUser().value?.getIdToken(true)!;
     await fetchTenantInfo(tenantId.value);
     appStore.setCurrUid(user.uid);
-    console.log(appStore.currUser.uid);
     await user.getIdTokenResult().then((idTokenResult) => {
       if (idTokenResult.claims.role) {
         appStore.setCurrUserRole(idTokenResult.claims.role as string);

@@ -62,7 +62,6 @@ export class TenantsController {
   @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
   getTenantUser(@Param('tenantId') tenantId: string, @Param('uid') uid: string): Promise<any> {
-    console.log('getTenantUser');
     return this.tenantsService.getTenantUsers(tenantId, uid);
   }
 

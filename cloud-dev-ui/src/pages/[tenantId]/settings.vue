@@ -44,13 +44,17 @@
               v-else-if="tab.title === 'User Management' && useAppStore().currUser.role === 'admin'"
               class="pa-5"
             >
-              <v-list-item-title>User Management</v-list-item-title>
-              <v-btn color="primary" @click="openAddUserDialog" class="mb-4">
-                Add User
-              </v-btn>
+              <div class="d-flex justify-space-between pb-10">
+                <h2>User Management</h2>
+                <v-btn color="primary" @click="openAddUserDialog">
+                  Add User
+                </v-btn>
+              </div>
               <v-data-table
+              class="data-table rounded"
+              density="comfortable"
               :items="users"
-              :headers="userTableHeaders"
+              :headers="userTableHeaders" 
               :items-per-page-options="[
                 { value: 5, title: '5' },
                 { value: 10, title: '10' },
@@ -58,16 +62,21 @@
                 { value: -1, title: 'All' },
               ]"
               item-value="email"
-              class="elevation-1"
               dense
               outlined
             >
+              <template #item.email="{ item }">
+                {{ item.email }}
+              </template>
+              <template #item.uid="{ item }">
+                {{ item.uid }}
+              </template>
               <template #item.role="{ item }">
                 {{ item.role }}
               </template>
               <template #item.action="{ item }">
                 <div class="d-flex justify-end">
-                  <v-icon class="me-3" color="blue" @click="openEditUserDialog(item)">
+                  <v-icon class="me-3" @click="openEditUserDialog(item)">
                     mdi-pencil
                   </v-icon>
                   <v-icon color="red" @click="openDeleteUserDialog(item.uid)">
@@ -109,9 +118,9 @@
                 </v-card-text>
               
                 <v-card-actions>
-                <v-btn color="blue" @click="dialog = false"> Cancel </v-btn>
+                <v-btn @click="dialog = false"> Cancel </v-btn>
                 <v-btn
-                  color="green"
+                  color="primary"
                   :disabled="
                   (!!editingUID && oldUserRole === newUserRole) ||
                   (!editingUID && !/.+@.+\..+/.test(newUserEmail))
@@ -164,10 +173,10 @@ const editingUID = ref("");
 const deleteUserUid = ref("");
 
 const userTableHeaders = [
-  { text: "Email", value: "email" },
-  { text: "Current Role", value: "role" },
-  { text: "UID", value: "uid"},
-  { text: "Actions", value: "action", sortable: false, maxWidth: "100px", },
+  { title: "Email", key: "email" },
+  { title: "UID", key: "uid"},
+  { title: "Current Role", key: "role" },
+  { title: "Actions", key: "action", sortable: false, maxWidth: "100px", },
 ];
 const tabs = computed(() => [
   {
