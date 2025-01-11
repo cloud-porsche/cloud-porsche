@@ -69,7 +69,7 @@
                 <v-icon class="me-3" color="blue" @click="openEditUserDialog(item)">
                   mdi-pencil
                 </v-icon>
-                <v-icon color="red" @click="deleteUser(item.email)">
+                <v-icon color="red" @click="openDeleteUserDialog(item.uid)">
                   mdi-delete
                 </v-icon>
               </template>
@@ -109,12 +109,30 @@
                 <v-btn color="blue" @click="dialog = false"> Cancel </v-btn>
                 <v-btn
                   color="green"
+                  :disabled="!!editingUID && oldUserRole === newUserRole"
                   @click="editingUID ? updateUserRole() : addUser()"
                 >
                   {{ editingUID ? "Update" : "Add User" }}
                 </v-btn>
               </v-card-actions>
             </v-card>
+          </v-dialog>
+          <v-dialog v-model="deleteUserDialog" max-width="500px">
+            <v-card>
+              <v-card-title>
+                <span class="headline">Delete User</span>
+              </v-card-title>
+          
+              <v-card-text>
+                <p>Are you sure you want to delete this user?</p>
+              </v-card-text>
+          
+              <v-card-actions>
+                <v-btn color="blue" @click="deleteUserDialog = false"> Cancel </v-btn>
+                <v-btn color="red" @click="deleteUser()"> Delete </v-btn>
+              </v-card-actions>
+            </v-card>
+
           </v-dialog>
         </v-responsive>
       </v-tabs-window-item>
@@ -133,9 +151,12 @@ const appStore = useAppStore();
 const tenantId = (router.currentRoute.value.params as any)["tenantId"];
 const users = ref<Array<{ email: string; uid: string; role: string }>>([]);
 const dialog = ref(false);
+const deleteUserDialog = ref(false);
 const newUserEmail = ref("");
 const newUserRole = ref("user");
+const oldUserRole = ref("");
 const editingUID = ref("");
+const deleteUserUid = ref("");
 
 const userTableHeaders = [
   { text: "Email", value: "email" },
@@ -270,10 +291,16 @@ const fetchUsers = async () => {
 };
 
 const openEditUserDialog = (user: { uid: string; email: string; role: string }) => {
+  dialog.value = true;
   editingUID.value = user.uid;
   newUserEmail.value = user.email;
   newUserRole.value = user.role;
-  dialog.value = true;
+  oldUserRole.value = user.role;
+};
+
+const openDeleteUserDialog = (uid: string) => {
+  deleteUserDialog.value = true;
+  deleteUserUid.value = uid;
 };
 
 const addUser = async () => {
@@ -295,11 +322,11 @@ const addUser = async () => {
       "tenantManagement"
     );
 
-    dialog.value = false;
     await fetchUsers();
   } catch (error) {
     console.error("Error adding user:", error);
   }
+  dialog.value = false;
 };
 
 const updateUserRole = async () => {
@@ -328,16 +355,12 @@ const updateUserRole = async () => {
   }
 };
 
-const deleteUser = async (email: string) => {
-  const userToDelete = users.value.find((user) => user.email === email);
-  if (!userToDelete || !userToDelete.uid) {
-    console.error("User not found or missing UID");
-    return;
-  }
+const deleteUser = async () => {
+  const uid = deleteUserUid.value;
 
   try {
     await del(
-      `/v1/tenants/${tenantId}/users/${userToDelete.uid}`,
+      `/v1/tenants/${tenantId}/users/${uid}`,
       undefined,
       "tenantManagement"
     );
@@ -345,6 +368,7 @@ const deleteUser = async (email: string) => {
   } catch (error) {
     console.error("Error deleting user:", error);
   }
+  deleteUserDialog.value = false;
 };
 
 getAuth().onAuthStateChanged(async (user) => {
