@@ -8,7 +8,7 @@ images:
   monitoringManagement: cloud-porsche/monitoring-management:latest
 
 ingress:
-  sslRedirect: false
+  sslRedirect: true
   proxyReadTimeout: 3600
   proxySendTimeout: 3600
 
