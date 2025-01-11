@@ -8,11 +8,6 @@ metadata:
     kubernetes.io/ingress.class: gce
 spec:
   ingressClassName: gce
-  defaultBackend:
-    service:
-      name: property-management
-      port:
-        number: {{ .Values.propertyManagement.port }}
   rules:
     - host: property-management.{{ .Values.tenantId }}.cloud-porsche.com
       http:
