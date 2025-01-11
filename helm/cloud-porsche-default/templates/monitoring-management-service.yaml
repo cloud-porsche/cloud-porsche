@@ -8,6 +8,6 @@ spec:
     - name: {{ .Values.monitoringManagement.port | quote }}
       port: {{ .Values.monitoringManagement.port }}
       targetPort: {{ .Values.monitoringManagement.port }}
-  type: NodePort
+  type: LoadBalancer
   selector:
     name: monitoring-management

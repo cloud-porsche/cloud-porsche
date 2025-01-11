@@ -8,6 +8,6 @@ spec:
     - name: {{ .Values.parkingManagement.port | quote }}
       port: {{ .Values.parkingManagement.port }}
       targetPort: {{ .Values.parkingManagement.port }}
-  type: NodePort
+  type: LoadBalancer
   selector:
     name: parking-management

@@ -1,3 +1,4 @@
+{{- if .Values.cert }}
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
@@ -5,4 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace}}
 spec:
   domains:
-    - {{ .Values.tenantId }}.cloud-porsche.com
+    - property-management.{{ .Values.tenantId }}.cloud-porsche.com
+    - parking-management.{{ .Values.tenantId }}.cloud-porsche.com
+    - monitoring-management.{{ .Values.tenantId }}.cloud-porsche.com
+{{- end }}
