@@ -53,8 +53,6 @@ export class ParkingPropertiesController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN)
-  @UseGuards(RolesGuard)
   update(
     @Headers('tenant-id') tenantId: string,
     @Param('id') id: string,

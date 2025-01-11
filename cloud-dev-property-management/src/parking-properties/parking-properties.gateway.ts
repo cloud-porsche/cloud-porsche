@@ -67,7 +67,11 @@ export class ParkingPropertiesGateway {
     let tenantId = client.handshake.headers['tenant-id'];
 
     if(client.handshake.headers['origin'].includes('localhost')) {
-      this.client_tenantIds.set(client.id, 'localhost');
+      if (!client.handshake.headers['tenant-id']) {
+        this.client_tenantIds.set(client.id, 'localhost');
+      } else {
+        this.client_tenantIds.set(client.id, tenantId);
+      }
       return;
     }
 

@@ -221,7 +221,26 @@
               </v-row>
               <v-row>
                 <v-col class="d-flex justify-center">
+                  <ProTier v-if="newLayers.length > 0">
+                    <v-btn
+                      prepend-icon="mdi-plus"
+                      @click="
+                        newLayers.push({
+                          floor: newLayers.length + 1,
+                          name: '',
+                          description: '',
+                          spotCount: 100,
+                          columns: 25,
+                          idPattern: '${layer}-${index}',
+                          parkingSpots: [],
+                        })
+                      "
+                    >
+                      Add Layer
+                    </v-btn>
+                  </ProTier>
                   <v-btn
+                    v-else
                     prepend-icon="mdi-plus"
                     @click="
                       newLayers.push({
@@ -234,7 +253,8 @@
                         parkingSpots: [],
                       })
                     "
-                    >Add Layer
+                  >
+                    Add Layer
                   </v-btn>
                 </v-col>
               </v-row>
@@ -268,44 +288,46 @@
                   ></v-text-field>
                 </v-col>
               </v-row>
-              <v-row>
-                <v-col>
-                  <v-divider></v-divider>
-                  <small
-                    class="pa-2 d-flex justify-center align-center text-grey text-center"
-                    >Left click a spot to replace it with a placeholder.<br />
-                    Right click to mark it as electric charger.</small
-                  ></v-col
-                >
-              </v-row>
-              <v-row>
-                <v-col>
-                  <div
-                    id="spot-container"
-                    :style="{
-                      gridTemplateColumns: `repeat(${layer.columns}, 1fr)`,
-                    }"
-                  >
-                    <Suspense>
-                      <ParkingSpotComponent
-                        v-for="spot in layer.parkingSpots"
-                        :key="spot.id"
-                        :spot="spot"
-                        disable-dialog
-                        @click="togglePlaceholder(layer, spot)"
-                        @contextmenu.prevent="
-                          spot.electricCharging = !spot.electricCharging
-                        "
-                      ></ParkingSpotComponent>
-                      <template v-slot:fallback>
-                        <v-progress-circular
-                          indeterminate
-                        ></v-progress-circular>
-                      </template>
-                    </Suspense>
-                  </div>
-                </v-col>
-              </v-row>
+              <ProTier>
+                <v-row>
+                  <v-col>
+                    <v-divider></v-divider>
+                      <small
+                        class="pa-2 d-flex justify-center align-center text-grey text-center"
+                        >Left click a spot to replace it with a placeholder.<br />
+                        Right click to mark it as electric charger.
+                      </small>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <div
+                      id="spot-container"
+                      :style="{
+                        gridTemplateColumns: `repeat(${layer.columns}, 1fr)`,
+                      }"
+                    >
+                      <Suspense>
+                        <ParkingSpotComponent
+                          v-for="spot in layer.parkingSpots"
+                          :key="spot.id"
+                          :spot="spot"
+                          disable-dialog
+                          @click="togglePlaceholder(layer, spot)"
+                          @contextmenu.prevent="
+                            spot.electricCharging = !spot.electricCharging
+                          "
+                        ></ParkingSpotComponent>
+                        <template v-slot:fallback>
+                          <v-progress-circular
+                            indeterminate
+                          ></v-progress-circular>
+                        </template>
+                      </Suspense>
+                    </div>
+                  </v-col>
+                </v-row>
+              </ProTier>
             </v-form>
           </v-stepper-window-item>
           <v-stepper-window-item :value="stepperPages.length">

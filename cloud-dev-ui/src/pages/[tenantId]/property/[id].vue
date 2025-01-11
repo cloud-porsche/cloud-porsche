@@ -41,7 +41,7 @@
       <v-divider vertical inset></v-divider>
       <v-spacer></v-spacer>
       <v-btn
-        :disabled="!useAppStore().wsStatus || useAppStore().currUser.role !== 'ADMIN'"
+        :disabled="!useAppStore().wsStatus || useAppStore().currUser.role !== 'admin'"
         density="comfortable"
         :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
         text="Simulation"
