@@ -4,10 +4,10 @@ metadata:
   name: cloud-porsche-ingress
   namespace: {{ .Release.Namespace}}
   annotations:
-    networking.gke.io/managed-certificates: property-management-cert, parking-management-cert, monitoring-management-cert
-    kubernetes.io/ingress.class: "gce"
+    networking.gke.io/managed-certificates: property-management-cert,parking-management-cert,monitoring-management-cert
+    kubernetes.io/ingress.class: gce
 spec:
-  ingressClassName: "gce"
+  ingressClassName: gce
   defaultBackend:
     service:
       name: property-management
