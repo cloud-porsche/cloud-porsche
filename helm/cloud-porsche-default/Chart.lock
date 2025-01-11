@@ -1,6 +1,6 @@
 dependencies:
-- name: ingress-nginx
-  repository: https://kubernetes.github.io/ingress-nginx
-  version: 4.11.3
-digest: sha256:0963a4470e5fe0ce97023b16cfc9c3cde18b74707c6379947542e09afa6d5346
-generated: "2024-12-14T19:32:06.4878582+01:00"
+- name: gce-ingress
+  repository: https://cloudnativeapp.github.io/charts/curated/
+  version: 1.1.2
+digest: sha256:a2edc6a5e63591501c99a603cdf0dd2b716e0b0a4f803e9c59c5133d1b9416f3
+generated: "2025-01-11T17:37:35.4615747+01:00"
