@@ -46,9 +46,15 @@
             >
               <div class="d-flex justify-space-between pb-10">
                 <h2>User Management</h2>
-                <v-btn color="primary" @click="openAddUserDialog">
-                  Add User
-                </v-btn>
+                <div class="d-flex justify-end">
+                  <v-btn color="primary" @click="fetchUsers">
+                    Refresh
+                  </v-btn>
+                  <v-spacer class="pl-5"></v-spacer>
+                  <v-btn color="primary" @click="openAddUserDialog">
+                    Add User
+                  </v-btn>
+                </div>
               </div>
               <v-data-table
               class="data-table rounded"
