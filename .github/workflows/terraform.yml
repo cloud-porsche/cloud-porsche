@@ -72,13 +72,14 @@ jobs:
         run: terraform init -input=false
       - name: Terraform apply
         working-directory: ./tf
-        run: terraform apply \
-          -input=false \
-          -compact-warnings \
-          -auto-approve \
-          -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
-          -var image_tag=${{ env.IMAGE_TAG }} \
-          -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          terraform apply \
+            -input=false \ 
+            -compact-warnings \
+            -auto-approve \
+            -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+            -var image_tag=${{ env.IMAGE_TAG }} \
+            -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   tf-destroy:
     if: inputs.run_type == 'destroy'
@@ -111,12 +112,13 @@ jobs:
         run: terraform init -input=false
       - name: Terraform destroy
         working-directory: ./tf
-        run: terraform destroy \
-          -input=false \
-          -compact-warnings \
-          -auto-approve \
-          -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
-          -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          terraform destroy \
+            -input=false \
+            -compact-warnings \
+            -auto-approve \
+            -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+            -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   tf-tenant-create:
     if: inputs.run_type == 'tenant-create'
