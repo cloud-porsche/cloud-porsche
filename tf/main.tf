@@ -14,12 +14,20 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.35"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4"
+    }
   }
 
   backend "gcs" {
     bucket = "cloud-porsche-terraform"
     prefix = "terraform"
   }
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }
 
 provider "google" {

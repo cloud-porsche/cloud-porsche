@@ -72,7 +72,13 @@ jobs:
         run: terraform init -input=false
       - name: Terraform apply
         working-directory: ./tf
-        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ env.IMAGE_TAG }}
+        run: terraform apply \
+          -input=false \
+          -compact-warnings \
+          -auto-approve \
+          -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+          -var image_tag=${{ env.IMAGE_TAG }} \
+          -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   tf-destroy:
     if: inputs.run_type == 'destroy'
@@ -105,7 +111,12 @@ jobs:
         run: terraform init -input=false
       - name: Terraform destroy
         working-directory: ./tf
-        run: terraform destroy -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+        run: terraform destroy \
+          -input=false \
+          -compact-warnings \
+          -auto-approve \
+          -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+          -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   tf-tenant-create:
     if: inputs.run_type == 'tenant-create'
@@ -169,7 +180,8 @@ jobs:
               -compact-warnings \
               -auto-approve \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
-              -var image_tag=${{ env.IMAGE_TAG }}
+              -var image_tag=${{ env.IMAGE_TAG }} \
+              -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Delete on Terraform fail
         if: failure()
         working-directory: ./tf
@@ -181,7 +193,8 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Commit and push changes (enterprise)
         if: inputs.tenant_type == 'enterprise'
         run: |
@@ -243,7 +256,8 @@ jobs:
               -input=false \
               -compact-warnings \
               -detailed-exitcode \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Terraform destroy tenant
         working-directory: ./tf
         if: ${{ steps.plan.outputs.exit_code }} == 2
@@ -255,7 +269,8 @@ jobs:
               -input=false \
               -compact-warnings \
               -auto-approve \
-              -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Delete tenant files
         if: ${{ steps.plan.outputs.exit_code }} == 2
         run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml

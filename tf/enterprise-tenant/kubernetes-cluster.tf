@@ -1,23 +1,9 @@
-resource "google_dns_record_set" "tenant_domain" {
-  name = "${var.tenant_id}.cloud-porsche.com."
-  type = "A"
-  ttl  = 300
-
-  managed_zone = "cloud-porsche-com"
-
-  rrdatas = [data.kubernetes_service.ingress.status[0].load_balancer[0].ingress[0].ip]
-}
-
-
-resource "google_dns_record_set" "tenant_sub_domains" {
-  for_each = toset(["property-management", "parking-management", "monitoring-management"])
-  name = "${each.value}.${var.tenant_id}.cloud-porsche.com."
-  type = "A"
-  ttl  = 300
-
-  managed_zone = "cloud-porsche-com"
-
-  rrdatas = [data.kubernetes_service.ingress.status[0].load_balancer[0].ingress[0].ip]
+resource "cloudflare_record" "tenant_ingress" {
+  zone_id = "c087a43517ba91fb09df4beffb7948d7"
+  name    = "${var.tenant_id}.ostabo.com"
+  type    = "A"
+  content = data.kubernetes_service.ingress.status.0.load_balancer.0.ingress.0.ip
+  proxied = true
 }
 
 ### Cluster Configuration
