@@ -8,6 +8,6 @@ spec:
     - name: {{ .Values.propertyManagement.port | quote }}
       port: {{ .Values.propertyManagement.port }}
       targetPort: {{ .Values.propertyManagement.port }}
-  type: LoadBalancer
+  type: NodePort
   selector:
     name: property-management
