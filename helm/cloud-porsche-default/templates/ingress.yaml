@@ -13,33 +13,26 @@ spec:
       port:
         number: {{ .Values.propertyManagement.port }}
   rules:
-    - host: property-management.{{ .Values.tenantId }}.cloud-porsche.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: property-management
-                port:
-                  number: {{ .Values.propertyManagement.port }}
-    - host: parking-management.{{ .Values.tenantId }}.cloud-porsche.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: parking-management
-                port:
-                  number: {{ .Values.parkingManagement.port }}
-    - host: monitoring-management.{{ .Values.tenantId }}.cloud-porsche.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: monitoring-management
-                port:
-                  number: {{ .Values.monitoringManagement.port }}
+    http:
+      paths:
+        - path: /property-management
+          pathType: Prefix
+          backend:
+            service:
+              name: property-management
+              port:
+                number: {{ .Values.propertyManagement.port }}
+        - path: /parking-management
+          pathType: Prefix
+          backend:
+            service:
+              name: parking-management
+              port:
+                number: {{ .Values.parkingManagement.port }}
+        - path: /monitoring-management
+          pathType: Prefix
+          backend:
+            service:
+              name: monitoring-management
+              port:
+                number: {{ .Values.monitoringManagement.port }}

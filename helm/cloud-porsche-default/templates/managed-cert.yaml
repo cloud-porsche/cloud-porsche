@@ -5,6 +5,4 @@ metadata:
   namespace: {{ .Release.Namespace}}
 spec:
   domains:
-    - property-management.{{ .Values.tenantId }}.cloud-porsche.com
-    - parking-management.{{ .Values.tenantId }}.cloud-porsche.com
-    - monitoring-management.{{ .Values.tenantId }}.cloud-porsche.com
+    - {{ .Values.tenantId }}.cloud-porsche.com

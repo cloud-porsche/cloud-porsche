@@ -1,6 +1,5 @@
 resource "google_dns_record_set" "tenant_domain" {
-  for_each = toset(["property-management", "parking-management", "monitoring-management"])
-  name = "${each.value}.${var.tenant_id}.cloud-porsche.com."
+  name = "${var.tenant_id}.cloud-porsche.com."
   type = "A"
   ttl  = 300
 
