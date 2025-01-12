@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cloud-porsche-com
+  namespace: {{ .Release.Namespace}}
+spec:
+  secretName: cloud-porsche-com-tls
+  issuerRef:
+    # The issuer created previously
+    name: cert-issuer
+  dnsNames:
+    - {{ .Values.tenantId }}.cloud-porsche.com
