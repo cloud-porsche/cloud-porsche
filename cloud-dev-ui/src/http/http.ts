@@ -95,7 +95,11 @@ function request<T extends BodyInit>(
   init: Omit<Init, "headers"> | undefined,
   method: Method,
   body?: T,
-  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" | "tenantManagement" = "propertyManagement", // Standard: Property Management
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "monitoringManagement"
+    | "tenantManagement" = "propertyManagement", // Standard: Property Management
 ) {
   // ADJUSTED PART
   // if input is not a full url, prepend the base url in env
@@ -114,7 +118,7 @@ function request<T extends BodyInit>(
     case "tenantManagement":
       api_url = useAppStore().api.tenantManagement;
   }
-  if(
+  if (
     typeof input === "string" &&
     api_url !== undefined &&
     api_url !== "undefined" &&
@@ -144,8 +148,14 @@ function request<T extends BodyInit>(
       method,
       body,
     });
-    if (useMonitoringStore().data.left_free_api_calls === 0 && api !== "monitoringManagement") {
-      throw new HttpError(req, new Response("No free API calls left", { status: 429 }));
+    if (
+      useMonitoringStore().data.left_free_api_calls === 0 &&
+      api !== "monitoringManagement"
+    ) {
+      throw new HttpError(
+        req,
+        new Response("No free API calls left", { status: 429 }),
+      );
     }
     const res = await fetch(req);
 
@@ -178,7 +188,11 @@ function getJSONHeaders(init?: Init) {
 export function get(
   input: RequestInfo | URL,
   init?: Init,
-  api: "propertyManagement" | "parkingManagement" | "monitoringManagement" | "tenantManagement" = "propertyManagement",
+  api:
+    | "propertyManagement"
+    | "parkingManagement"
+    | "monitoringManagement"
+    | "tenantManagement" = "propertyManagement",
 ) {
   return request(input, getHeaders(init), init, "GET", undefined, api);
 }
