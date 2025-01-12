@@ -3,12 +3,10 @@ kind: Certificate
 metadata:
   name: cloud-porsche-com
   namespace: {{ .Release.Namespace}}
-  annotations:
-    helm.sh/hook: post-install,post-upgrade
 spec:
   secretName: cloud-porsche-com-tls
   issuerRef:
     name: cert-issuer
-    kind: ClusterIssuer
+    kind: Issuer
   dnsNames:
     - {{ .Values.tenantId }}.cloud-porsche.com
