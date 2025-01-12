@@ -9,14 +9,6 @@ spec:
   secretName: cloud-porsche-com-tls
   issuerRef:
     name: cert-issuer
+    kind: ClusterIssuer
   dnsNames:
     - {{ .Values.tenantId }}.cloud-porsche.com
-  acme:
-    config:
-      - dns01:
-          provider: dns
-        domains:
-          - {{ .Values.tenantId }}.cloud-porsche.com
-    issuerRef:
-      name: cert-issuer
-      kind: ClusterIssuer
