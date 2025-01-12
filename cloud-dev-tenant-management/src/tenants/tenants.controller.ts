@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
 import { Tenant } from './dto/tenant.dto';
@@ -61,7 +69,10 @@ export class TenantsController {
   })
   @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
-  getTenantUser(@Param('tenantId') tenantId: string, @Param('uid') uid: string): Promise<any> {
+  getTenantUser(
+    @Param('tenantId') tenantId: string,
+    @Param('uid') uid: string,
+  ): Promise<any> {
     return this.tenantsService.getTenantUsers(tenantId, uid);
   }
 

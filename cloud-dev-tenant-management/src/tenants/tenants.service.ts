@@ -52,7 +52,12 @@ export class TenantsService {
         },
       })
       .then(async (newTenant) => {
-        await this.createUserForTenant(newTenant.tenantId, tenant.email, tenant.password, 'admin');
+        await this.createUserForTenant(
+          newTenant.tenantId,
+          tenant.email,
+          tenant.password,
+          'admin',
+        );
         // const ghResponse = await this.octokit.request(
         //   `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
         //   {
@@ -76,11 +81,11 @@ export class TenantsService {
         //     'GET ' + ghResponse.url.replace('/dispatches', ''),
         //   ),
         // };
-      })
-      // .catch((error) => {
-      //   this.logger.error(error);
-      //   return error;
-      // });
+      });
+    // .catch((error) => {
+    //   this.logger.error(error);
+    //   return error;
+    // });
   }
 
   async deleteTenant(tenantId: string) {
@@ -128,8 +133,12 @@ export class TenantsService {
       });
   }
 
-
-  async createUserForTenant(tenantId: string, email: string, password: string, role: string) {
+  async createUserForTenant(
+    tenantId: string,
+    email: string,
+    password: string,
+    role: string,
+  ) {
     try {
       const a = getAuth();
       a.tenantId = tenantId;
@@ -138,7 +147,7 @@ export class TenantsService {
         email,
         password,
       );
-      const auth = admin.auth().tenantManager().authForTenant(tenantId);        
+      const auth = admin.auth().tenantManager().authForTenant(tenantId);
       await auth.setCustomUserClaims(userCredentials.user.uid, { role: role });
       await sendEmailVerification(userCredentials.user);
       return userCredentials.user;
@@ -152,7 +161,9 @@ export class TenantsService {
     return tenantAuth
       .listUsers()
       .then((result) => {
-        return result.users.filter((user) => {if (user.uid != uid) return user.toJSON()});
+        return result.users.filter((user) => {
+          if (user.uid != uid) return user.toJSON();
+        });
       })
       .catch((error) => {
         return error;
@@ -175,6 +186,6 @@ export class TenantsService {
 
   async setUserRole(tenantId: string, uid: string, role: string) {
     const tenantAuth = admin.auth().tenantManager().authForTenant(tenantId);
-    return tenantAuth.setCustomUserClaims(uid, { role: role});
+    return tenantAuth.setCustomUserClaims(uid, { role: role });
   }
 }
