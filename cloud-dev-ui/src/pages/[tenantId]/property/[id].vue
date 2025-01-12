@@ -127,7 +127,10 @@
             >{{ property.name }}
             <v-spacer></v-spacer>
             <v-divider vertical inset class="ma-4"></v-divider>
-            <ProTier class="d-flex align-center" v-model="isometric">
+            <ProTier
+              class="d-flex align-center flex-grow-1"
+              v-model="isometric"
+            >
               <v-switch
                 label="Isometric"
                 flat
