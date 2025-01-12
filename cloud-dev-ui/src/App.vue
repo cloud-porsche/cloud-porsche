@@ -172,7 +172,6 @@ const tenantId = computed(() => {
   return determineCurrentTenantId();
 });
 
-console.log(auth);
 auth?.onAuthStateChanged(async (user) => {
   await router.isReady();
   await determineCurrentTenantId();

@@ -21,7 +21,7 @@
 
     <!-- Dashboard Container -->
     <v-responsive>
-        <div id="dashboard_container"></div>
+      <div id="dashboard_container"></div>
     </v-responsive>
   </div>
 </template>
@@ -56,7 +56,12 @@ const selectedFilter = ref(monitoringStore.timeframe);
 const error = ref(false);
 
 // Create Custom HTML for Cards
-function createCardHTML(title: string, value: number, percentChange: number, showChange = true) {
+function createCardHTML(
+  title: string,
+  value: number,
+  percentChange: number,
+  showChange = true,
+) {
   let color = percentChange >= 0 ? "green" : "red";
   if (!showChange) {
     color = "transparent";
@@ -83,7 +88,6 @@ function createCardHTML(title: string, value: number, percentChange: number, sho
     </div>
   `;
 }
-
 
 // Initialize Dashboard
 async function initDashBoard() {
@@ -178,8 +182,8 @@ async function initDashBoard() {
         type: "HTML",
         renderTo: "card-free-api-calls",
         html: createCardHTML(
-          "Free API Calls this month", 
-          monitoringStore.data.left_free_api_calls, 
+          "Free API Calls this month",
+          monitoringStore.data.left_free_api_calls,
           0,
           false,
         ),
@@ -190,10 +194,17 @@ async function initDashBoard() {
         chartOptions: {
           chart: { type: "line" },
           title: { text: "Customer Trends" },
-          xAxis: { categories: Object.keys(monitoringStore.data.customers), title: { text: "Timeframe" } },
+          xAxis: {
+            categories: Object.keys(monitoringStore.data.customers),
+            title: { text: "Timeframe" },
+          },
           yAxis: { title: { text: "Number of Customers" } },
           series: [
-            { type: "line", name: "Customers", data: Object.values(monitoringStore.data.customers)},
+            {
+              type: "line",
+              name: "Customers",
+              data: Object.values(monitoringStore.data.customers),
+            },
           ],
         },
       },
@@ -212,10 +223,16 @@ async function initDashBoard() {
             {
               type: "pie",
               name: "Customers",
-              data: Object.keys(monitoringStore.data.customer_distribution).map((label, index) => ({
-                name: label,
-                y: Number(Object.values(monitoringStore.data.customer_distribution)[index]),
-              })),
+              data: Object.keys(monitoringStore.data.customer_distribution).map(
+                (label, index) => ({
+                  name: label,
+                  y: Number(
+                    Object.values(monitoringStore.data.customer_distribution)[
+                      index
+                    ],
+                  ),
+                }),
+              ),
             },
           ],
         },
@@ -228,7 +245,7 @@ async function initDashBoard() {
           title: { text: "Average Daily Utilization" },
           xAxis: {
             categories:
-              (Object.keys(monitoringStore.data.avg_utilization).length > 0)
+              Object.keys(monitoringStore.data.avg_utilization).length > 0
                 ? Object.keys(
                     monitoringStore.data.avg_utilization[
                       Object.keys(monitoringStore.data.avg_utilization)[0]
@@ -238,11 +255,13 @@ async function initDashBoard() {
             title: { text: "Date" },
           },
           yAxis: { title: { text: "Utilization in %" } },
-          series: Object.keys(monitoringStore.data.avg_utilization).map((key) => ({
-            type: "line",
-            name: key,
-            data: Object.values(monitoringStore.data.avg_utilization[key]),
-          })),
+          series: Object.keys(monitoringStore.data.avg_utilization).map(
+            (key) => ({
+              type: "line",
+              name: key,
+              data: Object.values(monitoringStore.data.avg_utilization[key]),
+            }),
+          ),
         },
       },
       {
@@ -278,14 +297,16 @@ async function initDashBoard() {
               stacking: "normal", // Enable stacking
             },
           },
-          series: Object.values(DefectState).filter(value => typeof value === 'number').map((key) => ({
-            type: "column",
-            name: DefectState[key],
-            data: Object.keys(monitoringStore.data.defect_distribution).map(
-              (property) =>
-                monitoringStore.data.defect_distribution[property][key],
-            ),
-          })),
+          series: Object.values(DefectState)
+            .filter((value) => typeof value === "number")
+            .map((key) => ({
+              type: "column",
+              name: DefectState[key],
+              data: Object.keys(monitoringStore.data.defect_distribution).map(
+                (property) =>
+                  monitoringStore.data.defect_distribution[property][key],
+              ),
+            })),
         },
       },
     ],
@@ -308,12 +329,11 @@ onMounted(async () => {
         try {
           await initDashBoard();
         } catch (e) {
-          console.log(e);
+          console.error(e);
         }
       }
     },
   );
-
 
   watch(isDark, (newVal) => {
     document.getElementById("dashboard_container")!.className = `highcharts-${

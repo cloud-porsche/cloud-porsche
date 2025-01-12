@@ -164,7 +164,7 @@
                 <v-btn color="blue" @click="deleteUserDialog = false">
                   Cancel
                 </v-btn>
-                <v-btn color="red" @click="handleDeleteUser"> Delete </v-btn>
+                <v-btn color="red" @click="handleDeleteUser">Delete</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>

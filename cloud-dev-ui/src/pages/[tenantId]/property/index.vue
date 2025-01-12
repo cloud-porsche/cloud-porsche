@@ -524,7 +524,7 @@ const mobile = useDisplay().mobile;
 const propertyStore = usePropertyStore();
 const monitoringStore = useMonitoringStore();
 const appStore = useAppStore();
-console.log(appStore.currUser.role);
+
 await monitoringStore.fetchMonitoringData();
 const { parkingSpots } = storeToRefs(propertyStore);
 const required = (v: string | undefined) => !!v || "This field is required.";

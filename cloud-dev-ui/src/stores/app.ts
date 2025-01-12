@@ -89,13 +89,13 @@ export const useAppStore = defineStore("app", {
     setTenantInfo(info: ITenant) {
       if (import.meta.env.PROD) {
         this.changePropertyManagementApiURL(
-          `http://${info.ip}/property-management`,
+          `https://${info.ip}/property-management`,
         );
         this.changeParkingManagementApiURL(
-          `http://${info.ip}/parking-management`,
+          `https://${info.ip}/parking-management`,
         );
         this.changeMonitoringManagementApiURL(
-          `http://${info.ip}/monitoring-management`,
+          `https://${info.ip}/monitoring-management`,
         );
       }
       this.tenant.info = info;

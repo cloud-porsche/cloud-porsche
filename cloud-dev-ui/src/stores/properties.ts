@@ -98,13 +98,11 @@ export const usePropertyStore = defineStore("properties", {
     ) {
       this.$state.loading = true;
       try {
-        await patchJSON(`/v1/parking-properties/${propertyId}`, property
-        );
+        await patchJSON(`/v1/parking-properties/${propertyId}`, property);
       } catch (error) {
         this.$state.loading = false;
         this.$state.error = error;
-      }
-      finally {
+      } finally {
         this.$state.loading = false;
         this.$state.error = null;
         await this.fetchProperty(propertyId);
