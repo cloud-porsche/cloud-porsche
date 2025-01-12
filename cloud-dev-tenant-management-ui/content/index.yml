@@ -50,6 +50,7 @@ pricing:
       features:
         - 1 User
         - 1 Parking Property
+        - Live Parking Monitoring
         - Shared Compute
         - Management Overview
         - Community Support
@@ -64,9 +65,12 @@ pricing:
         to: 'sign-up?plan=pro'
       features:
         - Free Tier
+        - Property Layer Customizations
         - Up to 5 Parking Properties
+        - Isometric 3D Property View
         - Analytical Dashboard
-        - Unlimited Users
+        - User Management
+        - Role Based Permissions
         - Income Reporting
         - Priority Support
     - title: Enterprise
@@ -80,9 +84,7 @@ pricing:
       features:
         - Pro Tier
         - High Data Separation
-        - User Management
         - Custom Branding
-        - Role Based Permissions
         - 24/7 Live Support
 testimonials:
   headline: Testimonials
