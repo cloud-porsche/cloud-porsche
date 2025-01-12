@@ -93,7 +93,7 @@
                     <v-icon class="me-3" @click="openEditUserDialog(item)">
                       mdi-pencil
                     </v-icon>
-                    <v-icon color="red" @click="openDeleteUserDialog(item.uid)">
+                    <v-icon color="red" @click="openDeleteUserDialog(item)">
                       mdi-delete
                     </v-icon>
                   </div>
@@ -155,7 +155,9 @@
               </v-card-title>
 
               <v-card-text>
-                <p>Are you sure you want to delete this user?</p>
+                <p>
+                  Are you sure you want to delete the user {{ deleteUserMail }}?
+                </p>
               </v-card-text>
 
               <v-card-actions>
@@ -188,6 +190,7 @@ const newUserRole = ref("user");
 const oldUserRole = ref("");
 const editingUID = ref("");
 const deleteUserUid = ref("");
+const deleteUserMail = ref("");
 
 const userTableHeaders = [
   { title: "Email", key: "email" },
@@ -310,9 +313,14 @@ const openEditUserDialog = (user: {
   oldUserRole.value = user.role;
 };
 
-const openDeleteUserDialog = (uid: string) => {
+const openDeleteUserDialog = (user: {
+  uid: string;
+  email: string;
+  role: string;
+}) => {
   deleteUserDialog.value = true;
-  deleteUserUid.value = uid;
+  deleteUserUid.value = user.uid;
+  deleteUserMail.value = user.email;
 };
 
 const handleAddOrUpdateUser = async () => {
