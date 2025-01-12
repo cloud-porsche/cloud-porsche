@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.5.0
+version: 0.5.1
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -29,4 +29,9 @@ dependencies:
   - name: ingress-nginx
     version: ^4.11.3
     repository: https://kubernetes.github.io/ingress-nginx
+  - name: cert-manager
+    version: v1.16.2
+    repository: https://charts.jetstack.io
+    alias: cert-manager
+    condition: cert-manager.enabled
 
