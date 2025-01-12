@@ -13,3 +13,6 @@ spec:
       - dns01:
           cloudDNS:
             project: cloud-porsche
+            serviceAccountSecretRef:
+              name: google-application-credentials
+              key: credentials.json
