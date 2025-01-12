@@ -134,22 +134,14 @@
               </v-card-text>
 
               <v-card-actions>
-                <v-btn @click="dialog = false"> Cancel </v-btn>
+                <v-btn @click="dialog = false"> Cancel</v-btn>
                 <v-btn
                   color="primary"
                   :disabled="
                     (!!editingUID && oldUserRole === newUserRole) ||
                     (!editingUID && !/.+@.+\..+/.test(newUserEmail))
                   "
-                  @click="
-                    editingUID
-                      ? userStore.updateUserRole(
-                          tenantId,
-                          editingUID,
-                          newUserRole,
-                        )
-                      : userStore.addUser(tenantId, newUserEmail, newUserRole)
-                  "
+                  @click="handleAddOrUpdateUser"
                 >
                   {{ editingUID ? "Update" : "Add User" }}
                 </v-btn>
@@ -170,9 +162,7 @@
                 <v-btn color="blue" @click="deleteUserDialog = false">
                   Cancel
                 </v-btn>
-                <v-btn color="red" @click="userStore.deleteUser(tenantId)">
-                  Delete
-                </v-btn>
+                <v-btn color="red" @click="handleDeleteUser"> Delete </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -323,6 +313,34 @@ const openEditUserDialog = (user: {
 const openDeleteUserDialog = (uid: string) => {
   deleteUserDialog.value = true;
   deleteUserUid.value = uid;
+};
+
+const handleAddOrUpdateUser = async () => {
+  try {
+    if (editingUID.value) {
+      await userStore.updateUserRole(
+        tenantId,
+        editingUID.value,
+        newUserRole.value,
+      );
+    } else {
+      await userStore.addUser(tenantId, newUserEmail.value, newUserRole.value);
+    }
+  } catch (error) {
+    console.error("Error in adding or updating user:", error);
+  } finally {
+    dialog.value = false;
+  }
+};
+
+const handleDeleteUser = async () => {
+  try {
+    await userStore.deleteUser(tenantId, deleteUserUid.value);
+  } catch (error) {
+    console.error("Error deleting user:", error);
+  } finally {
+    deleteUserDialog.value = false;
+  }
 };
 
 watch(

@@ -43,11 +43,9 @@ export const useUserStore = defineStore("user", {
       }
     },
     async addUser(tenantId: string, email: string, role: string) {
-      console.log("addUsers", email, role);
       this.$state.error = null;
       try {
         const newUser = { email, role };
-        console.log("newUser", newUser);
         await postJSON(
           `/v1/tenants/${tenantId}/users`,
           newUser,
