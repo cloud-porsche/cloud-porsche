@@ -41,13 +41,21 @@
               </v-select>
             </v-list-item>
             <v-list-item
-              v-else-if="tab.title === 'User Management' && useAppStore().currUser.role === 'admin'"
+              v-else-if="
+                tab.title === 'User Management' &&
+                useAppStore().currUser.role === 'admin'
+              "
               class="pa-5"
             >
               <div class="d-flex justify-space-between pb-10">
                 <h2>User Management</h2>
                 <div class="d-flex justify-end">
-                  <v-btn color="primary" @click="fetchUsers">
+                  <v-btn
+                    color="primary"
+                    @click="
+                      userStore.fetchUsers(tenantId, appStore.currUser.uid)
+                    "
+                  >
                     Refresh
                   </v-btn>
                   <v-spacer class="pl-5"></v-spacer>
@@ -57,40 +65,40 @@
                 </div>
               </div>
               <v-data-table
-              class="data-table rounded"
-              density="comfortable"
-              :items="users"
-              :headers="userTableHeaders" 
-              :items-per-page-options="[
-                { value: 5, title: '5' },
-                { value: 10, title: '10' },
-                { value: 25, title: '25' },
-                { value: -1, title: 'All' },
-              ]"
-              item-value="email"
-              dense
-              outlined
-            >
-              <template #item.email="{ item }">
-                {{ item.email }}
-              </template>
-              <template #item.uid="{ item }">
-                {{ item.uid }}
-              </template>
-              <template #item.role="{ item }">
-                {{ item.role }}
-              </template>
-              <template #item.action="{ item }">
-                <div class="d-flex justify-end">
-                  <v-icon class="me-3" @click="openEditUserDialog(item)">
-                    mdi-pencil
-                  </v-icon>
-                  <v-icon color="red" @click="openDeleteUserDialog(item.uid)">
-                    mdi-delete
-                  </v-icon>
-                </div>
-              </template>
-            </v-data-table>
+                class="data-table rounded"
+                density="comfortable"
+                :items="userStore.users"
+                :headers="userTableHeaders"
+                :items-per-page-options="[
+                  { value: 5, title: '5' },
+                  { value: 10, title: '10' },
+                  { value: 25, title: '25' },
+                  { value: -1, title: 'All' },
+                ]"
+                item-value="email"
+                dense
+                outlined
+              >
+                <template #item.email="{ item }">
+                  {{ item.email }}
+                </template>
+                <template #item.uid="{ item }">
+                  {{ item.uid }}
+                </template>
+                <template #item.role="{ item }">
+                  {{ item.role }}
+                </template>
+                <template #item.action="{ item }">
+                  <div class="d-flex justify-end">
+                    <v-icon class="me-3" @click="openEditUserDialog(item)">
+                      mdi-pencil
+                    </v-icon>
+                    <v-icon color="red" @click="openDeleteUserDialog(item.uid)">
+                      mdi-delete
+                    </v-icon>
+                  </div>
+                </template>
+              </v-data-table>
             </v-list-item>
             <v-list-item v-else class="pa-5">
               <v-list-item-title>No settings available.</v-list-item-title>
@@ -103,8 +111,8 @@
                   {{ editingUID ? "Edit User Role" : "Add New User" }}
                 </span>
               </v-card-title>
-          
-                <v-card-text>
+
+              <v-card-text>
                 <v-text-field
                   v-if="!editingUID"
                   v-model="newUserEmail"
@@ -112,7 +120,9 @@
                   outlined
                   required
                   editable="true"
-                  :rules="[v => /.+@.+\..+/.test(v) || 'E-mail must be valid']"
+                  :rules="[
+                    (v) => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+                  ]"
                 ></v-text-field>
                 <v-select
                   v-model="newUserRole"
@@ -121,21 +131,29 @@
                   outlined
                   required
                 ></v-select>
-                </v-card-text>
-              
-                <v-card-actions>
+              </v-card-text>
+
+              <v-card-actions>
                 <v-btn @click="dialog = false"> Cancel </v-btn>
                 <v-btn
                   color="primary"
                   :disabled="
-                  (!!editingUID && oldUserRole === newUserRole) ||
-                  (!editingUID && !/.+@.+\..+/.test(newUserEmail))
+                    (!!editingUID && oldUserRole === newUserRole) ||
+                    (!editingUID && !/.+@.+\..+/.test(newUserEmail))
                   "
-                  @click="editingUID ? updateUserRole() : addUser()"
+                  @click="
+                    editingUID
+                      ? userStore.updateUserRole(
+                          tenantId,
+                          editingUID,
+                          newUserRole,
+                        )
+                      : userStore.addUser(tenantId, newUserEmail, newUserRole)
+                  "
                 >
                   {{ editingUID ? "Update" : "Add User" }}
                 </v-btn>
-                </v-card-actions>
+              </v-card-actions>
             </v-card>
           </v-dialog>
           <v-dialog v-model="deleteUserDialog" max-width="500px">
@@ -143,17 +161,20 @@
               <v-card-title>
                 <span class="headline">Delete User</span>
               </v-card-title>
-          
+
               <v-card-text>
                 <p>Are you sure you want to delete this user?</p>
               </v-card-text>
-          
+
               <v-card-actions>
-                <v-btn color="blue" @click="deleteUserDialog = false"> Cancel </v-btn>
-                <v-btn color="red" @click="deleteUser()"> Delete </v-btn>
+                <v-btn color="blue" @click="deleteUserDialog = false">
+                  Cancel
+                </v-btn>
+                <v-btn color="red" @click="userStore.deleteUser(tenantId)">
+                  Delete
+                </v-btn>
               </v-card-actions>
             </v-card>
-
           </v-dialog>
         </v-responsive>
       </v-tabs-window-item>
@@ -163,13 +184,13 @@
 
 <script setup lang="ts">
 import { useAppStore } from "@/stores/app";
+import { useUserStore } from "@/stores/user";
 import { MaterialVersion } from "@/plugins/vuetify";
-import { del, get, postJSON } from "@/http/http";
 import router from "@/router";
 
 const appStore = useAppStore();
+const userStore = useUserStore();
 const tenantId = (router.currentRoute.value.params as any)["tenantId"];
-const users = ref<Array<{ email: string; uid: string; role: string }>>([]);
 const dialog = ref(false);
 const deleteUserDialog = ref(false);
 const newUserEmail = ref("");
@@ -180,9 +201,9 @@ const deleteUserUid = ref("");
 
 const userTableHeaders = [
   { title: "Email", key: "email" },
-  { title: "UID", key: "uid"},
+  { title: "UID", key: "uid" },
   { title: "Current Role", key: "role" },
-  { title: "Actions", key: "action", sortable: false, maxWidth: "100px", },
+  { title: "Actions", key: "action", sortable: false, maxWidth: "100px" },
 ];
 const tabs = computed(() => [
   {
@@ -287,30 +308,11 @@ const tabs = computed(() => [
 ]);
 const activeTab = ref(tabs.value[0]);
 
-const fetchUsers = async () => {
-  try {
-    const response = await get(
-      `/v1/tenants/${tenantId}/users/${useAppStore().currUser.uid}`,
-      undefined,
-      "tenantManagement"
-    );
-    const fetchedUsers = await response.json();
-
-    if (Array.isArray(fetchedUsers)) {
-      users.value = fetchedUsers.map((user) => ({
-        email: user.email,
-        uid: user.uid,
-        role: user.customClaims?.role,
-      }));
-    } else {
-      console.error("Fetched users data is not an array.");
-    }
-  } catch (error) {
-    console.error("Error fetching users:", error);
-  }
-};
-
-const openEditUserDialog = (user: { uid: string; email: string; role: string }) => {
+const openEditUserDialog = (user: {
+  uid: string;
+  email: string;
+  role: string;
+}) => {
   dialog.value = true;
   editingUID.value = user.uid;
   newUserEmail.value = user.email;
@@ -323,79 +325,14 @@ const openDeleteUserDialog = (uid: string) => {
   deleteUserUid.value = uid;
 };
 
-const addUser = async () => {
-  if (!newUserEmail.value || !newUserRole.value) {
-    console.error("Email and Role are required.");
-    return;
-  }
-
-  try {
-    const newUser = {
-      email: newUserEmail.value,
-      role: newUserRole.value,
-    };
-
-    await postJSON(
-      `/v1/tenants/${tenantId}/users`,
-      newUser,
-      undefined,
-      "tenantManagement"
-    );
-
-    await fetchUsers();
-  } catch (error) {
-    console.error("Error adding user:", error);
-  }
-  dialog.value = false;
-};
-
-const updateUserRole = async () => {
-  if (!editingUID.value || !newUserRole.value) {
-    console.error("UID and Role are required.");
-    return;
-  }
-
-  try {
-    const updatedUser = {
-      uid: editingUID.value,
-      role: newUserRole.value,
-    };
-
-    await postJSON(
-      `/v1/tenants/${tenantId}/users/setRole`,
-      updatedUser,
-      undefined,
-      "tenantManagement"
-    );
-
-    dialog.value = false;
-    await fetchUsers();
-  } catch (error) {
-    console.error("Error updating user role:", error);
-  }
-};
-
-const deleteUser = async () => {
-  const uid = deleteUserUid.value;
-
-  try {
-    await del(
-      `/v1/tenants/${tenantId}/users/${uid}`,
-      undefined,
-      "tenantManagement"
-    );
-    await fetchUsers();
-  } catch (error) {
-    console.error("Error deleting user:", error);
-  }
-  deleteUserDialog.value = false;
-};
-
-watch(() => useAppStore().authLoading, async (loading) => {
-  if (!loading && useAppStore().currUser.role === "admin") {
-    await fetchUsers();
-  }
-});
+watch(
+  () => useAppStore().authLoading,
+  async (loading) => {
+    if (!loading && useAppStore().currUser.role === "admin") {
+      await userStore.fetchUsers(tenantId, appStore.currUser.uid);
+    }
+  },
+);
 
 const openAddUserDialog = () => {
   newUserEmail.value = "";
