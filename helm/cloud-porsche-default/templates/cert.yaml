@@ -6,7 +6,15 @@ metadata:
 spec:
   secretName: cloud-porsche-com-tls
   issuerRef:
-    # The issuer created previously
     name: cert-issuer
   dnsNames:
     - {{ .Values.tenantId }}.cloud-porsche.com
+  acme:
+    config:
+      - dns01:
+          provider: dns
+        domains:
+          - {{ .Values.tenantId }}.cloud-porsche.com
+    issuerRef:
+      name: letsencrypt-issuer
+      kind: ClusterIssuer
