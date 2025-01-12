@@ -18,5 +18,5 @@ spec:
         domains:
           - {{ .Values.tenantId }}.cloud-porsche.com
     issuerRef:
-      name: letsencrypt-issuer
+      name: cert-issuer
       kind: ClusterIssuer
