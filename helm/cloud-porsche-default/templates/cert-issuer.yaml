@@ -3,6 +3,8 @@ kind: Issuer
 metadata:
   name: cert-issuer
   namespace: {{ .Release.Namespace}}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory

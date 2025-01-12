@@ -5,6 +5,10 @@
 cert-manager:
   enabled: true
 
+installCRDs: true
+crds:
+  enabled: true
+
 images:
   propertyManagement: cloud-porsche/property-management:latest
   parkingManagement: cloud-porsche/parking-management:latest
