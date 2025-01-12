@@ -172,6 +172,7 @@ const tenantId = computed(() => {
   return determineCurrentTenantId();
 });
 
+console.log(auth);
 auth?.onAuthStateChanged(async (user) => {
   await router.isReady();
   await determineCurrentTenantId();
@@ -179,19 +180,17 @@ auth?.onAuthStateChanged(async (user) => {
     const token = await useCurrentUser().value?.getIdToken(true)!;
     await fetchTenantInfo(tenantId.value);
     appStore.setCurrUid(user.uid);
-    await user.getIdTokenResult().then((idTokenResult) => {
-      if (idTokenResult.claims.role) {
-        appStore.setCurrUserRole(idTokenResult.claims.role as string);
-      } else {
-        appStore.setCurrUserRole("user");
-
-      }
-    });
-    initWs(token, tenantId.value);    
+    const idTokenResult = await user.getIdTokenResult();
+    if (idTokenResult.claims.role) {
+      appStore.setCurrUserRole(idTokenResult.claims.role as string);
+    } else {
+      appStore.setCurrUserRole("user");
+    }
+    initWs(token, tenantId.value);
     await propertyStore.fetchProperties();
     await monitoringStore.fetchMonitoringData();
-    appStore.setAuthLoading(false);
   }
+  appStore.setAuthLoading(false);
 });
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;

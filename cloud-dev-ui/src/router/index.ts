@@ -10,8 +10,7 @@ import { routes } from "vue-router/auto-routes";
 import { createWebHashHistory } from "vue-router";
 import { getCurrentUser } from "vuefire";
 import { verifiedIfPassword } from "@/plugins/verify-user";
-import { signOut } from "firebase/auth";
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -47,17 +46,21 @@ router.beforeEach(async (to, from) => {
       },
     };
   }
-  if (isLoggedIn && (from.params as any)["tenantId"] && tenantId !== (from.params as any)["tenantId"]) {
+  if (
+    isLoggedIn &&
+    (from.params as any)["tenantId"] &&
+    tenantId !== (from.params as any)["tenantId"]
+  ) {
     const auth = getAuth();
-    signOut(auth!)
-      // useAppStore().removeTenantId();
+    await signOut(auth!);
+    // useAppStore().removeTenantId();
     return {
       name: "/[tenantId]/",
       params: {
         tenantId: tenantId,
       },
-    }
-    }
+    };
+  }
 });
 
 // Workaround for https://github.com/vitejs/vite/issues/11804

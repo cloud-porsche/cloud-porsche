@@ -47,8 +47,8 @@ export const useAppStore = defineStore("app", {
       },
       currUser: {
         role: "",
-        uid: "", 
-      }
+        uid: "",
+      },
     };
   },
   getters: {

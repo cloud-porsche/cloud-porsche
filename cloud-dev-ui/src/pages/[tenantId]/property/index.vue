@@ -6,19 +6,22 @@
           >Property Management Page
           <v-spacer></v-spacer>
           <v-btn
-          class="ml-4"
-          :icon="'mdi-plus'"
-          v-tooltip="'Add new Property'"
-          @click="newPropertyDialog = true"
-          :disabled="appStore.currUser.role != 'admin'"
+            class="ml-4"
+            :icon="'mdi-plus'"
+            v-tooltip="'Add new Property'"
+            @click="newPropertyDialog = true"
+            :disabled="appStore.currUser.role != 'admin'"
           />
           <v-btn
-          class="ml-4"
-          :icon="'mdi-delete'"
-          color="error"
-          v-tooltip="'Delete'"
-          :disabled="propertyStore.properties.length <= 0 || appStore.currUser.role != 'admin'"
-          @click="deleteDialog = true"
+            class="ml-4"
+            :icon="'mdi-delete'"
+            color="error"
+            v-tooltip="'Delete'"
+            :disabled="
+              propertyStore.properties.length <= 0 ||
+              appStore.currUser.role != 'admin'
+            "
+            @click="deleteDialog = true"
           />
           <v-btn
             class="ml-4"
@@ -51,7 +54,7 @@
                 parkingSpots(property.id).filter(
                   (s) =>
                     s.state === ParkingSpotState.OCCUPIED ||
-                    s.state === ParkingSpotState.CHARGING
+                    s.state === ParkingSpotState.CHARGING,
                 ).length
               }}
               / {{ parkingSpots(property.id).length }}
@@ -292,11 +295,11 @@
                 <v-row>
                   <v-col>
                     <v-divider></v-divider>
-                      <small
-                        class="pa-2 d-flex justify-center align-center text-grey text-center"
-                        >Left click a spot to replace it with a placeholder.<br />
-                        Right click to mark it as electric charger.
-                      </small>
+                    <small
+                      class="pa-2 d-flex justify-center align-center text-grey text-center"
+                      >Left click a spot to replace it with a placeholder.<br />
+                      Right click to mark it as electric charger.
+                    </small>
                   </v-col>
                 </v-row>
                 <v-row>
@@ -424,7 +427,7 @@
                           {{
                             newLayers.reduce(
                               (acc, layer) => acc + layer.spotCount,
-                              0
+                              0,
                             )
                           }}
                           spots in total
@@ -507,7 +510,6 @@ import {
   ParkingSpot,
   ParkingSpotLayer,
   ParkingSpotState,
-  Role,
 } from "@cloud-porsche/types";
 import { useDisplay } from "vuetify";
 import { ref } from "vue";
@@ -600,7 +602,7 @@ function nextOrGenerate(next: () => void) {
               .replace("${index}", index.toString())
               .replace("${layer}", layer.floor.toString());
         return spot;
-      })
+      }),
     );
   }
   next();
@@ -623,7 +625,7 @@ function togglePlaceholder(layer: ParkingSpotLayer, spot: ParkingSpot) {
   spot.electricCharging = false;
   if (spot.placeholder) {
     layer.parkingSpots = layer.parkingSpots.filter(
-      (s) => s.placeholder || s.id !== spot.id
+      (s) => s.placeholder || s.id !== spot.id,
     );
     spot.placeholder = !spot.placeholder;
   } else {
@@ -646,7 +648,7 @@ async function saveNewProperty() {
     lastModified: new Date(),
     layers: newLayers,
     defects: [],
-    tenantId: ""
+    tenantId: "",
   };
 
   await propertyStore.addProperty(finalProperty);
@@ -665,7 +667,7 @@ function getStateColor(property: IParkingProperty) {
     return undefined;
   }
   const occupied = spots.filter(
-    (s) => s.state === ParkingSpotState.OCCUPIED
+    (s) => s.state === ParkingSpotState.OCCUPIED,
   ).length;
   if (occupied === spots.length) {
     return "tomato";
