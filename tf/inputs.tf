@@ -11,3 +11,10 @@ variable "image_tag" {
   default     = "latest"
   nullable    = false
 }
+
+variable "cloudflare_api_token" {
+  type        = string
+  description = "The Cloudflare API token"
+  sensitive   = true
+  nullable    = false
+}

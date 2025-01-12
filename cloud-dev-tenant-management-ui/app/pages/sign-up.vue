@@ -5,7 +5,7 @@ const toast = useToast();
 
 const router = useRouter();
 const initialPlan = computed(
-  () => router.currentRoute.value.query.plan || "free",
+  () => router.currentRoute.value.query.plan || "pro",
 );
 
 const state = reactive({

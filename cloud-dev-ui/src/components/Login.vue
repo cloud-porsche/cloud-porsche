@@ -24,7 +24,7 @@
         <v-btn @click="signIn" color="primary" width="100%">Confirm</v-btn>
       </v-form>
       <v-card-text class="w-100 text-center text-grey">
-        <span v-if="tenantId === 'free'"
+        <span v-if="tenantId === (isProd ? 'free-tier' : 'free')"
           >No Account yet? Register
           <a class="register-link text-accent" @click="openRegister"
             >here</a
@@ -38,9 +38,12 @@
           ></small
         >
       </v-card-text>
-      <v-divider class="ma-4" v-if="tenantId === 'free'"></v-divider>
+      <v-divider
+        class="ma-4"
+        v-if="tenantId === (isProd ? 'free-tier' : 'free')"
+      ></v-divider>
       <v-btn-group
-        v-if="tenantId === 'free'"
+        v-if="tenantId === (isProd ? 'free-tier' : 'free')"
         class="d-flex justify-center align-center"
         rounded
         variant="outlined"
@@ -111,6 +114,8 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { useAppStore } from "@/stores/app";
+
+const isProd = import.meta.env.PROD;
 
 const appStore = useAppStore();
 const isDark = computed(() => appStore.isDark);

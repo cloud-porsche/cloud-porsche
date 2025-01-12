@@ -134,7 +134,10 @@ function request<T extends BodyInit>(
     const token = await useCurrentUser().value?.getIdToken(true);
     const tenantId = (router.currentRoute.value.params as any)["tenantId"];
 
-    if (tenantId && tenantId !== "free") {
+    if (
+      tenantId &&
+      tenantId !== (import.meta.env.PROD ? "free-tier" : "free")
+    ) {
       headers.set(
         "tenant-id",
         tenantId.includes(":") ? tenantId.split(":")[1] : tenantId,

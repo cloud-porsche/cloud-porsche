@@ -1,8 +1,0 @@
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: managed-cert
-  namespace: {{ .Release.Namespace}}
-spec:
-  domains:
-    - {{ .Values.tenantId }}.cloud-porsche.com

@@ -7,10 +7,11 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/proxy-read-timeout: {{ .Values.ingress.proxyReadTimeout | quote }}
     nginx.ingress.kubernetes.io/proxy-send-timeout: {{ .Values.ingress.proxySendTimeout | quote }}
-    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
-    networking.gke.io/managed-certificates: managed-cert
-    kubernetes.io/ingress.class: "gce"
 spec:
+  tls:
+    - hosts:
+        - {{ .Values.tenantId }}.cloud-porsche.com.cloud-porsche.com
+      secretName: cloud-porsche-com-tls
   ingressClassName: nginx
   rules:
     - http:

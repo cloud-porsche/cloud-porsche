@@ -2,24 +2,20 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 6.12"
+      version = "~> 6.15"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.16"
+      version = "~> 2.17"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.4"
+      version = "~> 2.35"
     }
-  }
-}
-
-resource "google_dns_managed_zone" "cloud-porsche" {
-  name     = "cloud-porsche"
-  dns_name = "cloud-porsche.com."
-  dnssec_config {
-    state = "on"
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4"
+    }
   }
 }
 
@@ -52,6 +48,13 @@ resource "google_project_iam_member" "service_account_iam_storage" {
 resource "google_project_iam_member" "service_account_iam_pubsub" {
   project = "cloud-porsche"
   role    = "roles/pubsub.admin"
+  member  = "serviceAccount:${google_service_account.tenant_service_account.email}"
+  depends_on = [google_service_account.tenant_service_account]
+}
+
+resource "google_project_iam_member" "service_account_iam_dns" {
+  project = "cloud-porsche"
+  role    = "roles/dns.admin"
   member  = "serviceAccount:${google_service_account.tenant_service_account.email}"
   depends_on = [google_service_account.tenant_service_account]
 }

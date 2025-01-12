@@ -27,7 +27,7 @@ router.beforeEach(async (to, from) => {
     return {
       name: "/[tenantId]/",
       params: {
-        tenantId: "free",
+        tenantId: import.meta.env.PROD ? "free-tier" : "free",
       },
     };
   }
@@ -53,7 +53,6 @@ router.beforeEach(async (to, from) => {
   ) {
     const auth = getAuth();
     await signOut(auth!);
-    // useAppStore().removeTenantId();
     return {
       name: "/[tenantId]/",
       params: {
