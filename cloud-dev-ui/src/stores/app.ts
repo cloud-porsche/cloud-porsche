@@ -1,5 +1,5 @@
 // Utilities
-import { ITenant } from "@cloud-porsche/types";
+import { ITenant, TenantTier } from "@cloud-porsche/types";
 import { defineStore } from "pinia";
 import { Socket } from "socket.io-client";
 
@@ -60,6 +60,18 @@ export const useAppStore = defineStore("app", {
     },
     wsStatus(state) {
       return state.api.ws.connected;
+    },
+    hasAdminAccess(state) {
+      return (
+        state.tenant.info?.tier === TenantTier.FREE ||
+        state.currUser.role === "admin"
+      );
+    },
+    isUserRole(state) {
+      return (
+        state.tenant.info?.tier !== TenantTier.FREE &&
+        state.currUser.role === "user"
+      );
     },
   },
   actions: {

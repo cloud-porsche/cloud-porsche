@@ -7,18 +7,10 @@ import {
 } from 'fireorm';
 import { ParkingProperty } from './entities/parking-property.entity';
 import { CreateParkingPropertyDto } from './dto/create-parking-property.dto';
-
-export interface ParkingPropertySubscriber {
-  changedParkingProperty(
-    sender: ParkingPropertiesService,
-    parkingProperty: ParkingProperty[],
-  ): Promise<void>;
-}
+import { UpdateParkingSpotDto } from './dto/update-parking-spot.dto';
 
 @Injectable()
 export class ParkingPropertiesService {
-  private listeners = [];
-
   parkingPropertyRepository: BaseFirestoreRepository<ParkingProperty>;
 
   constructor(repositoryClass: EntityConstructorOrPath<ParkingProperty>) {
@@ -30,8 +22,7 @@ export class ParkingPropertiesService {
       ...createDefectDto,
       tenantId: tenantId,
     });
-    const res = await this.parkingPropertyRepository.create(newProperty);
-    return res;
+    return await this.parkingPropertyRepository.create(newProperty);
   }
 
   async findAll(tenantId: string) {
@@ -48,7 +39,7 @@ export class ParkingPropertiesService {
   }
 
   async update(
-    tenantId: string,
+    _: string,
     id: string,
     updateParkingPropertyDto: UpdateParkingPropertyDto,
   ) {
@@ -57,14 +48,37 @@ export class ParkingPropertiesService {
       lastModified: new Date(),
       ...updateParkingPropertyDto,
     };
-    const res = await this.parkingPropertyRepository.update(
+    return await this.parkingPropertyRepository.update(
       toUpdate as ParkingProperty,
     );
-    return res;
   }
 
-  async remove(tenantId: string, id: string) {
-    const res = await this.parkingPropertyRepository.delete(id);
-    return res;
+  async remove(_: string, id: string) {
+    return await this.parkingPropertyRepository.delete(id);
+  }
+
+  async updateSpot(
+    tenantId: string,
+    id: string,
+    spotId: string,
+    updateParkingSpotDto: UpdateParkingSpotDto,
+  ) {
+    const doc = await this.parkingPropertyRepository.findById(id);
+    if (!doc || doc.tenantId !== tenantId) {
+      return null;
+    }
+    const layer = doc.layers.find((l) =>
+      l.parkingSpots.find((s) => s.id === spotId),
+    );
+    if (!layer) {
+      return null;
+    }
+    const spot = layer.parkingSpots.find((s) => s.id === spotId);
+    if (!spot) {
+      return null;
+    }
+    Object.assign(spot, updateParkingSpotDto);
+    spot.lastStateChange = new Date();
+    return await this.parkingPropertyRepository.update(doc);
   }
 }

@@ -62,7 +62,7 @@
             icon="mdi-pencil"
             @click="editDialog(item)"
             variant="plain"
-            :disabled="useAppStore().currUser.role === 'user'"
+            :disabled="useAppStore().isUserRole"
           >
           </v-btn>
         </template>
@@ -124,7 +124,7 @@
                     class="me-2"
                     @click="editDialog(item)"
                     variant="tonal"
-                    :disabled="useAppStore().currUser.role === 'user'"
+                    :disabled="useAppStore().isUserRole"
                     >Edit
                   </v-btn>
                   <v-btn
@@ -132,7 +132,7 @@
                     color="error"
                     @click="initiateDeletion(item)"
                     variant="flat"
-                    :disabled="useAppStore().currUser.role === 'user'"
+                    :disabled="useAppStore().isUserRole"
                     >Delete
                   </v-btn>
                 </div>
