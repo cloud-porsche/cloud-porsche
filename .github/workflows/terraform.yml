@@ -67,6 +67,7 @@ jobs:
           export IMAGE_TAG=$([[ $EXISTING_TAGS == '[]' ]] && echo 'latest' || echo '${{ github.sha }}')
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Using IMAGE_TAG: $IMAGE_TAG"
+      - uses: hashicorp/setup-terraform@v3
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
@@ -107,6 +108,7 @@ jobs:
           install_components: kubectl
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - uses: hashicorp/setup-terraform@v3
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
@@ -168,6 +170,7 @@ jobs:
         with:
           input: ./helm/cloud-porsche-default/enterprise-template.yaml
           output: ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+      - uses: hashicorp/setup-terraform@v3
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
@@ -242,6 +245,7 @@ jobs:
           install_components: kubectl
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+      - uses: hashicorp/setup-terraform@v3
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
