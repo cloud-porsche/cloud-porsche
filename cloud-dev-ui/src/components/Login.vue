@@ -82,6 +82,14 @@
       type="error"
       class="position-absolute bottom-0 ma-5 slide-y-transition"
       >{{ error }}
+      <template #append>
+        <v-btn
+          v-if="notVerified"
+          variant="outlined"
+          @click="resendVerifyEmail()"
+          >Resend
+        </v-btn>
+      </template>
     </v-alert>
 
     <v-alert
@@ -109,9 +117,11 @@ import {
   AuthProvider,
   GithubAuthProvider,
   GoogleAuthProvider,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
+  User,
 } from "firebase/auth";
 import { useAppStore } from "@/stores/app";
 
@@ -150,6 +160,8 @@ const successMessage = ref("");
 
 const registerSheet = ref(false);
 
+const notVerified = ref<User | undefined>(undefined);
+
 function signIn() {
   error.value = null;
   signInWithEmailAndPassword(auth!, email.value, password.value)
@@ -158,6 +170,7 @@ function signIn() {
       if (!user.emailVerified) {
         error.value =
           "Email not verified. Please check your inbox to verify your email before logging in.";
+        notVerified.value = user;
       } else {
         successMessage.value = "Successfully logged in!";
       }
@@ -190,6 +203,23 @@ function resetPassword() {
       console.error("Failed reset", reason);
       error.value = "Please enter a valid email address.";
     });
+}
+
+function resendVerifyEmail() {
+  error.value = null;
+  if (notVerified.value) {
+    sendEmailVerification(notVerified.value)
+      .then(() => {
+        successMessage.value = "Verification email sent.";
+      })
+      .catch((reason) => {
+        console.error("Failed resend", reason);
+        error.value = reason;
+      })
+      .finally(() => {
+        notVerified.value = undefined;
+      });
+  }
 }
 </script>
 

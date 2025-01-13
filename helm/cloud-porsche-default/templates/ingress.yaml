@@ -10,7 +10,7 @@ metadata:
 spec:
   tls:
     - hosts:
-        - {{ .Values.tenantId }}.cloud-porsche.com.cloud-porsche.com
+        - {{ .Values.tenantId }}.cloud-porsche.com
       secretName: cloud-porsche-com-tls
   ingressClassName: nginx
   rules:
