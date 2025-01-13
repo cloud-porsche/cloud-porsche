@@ -21,7 +21,10 @@
 
     <!-- Dashboard Container -->
     <v-responsive>
-      <div id="dashboard_container"></div>
+      <div id="dashboard_free"></div>
+      <ProTier>
+        <div id="dashboard_container" style="min-height: 100%;"></div>
+      </ProTier>
     </v-responsive>
   </div>
 </template>
@@ -91,6 +94,52 @@ function createCardHTML(
 
 // Initialize Dashboard
 async function initDashBoard() {
+  Dashboards.board("dashboard_free", {
+    gui: {
+      layouts: [
+        {
+          rows: [
+            {
+            cells: [
+              { id: "row-1", 
+                layout: {
+                  rows: [
+                    {
+                      cells: [
+                        {id: "card-api-calls-free"},
+                        {id: "card-customers-free"}
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+            }
+          ]
+        }
+      ]
+    },
+    components: [
+      {
+        type: "HTML",
+        renderTo: "card-api-calls-free",
+        html: createCardHTML(
+          "API Calls",
+          monitoringStore.data.api_calls.current_period_api_calls,
+          monitoringStore.data.api_calls.percent_change
+        )
+      },
+      {
+        type: "HTML",
+        renderTo: "card-customers-free",
+        html: createCardHTML(
+          "Customers",
+          monitoringStore.data.customer_count_change.current_period_customers,
+          monitoringStore.data.customer_count_change.percent_change
+        )
+      }
+    ]
+  });
   Dashboards.board("dashboard_container", {
     gui: {
       layouts: [
@@ -356,7 +405,7 @@ onMounted(async () => {
 .highcharts-dashboards-wrapper {
   background-color: transparent;
   padding: 0;
-  height: 100%;
+  min-height: 0;
 }
 
 #card-customers,
