@@ -83,8 +83,8 @@ jobs:
           image: europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:${{ github.ref_name == 'master' && 'stable' || 'latest' }}
           region: europe-west4
           env_vars: |-
-            CORS_ORIGIN=https://cloud-porsche.github.io
-            CORS_ORIGINS=https://cloud-porsche.github.io\,https://cloud-dev.ostabo.com
+            CORS_ORIGIN=https://app.cloud-porsche.com
+            CORS_ORIGINS=https://app.cloud-porsche.com\,https://cloud-porsche.github.io\,https://cloud-dev.ostabo.com
             FIRESTORE_EMULATOR_HOST=
             FIREBASE_STORAGE_EMULATOR_HOST=
             FIREBASE_STORAGE_BUCKET=cloud-porsche
