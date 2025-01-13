@@ -10,7 +10,7 @@
             :icon="'mdi-plus'"
             v-tooltip="'Add new Property'"
             @click="newPropertyDialog = true"
-            :disabled="appStore.currUser.role != 'admin'"
+            :disabled="!appStore.hasAdminAccess"
           />
           <v-btn
             class="ml-4"
@@ -18,8 +18,7 @@
             color="error"
             v-tooltip="'Delete'"
             :disabled="
-              propertyStore.properties.length <= 0 ||
-              appStore.currUser.role != 'admin'
+              propertyStore.properties.length <= 0 || !appStore.hasAdminAccess
             "
             @click="deleteDialog = true"
           />

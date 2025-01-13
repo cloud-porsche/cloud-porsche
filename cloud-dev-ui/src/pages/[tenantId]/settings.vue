@@ -42,8 +42,7 @@
             </v-list-item>
             <v-list-item
               v-else-if="
-                tab.title === 'User Management' &&
-                useAppStore().currUser.role === 'admin'
+                tab.title === 'User Management' && useAppStore().hasAdminAccess
               "
               class="pa-5"
             >
@@ -354,7 +353,7 @@ const handleDeleteUser = async () => {
 watch(
   () => useAppStore().authLoading,
   async (loading) => {
-    if (!loading && useAppStore().currUser.role === "admin") {
+    if (!loading && useAppStore().hasAdminAccess) {
       await userStore.fetchUsers(tenantId, appStore.currUser.uid);
     }
   },
