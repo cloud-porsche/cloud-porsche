@@ -70,17 +70,27 @@ jobs:
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
+      - name: Terraform plan
+        working-directory: ./tf
+        run: |
+          terraform plan \
+            -input=false \
+            -compact-warnings \
+            -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+            -var image_tag=${{ env.IMAGE_TAG }} \
+            -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }} \
+            -out=plan.tfplan
       - name: Terraform apply
         working-directory: ./tf
         run: |
-          ls -la
           terraform apply \
             -input=false \ 
             -compact-warnings \
             -auto-approve \
             -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
             -var image_tag=${{ env.IMAGE_TAG }} \
-            -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
+            -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }} \
+            plan.tfplan
 
   tf-destroy:
     if: inputs.run_type == 'destroy'
@@ -172,6 +182,19 @@ jobs:
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
+      - name: Terraform plan tenant creation
+        working-directory: ./tf
+        run: |
+          terraform plan \
+              -target helm.${{ inputs.tenant_id }} \
+              -target kubernetes.${{ inputs.tenant_id }} \
+              -target module.${{ inputs.tenant_id }} \
+              -input=false \
+              -compact-warnings \
+              -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+              -var image_tag=${{ env.IMAGE_TAG }} \
+              -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }} \
+              -out=plan.tfplan
       - name: Terraform create tenant
         working-directory: ./tf
         run: |
@@ -184,7 +207,8 @@ jobs:
               -auto-approve \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
               -var image_tag=${{ env.IMAGE_TAG }} \
-              -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
+              -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }} \
+              plan.tfplan
       - name: Delete on Terraform fail
         if: failure()
         working-directory: ./tf
