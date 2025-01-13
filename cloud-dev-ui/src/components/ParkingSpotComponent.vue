@@ -24,7 +24,7 @@
           <span class="d-flex text-center align-center"
             >Parking Spot Details
             <v-spacer />
-            <v-btn icon @click="closeDialog()">
+            <v-btn icon variant="flat" @click="closeDialog()">
               <v-icon>mdi-close</v-icon>
             </v-btn></span
           >
@@ -45,7 +45,41 @@
               <tr>
                 <td>State</td>
                 <td>
+                  <v-select
+                    v-if="useAppStore().hasAdminAccess"
+                    variant="plain"
+                    :model-value="spot.state"
+                    @update:modelValue="emitStateChange($event)"
+                    :items="[
+                      ParkingSpotState.FREE,
+                      ParkingSpotState.RESERVED,
+                      ParkingSpotState.OUT_OF_ORDER,
+                    ]"
+                    menu-icon="mdi-pencil"
+                  >
+                    <template v-slot:selection="{ item }">
+                      <v-chip
+                        :color="getStateColor(item.raw)"
+                        :text="toStatusText(item.raw)"
+                        class="text-uppercase"
+                        size="small"
+                        label
+                      />
+                    </template>
+                    <template #item="{ props, item }">
+                      <v-list-item v-bind:props @click="props.onClick as any">
+                        <v-chip
+                          :color="getStateColor(item.raw)"
+                          :text="toStatusText(item.raw)"
+                          class="text-uppercase"
+                          size="small"
+                          label
+                        />
+                      </v-list-item>
+                    </template>
+                  </v-select>
                   <v-chip
+                    v-else
                     :color="getStateColor(spot.state)"
                     :text="toStatusText(spot.state)"
                     class="text-uppercase"
@@ -98,12 +132,15 @@
 <script setup lang="ts">
 import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
 import { useDateFormat } from "@vueuse/core";
+import { useAppStore } from "@/stores/app";
 
 defineProps<{
   spot: ParkingSpot;
   disableDialog?: boolean;
   explanation?: string;
 }>();
+
+const emit = defineEmits(["stateChange"]);
 
 const inspectDialog = ref(false);
 
@@ -139,6 +176,10 @@ function toStatusText(state: ParkingSpotState) {
     default:
       return "Unknown";
   }
+}
+
+function emitStateChange(state: ParkingSpotState) {
+  emit("stateChange", state);
 }
 
 function openDialog() {

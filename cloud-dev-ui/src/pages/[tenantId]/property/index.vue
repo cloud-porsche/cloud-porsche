@@ -10,7 +10,7 @@
             :icon="'mdi-plus'"
             v-tooltip="'Add new Property'"
             @click="newPropertyDialog = true"
-            :disabled="!appStore.hasAdminAccess"
+            :disabled="!appStore.hasAdminAccess || propertyLimitReached()"
           />
           <v-btn
             class="ml-4"
@@ -509,6 +509,7 @@ import {
   ParkingSpot,
   ParkingSpotLayer,
   ParkingSpotState,
+  TenantTier,
 } from "@cloud-porsche/types";
 import { useDisplay } from "vuetify";
 import { ref } from "vue";
@@ -685,6 +686,19 @@ function toParkingTypeText(item: ParkingPropertyType) {
       return "Total";
     default:
       return "Unknown";
+  }
+}
+
+function propertyLimitReached() {
+  switch (appStore.tenant.info?.tier) {
+    case TenantTier.FREE:
+      return propertyStore.properties.length >= 1;
+    case TenantTier.PRO:
+      return propertyStore.properties.length >= 5;
+    case TenantTier.ENTERPRISE:
+      return false;
+    default:
+      return true;
   }
 }
 

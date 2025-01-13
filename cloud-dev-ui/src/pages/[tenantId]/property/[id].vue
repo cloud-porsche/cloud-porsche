@@ -190,6 +190,7 @@
               v-model="page"
               :length="property.layers.length"
               variant="outlined"
+              total-visible="5"
               density="comfortable"
             ></v-pagination>
           </v-card-title>
@@ -221,6 +222,7 @@
                   v-for="spot in currentLayer.parkingSpots"
                   :key="spot.id"
                   :spot="spot"
+                  @stateChange="updateSpotState(spot.id, $event)"
                 ></ParkingSpotComponent>
                 <template v-slot:fallback>
                   <v-progress-circular indeterminate></v-progress-circular>
@@ -427,6 +429,13 @@ function dragMove(event: MouseEvent) {
 
 function dragEnd(_: MouseEvent) {
   dragActive.value = false;
+}
+
+function updateSpotState(spotId: string, state: ParkingSpotState) {
+  propertyStore.updateParkingSpot(id.value, spotId, {
+    id: id.value,
+    state: state,
+  });
 }
 </script>
 
