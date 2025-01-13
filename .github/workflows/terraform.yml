@@ -73,9 +73,8 @@ jobs:
       - name: Terraform apply
         working-directory: ./tf
         run: |
-          ls -la
           terraform apply \
-            -input=false \ 
+            -input=false \
             -compact-warnings \
             -auto-approve \
             -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
