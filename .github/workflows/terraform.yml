@@ -70,12 +70,17 @@ jobs:
       - name: Terraform init
         working-directory: ./tf
         run: terraform init -input=false
-      - name: Terraform version
-        working-directory: ./tf
-        run: terraform --version
       - name: Terraform apply
         working-directory: ./tf
-        run: terraform apply -input=false -compact-warnings -auto-approve -var firebase_token=${{ secrets.FIREBASE_TOKEN }} -var image_tag=${{ env.IMAGE_TAG }} -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          ls -la
+          terraform apply \
+            -input=false \ 
+            -compact-warnings \
+            -auto-approve \
+            -var firebase_token=${{ secrets.FIREBASE_TOKEN }} \
+            -var image_tag=${{ env.IMAGE_TAG }} \
+            -var cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   tf-destroy:
     if: inputs.run_type == 'destroy'
