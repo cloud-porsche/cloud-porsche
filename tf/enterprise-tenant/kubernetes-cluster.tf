@@ -26,6 +26,11 @@ resource "google_container_cluster" "enterprise_tenant" {
   location = var.location
 
   initial_node_count = 1
+
+  service_external_ips_config {
+    enabled = false
+  }
+  
   node_config {
     disk_size_gb = 20
   }
