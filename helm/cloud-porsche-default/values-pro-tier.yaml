@@ -5,8 +5,8 @@ resources:
     cpu: 500m
     memory: 1024Mi
   requests:
-    cpu: 500m
-    memory: 1024Mi
+    cpu: 200m
+    memory: 512Mi
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
