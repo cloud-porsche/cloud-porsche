@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Headers, Param, Post } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
 import { Tenant } from './dto/tenant.dto';
@@ -74,5 +74,30 @@ export class TenantsController {
     @Body('email') email: string,
   ): Promise<any> {
     return this.tenantsService.addTenantUser(tenantId, email);
+  }
+
+  @Post(':tenantId/migrate/:newTenantId')
+  @ApiParam({
+    name: 'tenantId',
+    description: 'The ID of the tenant to migrate.',
+    example: 'tenant-123gh',
+  })
+  @ApiParam({
+    name: 'newTenantId',
+    description: 'The new tenant id.',
+    example: 'tenant-428ux',
+  })
+  async migrateTenant(
+    @Param('tenantId') tenantId: string,
+    @Param('newTenantId') newTenantId: string,
+    @Headers('authorization') token: string,
+    @Headers('authorization-new') newUserToken: string,
+  ) {
+    return await this.tenantsService.migrateTenant(
+      tenantId,
+      newTenantId,
+      token,
+      newUserToken,
+    );
   }
 }
