@@ -6,6 +6,27 @@ resource "cloudflare_record" "tenant_ingress" {
   proxied = true
 }
 
+resource "google_dns_record_set" "tenant_domain" {
+  name = "${var.tenant_id}.cloud-porsche.com."
+  type = "A"
+  ttl  = 300
+
+  managed_zone = "cloud-porsche-com"
+
+  rrdatas = [data.kubernetes_service.ingress.status[0].load_balancer[0].ingress[0].ip]
+}
+
+resource "kubernetes_secret" "google-credentials" {
+  depends_on = [google_service_account_key.tenant_service_account_key, helm_release.cert_manager]
+  metadata {
+    name      = "google-credentials"
+    namespace = "cert-manager"
+  }
+  data = {
+    "key.json" = base64decode(google_service_account_key.tenant_service_account_key.private_key)
+  }
+}
+
 ### Cluster Configuration
 resource "google_container_cluster" "enterprise_tenant" {
   name = var.tenant_id
@@ -23,7 +44,25 @@ resource "google_container_cluster" "enterprise_tenant" {
   deletion_protection = false
 }
 
+resource "helm_release" "cert_manager" {
+  name             = "cert-manager"
+  repository       = "https://charts.jetstack.io"
+  chart            = "cert-manager"
+  namespace        = "cert-manager"
+  create_namespace = true
+
+  set {
+    name  = "crds.enabled"
+    value = "true"
+  }
+  set {
+    name  = "global.leaderElection.namespace"
+    value = "cert-manager"
+  }
+}
+
 resource "helm_release" "enterprise_tenant" {
+  depends_on = [helm_release.cert_manager]
   chart      = "cloud-porsche-default"
   name       = var.tenant_id
   repository = "oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/"
