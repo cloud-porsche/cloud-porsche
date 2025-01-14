@@ -28,7 +28,7 @@ output "ingress_ip" {
 output "ingress_hostname" {
   depends_on = [
     helm_release.enterprise_tenant, data.kubernetes_service.ingress, google_container_cluster.enterprise_tenant,
-    cloudflare_record.tenant_ingress
+    google_dns_record_set.tenant_domain
   ]
-  value = cloudflare_record.tenant_ingress.hostname
+  value = trimsuffix(google_dns_record_set.tenant_domain.name, ".")
 }

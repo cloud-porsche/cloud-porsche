@@ -1,11 +1,3 @@
-resource "cloudflare_record" "tenant_ingress" {
-  zone_id = "c087a43517ba91fb09df4beffb7948d7"
-  name    = "${var.tenant_id}.ostabo.com"
-  type    = "A"
-  content = data.kubernetes_service.ingress.status.0.load_balancer.0.ingress.0.ip
-  proxied = true
-}
-
 resource "google_dns_record_set" "tenant_domain" {
   name = "${var.tenant_id}.cloud-porsche.com."
   type = "A"
@@ -39,6 +31,7 @@ resource "helm_release" "cert_manager" {
   chart            = "cert-manager"
   namespace        = "cert-manager"
   create_namespace = true
+  timeout          = 600
 
   set {
     name  = "crds.enabled"
