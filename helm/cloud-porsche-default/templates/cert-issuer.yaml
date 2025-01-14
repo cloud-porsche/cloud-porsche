@@ -10,6 +10,9 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-key
     solvers:
+      - http01:
+          ingress:
+            class: nginx
       - dns01:
           cloudDNS:
             project: cloud-porsche
