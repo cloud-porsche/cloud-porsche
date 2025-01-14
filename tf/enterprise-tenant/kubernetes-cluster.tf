@@ -12,10 +12,32 @@ resource "google_dns_record_set" "tenant_domain" {
 resource "google_container_cluster" "enterprise_tenant" {
   name = var.tenant_id
 
-  location                 = var.location
-  enable_autopilot         = true
-  enable_l4_ilb_subsetting = true
+  location = var.location
 
+  initial_node_count = 1
+  node_config {
+    disk_size_gb = 20
+  }
+  cluster_autoscaling {
+    auto_provisioning_defaults {
+      disk_size = 20
+      management {
+        auto_repair  = true
+        auto_upgrade = true
+      }
+    }
+    resource_limits {
+      resource_type = "cpu"
+      minimum       = 2
+      maximum       = 12
+    }
+    resource_limits {
+      resource_type = "memory"
+      minimum       = 2
+      maximum       = 32
+    }
+    enabled = true
+  }
   master_auth {
     client_certificate_config {
       issue_client_certificate = false
@@ -32,6 +54,7 @@ resource "helm_release" "cert_manager" {
   namespace        = "cert-manager"
   create_namespace = true
   timeout          = 600
+  wait_for_jobs    = true
 
   set {
     name  = "crds.enabled"
@@ -45,10 +68,11 @@ resource "helm_release" "cert_manager" {
 
 resource "helm_release" "enterprise_tenant" {
   depends_on = [helm_release.cert_manager]
-  chart      = "cloud-porsche-default"
-  name       = var.tenant_id
-  repository = "oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/"
-  timeout    = 900
+  chart         = "cloud-porsche-default"
+  name          = var.tenant_id
+  repository    = "oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/"
+  timeout       = 900
+  wait_for_jobs = true
 
   values = compact([
     file("${path.module}/../../helm/cloud-porsche-default/values.yaml"),
