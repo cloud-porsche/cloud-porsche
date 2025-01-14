@@ -121,7 +121,7 @@
     </v-bottom-sheet>
     <v-bottom-sheet
       :model-value="
-        monitoringStore.data.left_free_api_calls === 0 && !user?.tenantId
+        monitoringStore.free_data.left_free_api_calls === 0 && !user?.tenantId
       "
       fullscreen
       :close-on-content-click="false"
@@ -190,6 +190,7 @@ auth?.onAuthStateChanged(async (user) => {
     }
     initWs(token, tenantId.value);
     await propertyStore.fetchProperties();
+    await monitoringStore.fetchFreeMonitoringData();
     await monitoringStore.fetchMonitoringData();
   }
   appStore.setAuthLoading(false);
@@ -206,6 +207,7 @@ const fetchTenantInfo = async (tenantId: string) => {
   const db = getFirestore();
   const docRef = doc(db, "Tenants", tenantId);
   const docData = (await getDoc(docRef)).data() as ITenant;
+  console.log(docData);
   appStore.setTenantInfo(docData);
 };
 </script>

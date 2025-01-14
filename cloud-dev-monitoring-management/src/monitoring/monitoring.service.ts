@@ -11,6 +11,7 @@ import { TenantTier } from '@cloud-porsche/types';
 import { ConfigService } from '@nestjs/config';
 import { DefectAction } from './entities/defect-action.entity';
 import { DefectState } from '@cloud-porsche/types';
+import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 
 @Injectable()
 export class MonitoringService {
@@ -367,28 +368,22 @@ export class MonitoringService {
       await this.tenantDb.collection('Tenants').doc(tenantId).get()
     ).data() as Tenant;
     if (!tenant) {
-      tenant = (
-        await this.tenantDb.collection('Tenants').doc('free').get()
-      ).data() as Tenant;
+      throw new HttpErrorByCode['403']('Forbidden');
     }
 
     const [
       customers,
       customerDistribution,
       apiCalls,
-      customerCount,
       parkingIncome,
       avgUtilization,
-      leftFreeApiCalls,
       defectDistribution,
     ] = await Promise.all([
       this.getCustomerData(timeframe, allParkingActions),
       this.getCustomerDistribution(timeframe, allParkingActions),
       this.getApiCalls(timeframe, allApiCalls),
-      this.getCustomerCount(timeframe, allParkingActions),
       this.getParkingIncome(timeframe, allParkingActions),
       this.getDailyAvgUtilization(timeframe, allParkingActions),
-      this.getLeftFreeApiCalls('monthly', tenant, allApiCalls),
       this.getDefectDistribution(timeframe, allDefectActions),
     ]);
 
@@ -397,11 +392,42 @@ export class MonitoringService {
         customers: customers,
         customer_distribution: customerDistribution,
         api_calls: apiCalls,
-        customer_count_change: customerCount,
         parking_income: parkingIncome,
         avg_utilization: avgUtilization,
-        left_free_api_calls: leftFreeApiCalls,
         defect_distribution: defectDistribution,
+      },
+    };
+  }
+
+  async getFreeData(tenantId: string, timeframe: string) {
+    const allParkingActions = await this.parkingActionRepository
+    .whereEqualTo('tenantId', tenantId)
+    .find();
+    const allApiCalls = await this.apiCallRepository
+      .whereEqualTo('tenantId', tenantId)
+      .find();
+    
+    let tenant = (
+      await this.tenantDb.collection('Tenants').doc(tenantId).get()
+    ).data() as Tenant;
+    if (!tenant) {
+      tenant = (
+        await this.tenantDb.collection('Tenants').doc('free').get()
+      ).data() as Tenant;
+    }
+
+    const [
+      leftFreeApiCalls,
+      customerCount,
+    ] = await Promise.all([
+      this.getLeftFreeApiCalls('monthly', tenant, allApiCalls),
+      this.getCustomerCount(timeframe, allParkingActions),
+    ]);
+
+    return {
+      data: {
+        left_free_api_calls: leftFreeApiCalls,
+        customer_count_change: customerCount,
       },
     };
   }

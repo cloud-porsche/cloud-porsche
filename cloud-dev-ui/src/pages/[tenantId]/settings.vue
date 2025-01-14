@@ -63,7 +63,7 @@
                   </v-btn>
                 </div>
               </div>
-              <v-data-table
+              <v-data-table v-if="userStore.users.length > 0"
                 class="data-table rounded"
                 density="comfortable"
                 :items="userStore.users"
@@ -88,7 +88,7 @@
                   {{ item.role }}
                 </template>
                 <template #item.action="{ item }">
-                  <div class="d-flex justify-end">
+                  <div>
                     <v-icon class="me-3" @click="openEditUserDialog(item)">
                       mdi-pencil
                     </v-icon>
@@ -192,7 +192,7 @@ const deleteUserUid = ref("");
 const deleteUserMail = ref("");
 
 const userTableHeaders = [
-  { title: "Email", key: "email" },
+  { title: "Email", key: "email"},
   { title: "UID", key: "uid" },
   { title: "Current Role", key: "role" },
   { title: "Actions", key: "action", sortable: false, maxWidth: "100px" },

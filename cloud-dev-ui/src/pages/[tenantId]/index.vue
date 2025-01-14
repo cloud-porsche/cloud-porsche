@@ -124,9 +124,10 @@ async function initDashBoard() {
         type: "HTML",
         renderTo: "card-api-calls-free",
         html: createCardHTML(
-          "API Calls",
-          monitoringStore.data.api_calls.current_period_api_calls,
-          monitoringStore.data.api_calls.percent_change
+          "Free API Calls left this month",
+          monitoringStore.free_data.left_free_api_calls,
+          0,
+          false,
         )
       },
       {
@@ -134,8 +135,8 @@ async function initDashBoard() {
         renderTo: "card-customers-free",
         html: createCardHTML(
           "Customers",
-          monitoringStore.data.customer_count_change.current_period_customers,
-          monitoringStore.data.customer_count_change.percent_change
+          monitoringStore.free_data.customer_count_change.current_period_customers,
+          monitoringStore.free_data.customer_count_change.percent_change
         )
       }
     ]
@@ -161,14 +162,14 @@ async function initDashBoard() {
                                   id: "row-1-1A",
                                   cells: [
                                     { id: "card-api-calls" },
-                                    { id: "card-customers" },
+                                    // { id: "card-customers" },
                                   ],
                                 },
                                 {
                                   id: "row-1-1B",
                                   cells: [
                                     { id: "card-income" },
-                                    { id: "card-free-api-calls" },
+                                    // { id: "card-free-api-calls" },
                                   ],
                                 },
                               ],
@@ -209,15 +210,15 @@ async function initDashBoard() {
           monitoringStore.data.api_calls.percent_change,
         ),
       },
-      {
-        type: "HTML",
-        renderTo: "card-customers",
-        html: createCardHTML(
-          "Customers",
-          monitoringStore.data.customer_count_change.current_period_customers,
-          monitoringStore.data.customer_count_change.percent_change,
-        ),
-      },
+      // {
+      //   type: "HTML",
+      //   renderTo: "card-customers",
+      //   html: createCardHTML(
+      //     "Customers",
+      //     monitoringStore.data.customer_count_change.current_period_customers,
+      //     monitoringStore.data.customer_count_change.percent_change,
+      //   ),
+      // },
       {
         type: "HTML",
         renderTo: "card-income",
@@ -227,16 +228,16 @@ async function initDashBoard() {
           monitoringStore.data.parking_income.percent_change,
         ),
       },
-      {
-        type: "HTML",
-        renderTo: "card-free-api-calls",
-        html: createCardHTML(
-          "Free API Calls this month",
-          monitoringStore.data.left_free_api_calls,
-          0,
-          false,
-        ),
-      },
+      // {
+      //   type: "HTML",
+      //   renderTo: "card-free-api-calls",
+      //   html: createCardHTML(
+      //     "Free API Calls this month",
+      //     monitoringStore.data.left_free_api_calls,
+      //     0,
+      //     false,
+      //   ),
+      // },
       {
         type: "Highcharts",
         renderTo: "chart-line",
@@ -364,6 +365,7 @@ async function initDashBoard() {
 
 async function onFilterChange() {
   monitoringStore.setTimeframe(selectedFilter.value);
+  await monitoringStore.fetchFreeMonitoringData();
   await monitoringStore.fetchMonitoringData();
 }
 
@@ -389,7 +391,7 @@ onMounted(async () => {
       newVal ? "dark" : "light"
     }`;
   });
-
+  await monitoringStore.fetchFreeMonitoringData();
   await monitoringStore.fetchMonitoringData();
 });
 </script>

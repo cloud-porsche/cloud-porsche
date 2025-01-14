@@ -9,4 +9,9 @@ export class MonitoringController {
   async getData(@Headers('tenant-id') tenantId: string, @Query('timeframe') timeframe: string) {
     return this.monitoringService.getAllData(tenantId, timeframe);
   }
+
+  @Get('free_data')
+  async getFreeData(@Headers('tenant-id') tenantId: string, @Query('timeframe') timeframe: string) {
+    return this.monitoringService.getFreeData(tenantId, timeframe);
+  }
 }
