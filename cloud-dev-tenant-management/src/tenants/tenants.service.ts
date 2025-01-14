@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { Octokit } from 'octokit';
@@ -149,6 +149,10 @@ export class TenantsService {
     if (!oldTenantId || !newTenantId || !userToken || !newUserToken) {
       return HttpErrorByCode[500];
     }
+    if (newTenantId === 'free-tier') {
+      throw new BadRequestException('Migration to free tier not supported');
+    }
+
     const tenantAuth = admin.auth().tenantManager().authForTenant(oldTenantId);
     const decodedToken = await tenantAuth.verifyIdToken(userToken);
     const newTenantAuth = admin
@@ -165,15 +169,11 @@ export class TenantsService {
       .collection('Tenants')
       .doc(oldTenantId);
     if (!oldTenantDoc) {
-      return {
-        error: 'Old tenant doc not found',
-      };
+      throw new BadRequestException('Old tenant doc not found');
     }
     const oldTenant = (await oldTenantDoc.get()).data() as ITenant;
     if (!oldTenant) {
-      return {
-        error: 'Old tenant information not found',
-      };
+      throw new BadRequestException('Old tenant information not found');
     }
     if (
       oldTenant.tier !== TenantTier.FREE &&
@@ -187,15 +187,11 @@ export class TenantsService {
       .collection('Tenants')
       .doc(newTenantId);
     if (!newTenantDoc) {
-      return {
-        error: 'New tenant document not found',
-      };
+      throw new BadRequestException('New tenant document not found');
     }
     const newTenant = (await newTenantDoc.get()).data() as ITenant;
     if (!newTenant) {
-      return {
-        error: 'New tenant information not found',
-      };
+      throw new BadRequestException('New tenant information not found');
     }
     if (newTenant.adminEmail !== newDecodedToken.email) {
       return HttpErrorByCode[403];
@@ -231,6 +227,16 @@ export class TenantsService {
       ignoreUndefinedProperties: true,
     });
 
+    if (newTenant.tier === TenantTier.PRO) {
+      const properties = await firestoreOld
+        .collection('ParkingProperties')
+        .listDocuments();
+      if (properties.length > 5)
+        throw new BadRequestException(
+          'Migration to PRO tier only supports up to 5 properties',
+        );
+    }
+
     const oldTenantIdField =
       oldTenant.tier === TenantTier.FREE ? decodedToken.uid : oldTenantId;
 
@@ -246,6 +252,11 @@ export class TenantsService {
       }
     }
 
-    return HttpErrorByCode[200];
+    return {
+      res: {
+        from: oldTenantId,
+        to: newTenantId,
+      },
+    };
   }
 }
