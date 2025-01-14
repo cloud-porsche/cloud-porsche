@@ -2,10 +2,10 @@ tenantId: pro-tier
 
 resources:
   limits:
-    cpu: 1500m
-    memory: 2048Mi
+    cpu: 500m
+    memory: 1024Mi
   requests:
-    cpu: 1000m
+    cpu: 500m
     memory: 1024Mi
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
