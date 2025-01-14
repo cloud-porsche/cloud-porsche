@@ -6,12 +6,19 @@ import { ConfigService } from '@nestjs/config';
 import { IParkingProperty, ParkingSpotState } from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
 
-const SIMULATION_INTERVAL = 10000;
+const SIMULATION_SPEEDS = {
+  slow: 10000, // 10 Sekunden
+  normal: 5000, // 5 Sekunden
+  fast: 1000, // 1 Sekunde
+};
+
+type SimulationSpeed = keyof typeof SIMULATION_SPEEDS;
 
 @Injectable()
 export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
   private simulationIds = new Set<string>();
+  private simulationIntervals = new Map<string, SimulationSpeed>();
   private readonly parkingPropertiesApi: string;
 
   constructor(
@@ -25,21 +32,28 @@ export class SimulationService {
     );
   }
 
-  async startSimulation(token: string, tenantId: string, propertyId: string) {
+  async startSimulation(
+    token: string,
+    tenantId: string,
+    propertyId: string,
+    speed: SimulationSpeed = 'normal',
+  ) {
     if (this.simulationIds.has(propertyId)) {
       this.logger.error('Simulation already running');
       return;
     }
 
     this.simulationIds.add(propertyId);
+    this.simulationIntervals.set(propertyId, speed);
+
     this.schedulerRegistry.addInterval(
       propertyId,
       setInterval(
         async () => this.runSimulation(token, tenantId, propertyId),
-        SIMULATION_INTERVAL,
+        SIMULATION_SPEEDS[speed],
       ),
     );
-    this.logger.log('Simulation started for: ' + propertyId);
+    this.logger.log(`Simulation started for: ${propertyId} at speed: ${speed}`);
   }
 
   async stopSimulation(token: string, tenantId: string, propertyId: string) {
@@ -82,7 +96,36 @@ export class SimulationService {
     }
   }
 
+  async updateSimulationSpeed(propertyId: string, newSpeed: SimulationSpeed) {
+    if (!this.simulationIds.has(propertyId)) {
+      throw new Error('Simulation not running for this property');
+    }
+
+    // Entferne das alte Intervall
+    this.schedulerRegistry.deleteInterval(propertyId);
+
+    // Füge das neue Intervall hinzu
+    this.schedulerRegistry.addInterval(
+      propertyId,
+      setInterval(
+        async () =>
+          this.runSimulation(
+            null, // Du kannst hier optional die Token- und Tenant-Logik erweitern
+            null,
+            propertyId,
+          ),
+        SIMULATION_SPEEDS[newSpeed],
+      ),
+    );
+
+    this.simulationIntervals.set(propertyId, newSpeed);
+    this.logger.log(
+      `Simulation speed updated for ${propertyId} to: ${newSpeed}`,
+    );
+  }
+
   getSimulationStatus(propertyId: string) {
+    // TODO maybe noch den Speed mit zurückgeben
     return this.simulationIds.has(propertyId);
   }
 
@@ -142,6 +185,9 @@ export class SimulationService {
     });
 
     if (spot.electricCharging) {
+      const speed = this.simulationIntervals.get(propertyId) || 'normal';
+      const chargeDelay = SIMULATION_SPEEDS[speed] / 5;
+
       setTimeout(async () => {
         await this.parkingService.chargeSpot(
           token,
@@ -149,7 +195,7 @@ export class SimulationService {
           propertyId,
           spot.id,
         );
-      }, SIMULATION_INTERVAL / 5);
+      }, chargeDelay);
     }
   }
 
@@ -167,13 +213,16 @@ export class SimulationService {
     const spot = occupiedSpots[0]; // Nimm den ersten belegten Platz
     await this.parkingService.freeSpot(token, tenantId, propertyId, spot.id);
 
+    const speed = this.simulationIntervals.get(propertyId) || 'normal';
+    const leaveDelay = SIMULATION_SPEEDS[speed] / 2;
+
     setTimeout(async () => {
       const id = spot.customer.id;
       await this.parkingService.leave(token, tenantId, propertyId, {
         id,
         licensePlate: 'SIMULATION',
       });
-    }, SIMULATION_INTERVAL / 2);
+    }, leaveDelay);
   }
 
   private async fetchParkingProperty(
