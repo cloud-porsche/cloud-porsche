@@ -43,8 +43,12 @@ export class SimulationService {
       return;
     }
 
+    const intervalSpeed =
+      SIMULATION_SPEEDS[speed] || SIMULATION_SPEEDS['normal'];
+    this.logger.debug('Simulation Speed: ' + intervalSpeed);
+
     this.simulationIds.add(propertyId);
-    this.simulationIntervals.set(propertyId, SIMULATION_SPEEDS[speed]);
+    this.simulationIntervals.set(propertyId, intervalSpeed);
     this.logger.debug(
       'Simulation Intervals: ' + JSON.stringify([...this.simulationIntervals]),
     );
@@ -53,10 +57,14 @@ export class SimulationService {
       propertyId,
       setInterval(
         async () => this.runSimulation(token, tenantId, propertyId),
-        SIMULATION_SPEEDS[speed],
+        intervalSpeed,
       ),
     );
-    this.logger.log(`Simulation started for: ${propertyId} at speed: ${speed}`);
+    this.logger.log(
+      `Simulation started for: ${propertyId} at speed: ${intervalSpeed}`,
+    );
+    const intervals = this.schedulerRegistry.getIntervals();
+    this.logger.debug(`Active intervals: ${intervals.length}`);
   }
 
   async stopSimulation(token: string, tenantId: string, propertyId: string) {
@@ -65,6 +73,7 @@ export class SimulationService {
     await this.removeSimulationCars(token, tenantId, propertyId);
 
     this.simulationIds.delete(propertyId);
+    this.simulationIntervals.delete(propertyId);
     this.logger.log('Simulation stopped for: ' + propertyId);
   }
 
