@@ -75,7 +75,7 @@ export const useAppStore = defineStore("app", {
     },
     isFreeTenant(state) {
       return state.tenant.info?.tier === TenantTier.FREE;
-    }
+    },
   },
   actions: {
     updateWsConnection(socket: Socket) {
@@ -97,6 +97,10 @@ export const useAppStore = defineStore("app", {
     changeMonitoringManagementApiURL(url: string) {
       this.api.monitoringManagement = url;
       localStorage.setItem("monitoringManagement", url);
+    },
+    changeTenantManagementApiURL(url: string) {
+      this.api.tenantManagement = url;
+      localStorage.setItem("tenantManagement", url);
     },
     setAuthLoading(loading: boolean) {
       this.auth.loading = loading;

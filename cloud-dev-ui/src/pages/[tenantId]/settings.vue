@@ -310,14 +310,12 @@ const doMigration = async () => {
     headers.set("authorization-old", oldAuthToken);
     headers.set("authorization-new", currentToken);
     await post(
-      (import.meta.env.PROD
-        ? "https://tenant-management.cloud-porsche.com"
-        : "http://localhost:8082") +
-        `/v1/tenants/${oldTenantId.value}/migrate/${tenantId.value}`,
+      `/v1/tenants/${oldTenantId.value}/migrate/${tenantId.value}`,
       undefined,
       {
         headers: headers,
       },
+      "tenantManagement",
     );
     migrationSuccess.value = "Migration successful!";
     await propertyStore.fetchProperties();
@@ -432,6 +430,30 @@ const tabs = computed(() => [
         initial: appStore.api.monitoringManagement,
         valueChange: (value: string) => {
           appStore.changeMonitoringManagementApiURL(value);
+        },
+      },
+    ],
+  },
+  {
+    title: "Tenant Management",
+    text: "Settings for the Tenant Management Module.",
+    selections: [
+      {
+        title: "API Endpoint",
+        advanced: import.meta.env.PROD,
+        text: "This will be the communication endpoint for tenant management.",
+        options: [
+          ...new Set<string>([
+            ...(import.meta.env.VITE_TENANT_MANAGEMENT_API_OPTIONS ?? "").split(
+              ",",
+            ),
+            import.meta.env.VITE_TENANT_MANAGEMENT_API_URL,
+            appStore.api.tenantManagement,
+          ]),
+        ],
+        initial: appStore.api.tenantManagement,
+        valueChange: (value: string) => {
+          appStore.changeTenantManagementApiURL(value);
         },
       },
     ],
