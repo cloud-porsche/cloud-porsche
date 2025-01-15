@@ -126,6 +126,24 @@ export const usePropertyStore = defineStore("properties", {
         await this.fetchSimulationStatus(propertyId);
       }
     },
+    async updateSimulationSpeed(propertyId: string, speed: string) {
+      this.$state.loading = true;
+      try {
+        await postJSON(
+          `/v1/simulation/${propertyId}/update-speed`,
+          { speed: speed },
+          undefined,
+          "parkingManagement",
+        );
+      } catch (error) {
+        this.$state.loading = false;
+        this.$state.error = error;
+      } finally {
+        this.$state.loading = false;
+        this.$state.error = null;
+        await this.fetchSimulationStatus(propertyId);
+      }
+    },
     async setSimulationInactive(propertyId: string) {
       this.$state.loading = true;
       try {
