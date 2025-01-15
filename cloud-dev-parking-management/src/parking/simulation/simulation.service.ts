@@ -3,8 +3,10 @@ import { HttpService } from '@nestjs/axios';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ParkingService } from '../parking.service';
 import { ConfigService } from '@nestjs/config';
-import { IParkingProperty, ParkingSpotState } from '@cloud-porsche/types';
+import { IParkingProperty, ITenant, ParkingSpotState } from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
+import { getApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const SIMULATION_INTERVAL = 10000;
 
@@ -13,6 +15,7 @@ export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
   private simulationIds = new Set<string>();
   private readonly parkingPropertiesApi: string;
+  private tenantDb = getFirestore(getApp('tenant'));
 
   constructor(
     private readonly config: ConfigService,
@@ -26,6 +29,14 @@ export class SimulationService {
   }
 
   async startSimulation(token: string, tenantId: string, propertyId: string) {
+    const tenant = (
+      await this.tenantDb.collection('Tenants').doc(tenantId).get()
+    ).data() as ITenant;
+    if (!tenant) {
+      this.logger.error("Not allowed as Free Tenant");
+      return;
+    }
+
     if (this.simulationIds.has(propertyId)) {
       this.logger.error('Simulation already running');
       return;
@@ -43,6 +54,7 @@ export class SimulationService {
   }
 
   async stopSimulation(token: string, tenantId: string, propertyId: string) {
+    
     this.schedulerRegistry.deleteInterval(propertyId);
 
     await this.removeSimulationCars(token, tenantId, propertyId);
