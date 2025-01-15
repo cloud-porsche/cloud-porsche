@@ -17,7 +17,6 @@ export const useUserStore = defineStore("user", {
     },
   actions: {
     async fetchUsers(tenantId: string, adminUid: string) {
-      console.log("fetchUsers");
       this.$state.loading = true;
       this.$state.error = null;
       try {

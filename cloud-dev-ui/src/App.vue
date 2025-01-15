@@ -200,11 +200,9 @@ auth?.onAuthStateChanged(async (user) => {
       appStore.setCurrUserRole("user");
     }
     initWs(token, tenantId.value);
-    if (appStore.hasAdminAccess) {
-      await userStore.fetchUsers(user.uid, tenantId.value);
-    }
     await propertyStore.fetchProperties();
     await monitoringStore.fetchAllData();
+    await userStore.fetchUsers(tenantId.value, user.uid);
   }
   appStore.setAuthLoading(false);
 });

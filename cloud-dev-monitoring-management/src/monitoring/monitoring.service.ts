@@ -367,7 +367,45 @@ export class MonitoringService {
       await this.tenantDb.collection('Tenants').doc(tenantId).get()
     ).data() as Tenant;
     if (!tenant) {
-      throw new HttpException('Not allowed as free tenant', 403);
+      return {
+        data: {
+          customers: {
+            1: 39,
+            2: 49,
+            3: 59,
+            4: 69,
+          },
+          customer_distribution: {
+            '69': 69,
+            '420': 69,
+            '1337': 69,
+          },
+          avg_utilization: {
+            '69': {
+              1: 59,
+              2: 79,
+              3: 69,
+              4: 89,
+            },
+          },
+          api_calls: {
+            current_period_api_calls: 69,
+            percent_change: 69,
+          },
+          parking_income: {
+            current_period_income: 69,
+            percent_change: 69,
+          },
+          defect_distribution: {
+            '69': {
+              "0": 69,
+              "1": 69,
+              "2": 69,
+              "3": 69,
+            }
+          },
+        }
+      }
     }
 
     const [

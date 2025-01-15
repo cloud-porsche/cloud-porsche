@@ -61,7 +61,7 @@
                     </v-btn>
                   </div>
                 </div>
-                <v-data-table v-if="userStore.users.length > 0"
+                <v-data-table
                   class="data-table rounded"
                   density="comfortable"
                   :items="userStore.users"
@@ -180,7 +180,7 @@ import router from "@/router";
 
 const appStore = useAppStore();
 const userStore = useUserStore();
-const tenantId = (router.currentRoute.value.params as any)["tenantId"];
+const tenantId = computed(() => (router.currentRoute.value.params as any).tenantId);
 const dialog = ref(false);
 const deleteUserDialog = ref(false);
 const newUserEmail = ref("");
@@ -325,12 +325,12 @@ const handleAddOrUpdateUser = async () => {
   try {
     if (editingUID.value) {
       await userStore.updateUserRole(
-        tenantId,
+        tenantId.value,
         editingUID.value,
         newUserRole.value,
       );
     } else {
-      await userStore.addUser(tenantId, newUserEmail.value, newUserRole.value);
+      await userStore.addUser(tenantId.value, newUserEmail.value, newUserRole.value);
     }
   } catch (error) {
     console.error("Error in adding or updating user:", error);
@@ -341,7 +341,7 @@ const handleAddOrUpdateUser = async () => {
 
 const handleDeleteUser = async () => {
   try {
-    await userStore.deleteUser(tenantId, deleteUserUid.value);
+    await userStore.deleteUser(tenantId.value, deleteUserUid.value);
   } catch (error) {
     console.error("Error deleting user:", error);
   } finally {
