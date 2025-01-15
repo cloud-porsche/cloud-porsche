@@ -365,8 +365,7 @@ async function initDashBoard() {
 
 async function onFilterChange() {
   monitoringStore.setTimeframe(selectedFilter.value);
-  await monitoringStore.fetchFreeMonitoringData();
-  await monitoringStore.fetchMonitoringData();
+  await monitoringStore.fetchAllData();
 }
 
 onMounted(async () => {
