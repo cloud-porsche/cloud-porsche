@@ -283,8 +283,6 @@ const route = useRoute();
 const id = computed(() => (route.params as any)["id"]);
 const tenantId = computed(() => (route.params as any)["tenantId"]);
 
-const selectedSpeed = ref("normal");
-
 await propertyStore.fetchSimulationStatus(id.value);
 
 const [isoDefault, xDefault, yDefault, zoomDefault] = [false, 40, -100, 80];
@@ -302,12 +300,20 @@ function resetViewSettings() {
 
 const dragActive = ref(false);
 
-const simulationState = computed(() =>
-  propertyStore.simulationActive.includes(id.value),
-);
 const property = computed(() =>
   propertyStore.properties.find((property) => property.id === id.value),
 );
+const simulationState = computed(() =>
+  propertyStore.simulationActive.includes(id.value),
+);
+let selectedSpeed = ref("normal");
+
+watch(selectedSpeed, async (newValue) => {
+  console.log("Watch New speed:", newValue);
+  if (simulationState && id.value) {
+    await propertyStore.updateSimulationSpeed(id.value, selectedSpeed.value);
+  }
+});
 
 const page = ref(1);
 const currentLayer = computed(() => property.value?.layers?.[page.value - 1]);
