@@ -65,34 +65,34 @@ export class TenantsService {
           tenant.password,
           'admin',
         );
-        // const ghResponse = await this.octokit.request(
-        //   `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
-        //   {
-        //     ref: this.targetBranch,
-        //     inputs: {
-        //       run_type: 'tenant-create',
-        //       tenant_id: newTenant.tenantId,
-        //       tenant_name: tenant.name,
-        //       tenant_type: tenant.plan,
-        //       location: tenant.location,
-        //       admin_email: tenant.email,
-        //     },
-        //     headers: {
-        //       'X-GitHub-Api-Version': '2022-11-28',
-        //     },
-        //   },
-        // );
-        // return {
-        //   res: newTenant.toJSON(),
-        //   ghResponse: await this.octokit.request(
-        //     'GET ' + ghResponse.url.replace('/dispatches', ''),
-        //   ),
-        // };
+        const ghResponse = await this.octokit.request(
+          `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
+          {
+            ref: this.targetBranch,
+            inputs: {
+              run_type: 'tenant-create',
+              tenant_id: newTenant.tenantId,
+              tenant_name: tenant.name,
+              tenant_type: tenant.plan,
+              location: tenant.location,
+              admin_email: tenant.email,
+            },
+            headers: {
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
+          },
+        );
+        return {
+          res: newTenant.toJSON(),
+          ghResponse: await this.octokit.request(
+            'GET ' + ghResponse.url.replace('/dispatches', ''),
+          ),
+        };
+      })
+      .catch((error) => {
+        this.logger.error(error);
+        return error;
       });
-    // .catch((error) => {
-    //   this.logger.error(error);
-    //   return error;
-    // });
   }
 
   async deleteTenant(tenantId: string) {
