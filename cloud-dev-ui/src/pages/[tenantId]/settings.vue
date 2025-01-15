@@ -22,13 +22,14 @@
               v-if="tab.selections"
               v-for="selection in tab.selections"
               :disabled="selection.advanced"
-              v-tooltip:center="
-                selection.advanced ? 'Advanced Setting blocked' : ''
-              "
               :key="selection.title"
               class="pa-5"
             >
-              <v-list-item-title>{{ selection.title }}</v-list-item-title>
+              <v-list-item-title
+                >{{
+                  (selection.advanced ? "Disabled: " : "") + selection.title
+                }}
+              </v-list-item-title>
               <v-list-item-subtitle class="d-block pb-5"
                 >{{ selection.text }}
               </v-list-item-subtitle>
