@@ -9,17 +9,23 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { DefectsService } from './defects.service';
 import { CreateDefectDto } from './dto/create-defect.dto';
 import { Defect } from './entities/defect.entity';
 import { UpdateDefectDto } from './dto/update-defect.dto';
+import { Roles } from 'src/guards/roles.decorator';
+import { Role } from '@cloud-porsche/types';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 @Controller('defects')
 export class DefectsController {
   constructor(private readonly defectsService: DefectsService) {}
 
   @Post()
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @UseGuards(RolesGuard)
   async create(
     @Headers('tenant-id') tenantId: string,
     @Body() createDefectDto: CreateDefectDto,
@@ -58,6 +64,8 @@ export class DefectsController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @UseGuards(RolesGuard)
   async update(
     @Headers('tenant-id') tenantId: string,
     @Param('id') id: string,
@@ -68,6 +76,8 @@ export class DefectsController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @UseGuards(RolesGuard)
   async remove(
     @Headers('tenant-id') tenantId: string,
     @Param('id') id: string,

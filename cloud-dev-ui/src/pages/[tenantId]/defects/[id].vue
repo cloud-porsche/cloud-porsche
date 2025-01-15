@@ -58,7 +58,12 @@
           </v-img>
         </template>
         <template v-slot:item.actions="{ item }">
-          <v-btn icon="mdi-pencil" @click="editDialog(item)" variant="plain">
+          <v-btn
+            icon="mdi-pencil"
+            @click="editDialog(item)"
+            variant="plain"
+            :disabled="useAppStore().isUserRole"
+          >
           </v-btn>
         </template>
 
@@ -119,6 +124,7 @@
                     class="me-2"
                     @click="editDialog(item)"
                     variant="tonal"
+                    :disabled="useAppStore().isUserRole"
                     >Edit
                   </v-btn>
                   <v-btn
@@ -126,6 +132,7 @@
                     color="error"
                     @click="initiateDeletion(item)"
                     variant="flat"
+                    :disabled="useAppStore().isUserRole"
                     >Delete
                   </v-btn>
                 </div>
@@ -208,6 +215,7 @@ import { useDisplay } from "vuetify";
 import { useDateFormat } from "@vueuse/core";
 import { ref } from "vue";
 import { useRoute } from "vue-router";
+import { useAppStore } from "@/stores/app";
 
 export type SignedDefect = IDefect & { signedImage: string };
 
@@ -324,7 +332,7 @@ function refetch() {
           // Fetch the image URL and assign it to the defect object
           defect.signedImage = await fetchImage(defect.image); // Replace with actual image filename as needed
           return defect;
-        })
+        }),
       );
       loading.value = false;
       error.value = false;
@@ -384,7 +392,7 @@ function handleSave(newDefect: IDefect, image?: File) {
       .then(() =>
         postJSON("/v1/defects", newDefect).then(() => {
           refetch();
-        })
+        }),
       )
       .catch(errHandler);
   } else {
@@ -406,7 +414,7 @@ function handleUpdateList(search: string, filter: string) {
 
   loading.value = true;
   get(
-    `/v1/defects/search?search=${search}&filter=${filter}&propertyId=${id.value}`
+    `/v1/defects/search?search=${search}&filter=${filter}&propertyId=${id.value}`,
   )
     .json()
     .then(async (data) => {
@@ -415,7 +423,7 @@ function handleUpdateList(search: string, filter: string) {
           // Fetch the image URL and assign it to the defect object
           defect.signedImage = await fetchImage(defect.image); // Replace with actual image filename as needed
           return defect;
-        })
+        }),
       );
       loading.value = false;
       error.value = false;
@@ -435,7 +443,7 @@ function patchDefect(
   id: string,
   defect: Partial<SignedDefect>,
   image?: File,
-  oldId?: string
+  oldId?: string,
 ) {
   loading.value = true;
   if (image && defect.image && oldId !== defect.image) {
@@ -451,7 +459,7 @@ function patchDefect(
       .then(() =>
         patchJSON(`/v1/defects/${id}`, defect).then(() => {
           refetch();
-        })
+        }),
       )
       .catch(errHandler);
   } else if (!image && oldId) {

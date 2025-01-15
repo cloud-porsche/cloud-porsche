@@ -16,7 +16,7 @@ autoscaling:
 
 shared-envs:
   FIREBASE_OVERWRITE_CREDENTIALS: true
-  CORS_ORIGINS: https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
+  CORS_ORIGINS: https://app.cloud-porsche.com,https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
 
 propertyManagement:
   envs:

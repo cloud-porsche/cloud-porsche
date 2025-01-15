@@ -14,6 +14,9 @@ export class AuthMiddleware implements NestMiddleware {
       if (!tenantId) {
         req.headers['tenant-id'] = 'localhost';
       }
+      req['user'] = {
+        role: 'admin',
+      }
       next();
       return;
     }
@@ -37,7 +40,7 @@ export class AuthMiddleware implements NestMiddleware {
         req['user'] = {
           email: decodedToken.email,
           uid: decodedToken.uid,
-          tenantId: tenantId || decodedToken.uid,
+          role: decodedToken.role,
         };
         if (!tenantId) {
           req.headers['tenant-id'] = decodedToken.uid;
