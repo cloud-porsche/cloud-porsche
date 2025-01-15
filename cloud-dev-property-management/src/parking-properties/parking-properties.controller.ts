@@ -16,10 +16,6 @@ import { UpdateParkingPropertyDto } from './dto/update-parking-property.dto';
 export class ParkingPropertiesController {
   constructor(
     private readonly parkingPropertiesService: ParkingPropertiesService,
-    // TODO Fix SimulationService later
-    //private readonly simulationService: SimulationService,
-    //@Inject('SIMULATION_PARKING_PROPERTIES_SERVICE')
-    private readonly simulationParkingPropertiesService: ParkingPropertiesService,
   ) {}
 
   @Post()
@@ -40,9 +36,6 @@ export class ParkingPropertiesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    // if (this.simulationService.getSimulationStatus(id)) {
-    //   return this.simulationParkingPropertiesService.findOne(id);
-    // }
     return this.parkingPropertiesService.findOne(id);
   }
 
