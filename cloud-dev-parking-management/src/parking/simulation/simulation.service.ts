@@ -67,6 +67,34 @@ export class SimulationService {
     this.logger.debug(`Active intervals: ${intervals.length}`);
   }
 
+  async updateSimulationSpeed(
+    token: string,
+    tenantId: string,
+    propertyId: string,
+    newSpeed: string,
+  ) {
+    if (!this.simulationIds.has(propertyId)) {
+      throw new Error('Simulation not running for this property');
+    }
+
+    this.schedulerRegistry.deleteInterval(propertyId);
+
+    const newIntervalSpeed = SIMULATION_SPEEDS[newSpeed];
+
+    this.schedulerRegistry.addInterval(
+      propertyId,
+      setInterval(
+        async () => this.runSimulation(token, tenantId, propertyId),
+        newIntervalSpeed,
+      ),
+    );
+
+    this.simulationIntervals.set(propertyId, newIntervalSpeed);
+    this.logger.log(
+      `Simulation speed updated for ${propertyId} to: ${newIntervalSpeed}`,
+    );
+  }
+
   async stopSimulation(token: string, tenantId: string, propertyId: string) {
     this.schedulerRegistry.deleteInterval(propertyId);
 
@@ -106,34 +134,6 @@ export class SimulationService {
         });
       }
     }
-  }
-
-  async updateSimulationSpeed(propertyId: string, newSpeed: SimulationSpeed) {
-    if (!this.simulationIds.has(propertyId)) {
-      throw new Error('Simulation not running for this property');
-    }
-
-    // Entferne das alte Intervall
-    this.schedulerRegistry.deleteInterval(propertyId);
-
-    // Füge das neue Intervall hinzu
-    this.schedulerRegistry.addInterval(
-      propertyId,
-      setInterval(
-        async () =>
-          this.runSimulation(
-            null, // Du kannst hier optional die Token- und Tenant-Logik erweitern
-            null,
-            propertyId,
-          ),
-        SIMULATION_SPEEDS[newSpeed],
-      ),
-    );
-
-    this.simulationIntervals.set(propertyId, newSpeed);
-    this.logger.log(
-      `Simulation speed updated for ${propertyId} to: ${newSpeed}`,
-    );
   }
 
   getSimulationStatus(propertyId: string) {

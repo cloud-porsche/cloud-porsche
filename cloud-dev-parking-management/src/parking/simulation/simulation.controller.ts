@@ -45,10 +45,15 @@ export class SimulationController {
     @Headers('tenant-id') tenantId: string,
     @Headers('authorization') token: string,
     @Param('propertyId') propertyId: string,
-    @Body('speed') speed: SimulationSpeed,
+    @Body('speed') speed: string,
   ) {
     try {
-      await this.simulationService.updateSimulationSpeed(propertyId, speed);
+      await this.simulationService.updateSimulationSpeed(
+        token,
+        tenantId,
+        propertyId,
+        speed,
+      );
       return { message: `Simulation speed updated to ${speed}` };
     } catch (error) {
       this.logger.error('Error updating simulation speed', error);
