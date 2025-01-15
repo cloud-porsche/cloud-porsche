@@ -28,11 +28,10 @@ export class AppModule {
       .apply(AuthMiddleware)
       .exclude(
         { path: 'v1', method: RequestMethod.GET },
-        { path: 'api', method: RequestMethod.ALL },
         { path: 'v1/tenants', method: RequestMethod.POST },
       )
       .forRoutes({
-        path: '*',
+        path: 'v1/*',
         method: RequestMethod.ALL,
       });
   }
