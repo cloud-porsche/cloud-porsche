@@ -270,60 +270,70 @@ export class TenantsService {
       databaseURL: process.env.FIREBASE_DATABASE_URL,
       projectId: process.env.FIREBASE_PROJECT_ID,
     };
-    admin.initializeApp(creds, 'old');
-    admin.initializeApp(creds, 'new');
-    const firestoreOld = admin.firestore(admin.app('old'));
-    const oldDbName =
-      oldTenant.tier === TenantTier.FREE
-        ? 'free-tier'
-        : oldTenant.tier === TenantTier.PRO
-          ? 'pro-tier'
-          : oldTenantId;
-    firestoreOld.settings({
-      databaseId: 'property-management-' + oldDbName,
-      ignoreUndefinedProperties: true,
-    });
-    const firestoreNew = admin.firestore(admin.app('new'));
-    const newDbName =
-      oldTenant.tier === TenantTier.PRO ? 'pro-tier' : newTenantId;
-    firestoreNew.settings({
-      databaseId: 'property-management-' + newDbName,
-      ignoreUndefinedProperties: true,
-    });
+    const tenantAppFrom = admin.initializeApp(creds, 'old');
+    const tenantAppTo = admin.initializeApp(creds, 'new');
 
-    if (
-      newTenant.tier === TenantTier.PRO &&
-      oldTenant.tier === TenantTier.ENTERPRISE
-    ) {
-      const properties = await firestoreOld
-        .collection('ParkingProperties')
-        .listDocuments();
-      if (properties.length > 5)
-        throw new BadRequestException(
-          'Migration to PRO tier only supports up to 5 properties',
-        );
-    }
+    try {
+      const firestoreOld = admin.firestore(tenantAppFrom);
+      const oldDbName =
+        oldTenant.tier === TenantTier.FREE
+          ? 'free-tier'
+          : oldTenant.tier === TenantTier.PRO
+            ? 'pro-tier'
+            : oldTenantId;
+      firestoreOld.settings({
+        databaseId: 'property-management-' + oldDbName,
+        ignoreUndefinedProperties: true,
+      });
+      const firestoreNew = admin.firestore(tenantAppTo);
+      const newDbName =
+        oldTenant.tier === TenantTier.PRO ? 'pro-tier' : newTenantId;
+      firestoreNew.settings({
+        databaseId: 'property-management-' + newDbName,
+        ignoreUndefinedProperties: true,
+      });
 
-    const oldTenantIdField =
-      oldTenant.tier === TenantTier.FREE ? decodedToken.uid : oldTenantId;
+      if (
+        newTenant.tier === TenantTier.PRO &&
+        oldTenant.tier === TenantTier.ENTERPRISE
+      ) {
+        const properties = await firestoreOld
+          .collection('ParkingProperties')
+          .listDocuments();
+        if (properties.length > 5)
+          throw new BadRequestException(
+            'Migration to PRO tier only supports up to 5 properties',
+          );
+      }
 
-    const collections = await firestoreOld.listCollections();
-    for (const collection of collections) {
-      const docs = await collection.listDocuments();
-      for (const doc of docs) {
-        const data = (await doc.get()).data();
-        if (data.tenantId === oldTenantIdField) {
-          Object.assign(data, { tenantId: newTenantId });
-          await firestoreNew.collection(collection.id).doc(doc.id).set(data);
+      const oldTenantIdField =
+        oldTenant.tier === TenantTier.FREE ? decodedToken.uid : oldTenantId;
+
+      const collections = await firestoreOld.listCollections();
+      for (const collection of collections) {
+        const docs = await collection.listDocuments();
+        for (const doc of docs) {
+          const data = (await doc.get()).data();
+          if (data.tenantId === oldTenantIdField) {
+            Object.assign(data, { tenantId: newTenantId });
+            await firestoreNew.collection(collection.id).doc(doc.id).set(data);
+          }
         }
       }
-    }
 
-    return {
-      res: {
-        from: oldTenantId,
-        to: newTenantId,
-      },
-    };
+      await tenantAppFrom.delete();
+      await tenantAppTo.delete();
+
+      return {
+        res: {
+          from: oldTenantId,
+          to: newTenantId,
+        },
+      };
+    } catch (error) {
+      await tenantAppFrom.delete();
+      await tenantAppTo.delete();
+      throw error;
+    }
   }
 }
