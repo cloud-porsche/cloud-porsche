@@ -40,9 +40,11 @@
               >
               </v-select>
             </v-list-item>
-            <ProTier v-else-if="
+            <ProTier
+              v-else-if="
                 tab.title === 'User Management' && useAppStore().hasAdminAccess
-              ">
+              "
+            >
               <v-list-item class="pa-5">
                 <div class="d-flex justify-space-between pb-10">
                   <h2>User Management</h2>
@@ -102,6 +104,62 @@
               <v-list-item-title>No settings available.</v-list-item-title>
             </v-list-item>
           </v-list>
+          <v-expansion-panels v-if="tab.migration" rounded class="mt-8">
+            <v-expansion-panel>
+              <v-expansion-panel-title>
+                <v-list-item>
+                  <v-list-item-title>Data Migration</v-list-item-title>
+                  <v-list-item-subtitle>
+                    Migrating from a different tenant? Enter your details below
+                    and start the migration process.
+                  </v-list-item-subtitle>
+                </v-list-item>
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <v-form @submit="doMigration()" class="ma-2">
+                  <v-text-field
+                    v-model="oldTenantId"
+                    label="Old Tenant ID"
+                    required
+                  >
+                    <template #append>
+                      <v-icon
+                        v-tooltip:top="
+                          'You can find your tenant id in the path of your URL (e.g. yourname-y71nc)'
+                        "
+                        >mdi-help-circle-outline
+                      </v-icon>
+                    </template>
+                  </v-text-field>
+                  <v-text-field
+                    v-model="oldEmail"
+                    label="Old Tenant Email"
+                    required
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="oldPassword"
+                    label="Old Tenant Password"
+                    required
+                    type="password"
+                  ></v-text-field>
+                  <v-divider class="pb-4" />
+                  <span>
+                    <v-btn
+                      @click="doMigration"
+                      :color="migrationError ? 'error' : 'primary'"
+                      :loading="migrationLoading"
+                      :disabled="!oldTenantId || !oldEmail || !oldPassword"
+                    >
+                      Confirm & Start Migration
+                    </v-btn>
+                    <span v-if="migrationLong" class="pl-4">{{
+                      migrationLong
+                    }}</span>
+                  </span>
+                </v-form>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
           <v-dialog v-model="dialog" max-width="500px">
             <v-card>
               <v-card-title>
@@ -169,6 +227,13 @@
         </v-responsive>
       </v-tabs-window-item>
     </v-tabs-window>
+    <v-alert
+      v-if="migrationSuccess || migrationError"
+      closable
+      :type="migrationSuccess ? 'success' : 'error'"
+      class="ms-8 me-8 mb-8"
+      >{{ migrationSuccess || migrationError }}
+    </v-alert>
   </div>
 </template>
 
@@ -177,10 +242,19 @@ import { useAppStore } from "@/stores/app";
 import { useUserStore } from "@/stores/user";
 import { MaterialVersion } from "@/plugins/vuetify";
 import router from "@/router";
+import { post } from "@/http/http";
+import { useFirebaseAuth } from "vuefire";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import { usePropertyStore } from "@/stores/properties";
 
+const auth = useFirebaseAuth();
 const appStore = useAppStore();
 const userStore = useUserStore();
-const tenantId = computed(() => (router.currentRoute.value.params as any).tenantId);
+const propertyStore = usePropertyStore();
+const tenantId = computed(
+  () => (router.currentRoute.value.params as any).tenantId,
+);
 const dialog = ref(false);
 const deleteUserDialog = ref(false);
 const newUserEmail = ref("");
@@ -190,8 +264,72 @@ const editingUID = ref("");
 const deleteUserUid = ref("");
 const deleteUserMail = ref("");
 
+const oldTenantId = ref("");
+const oldEmail = ref("");
+const oldPassword = ref("");
+const migrationError = ref<string | undefined>(undefined);
+const migrationLoading = ref(false);
+const migrationLong = ref<string | undefined>(undefined);
+const migrationSuccess = ref<string | undefined>(undefined);
+
+const doMigration = async () => {
+  if (!auth) return;
+  migrationSuccess.value = undefined;
+  migrationLoading.value = true;
+  setTimeout(() => {
+    if (migrationLoading.value) {
+      migrationLong.value =
+        "Migration is taking longer than expected. Please be patient.";
+    }
+  }, 15000);
+  migrationError.value = undefined;
+  try {
+    const currentToken = await auth.currentUser?.getIdToken();
+    if (!currentToken) {
+      console.error("Currently not logged in!");
+      return;
+    }
+    const tempApp = initializeApp(
+      {
+        projectId: "cloud-porsche",
+        apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+        authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      },
+      "temp",
+    );
+    const tempAuth = getAuth(tempApp);
+    tempAuth.tenantId = oldTenantId.value;
+    const oldUser = await signInWithEmailAndPassword(
+      tempAuth,
+      oldEmail.value,
+      oldPassword.value,
+    );
+    const oldAuthToken = await oldUser.user.getIdToken();
+    const headers = new Headers();
+    headers.set("authorization-old", oldAuthToken);
+    headers.set("authorization-new", currentToken);
+    await post(
+      (import.meta.env.PROD
+        ? "https://tenant-management.cloud-porsche.com"
+        : "http://localhost:8082") +
+        `/v1/tenants/${oldTenantId.value}/migrate/${tenantId.value}`,
+      undefined,
+      {
+        headers: headers,
+      },
+    );
+    migrationSuccess.value = "Migration successful!";
+    await propertyStore.fetchProperties();
+  } catch (error) {
+    migrationError.value = "Migration failed: " + error;
+  } finally {
+    migrationLong.value = undefined;
+    migrationLoading.value = false;
+  }
+};
+
 const userTableHeaders = [
-  { title: "Email", key: "email"},
+  { title: "Email", key: "email" },
   { title: "UID", key: "uid" },
   { title: "Current Role", key: "role" },
   { title: "Actions", key: "action", sortable: false, maxWidth: "100px" },
@@ -219,6 +357,7 @@ const tabs = computed(() => [
         },
       },
     ],
+    migration: true,
   },
   {
     title: "User Management",
@@ -330,7 +469,11 @@ const handleAddOrUpdateUser = async () => {
         newUserRole.value,
       );
     } else {
-      await userStore.addUser(tenantId.value, newUserEmail.value, newUserRole.value);
+      await userStore.addUser(
+        tenantId.value,
+        newUserEmail.value,
+        newUserRole.value,
+      );
     }
   } catch (error) {
     console.error("Error in adding or updating user:", error);
