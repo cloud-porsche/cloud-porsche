@@ -111,9 +111,9 @@ export const usePropertyStore = defineStore("properties", {
     async setSimulationActive(propertyId: string, speed: string) {
       this.$state.loading = true;
       try {
-        await post(
+        await postJSON(
           `/v1/simulation/${propertyId}/start`,
-          JSON.stringify({ speed: speed }),
+          { speed: speed },
           undefined,
           "parkingManagement",
         );

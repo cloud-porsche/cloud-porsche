@@ -45,6 +45,9 @@ export class SimulationService {
 
     this.simulationIds.add(propertyId);
     this.simulationIntervals.set(propertyId, SIMULATION_SPEEDS[speed]);
+    this.logger.debug(
+      'Simulation Intervals: ' + JSON.stringify([...this.simulationIntervals]),
+    );
 
     this.schedulerRegistry.addInterval(
       propertyId,
