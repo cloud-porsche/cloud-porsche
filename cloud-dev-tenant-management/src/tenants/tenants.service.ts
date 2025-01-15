@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { Octokit } from 'octokit';
@@ -8,7 +14,6 @@ import {
   getAuth,
   sendEmailVerification,
 } from 'firebase/auth';
-import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 import { ITenant, TenantTier } from '@cloud-porsche/types';
 
 @Injectable()
@@ -198,7 +203,7 @@ export class TenantsService {
     newUserToken: string,
   ) {
     if (!oldTenantId || !newTenantId || !userToken || !newUserToken) {
-      return HttpErrorByCode[500];
+      throw new InternalServerErrorException('Missing parameters');
     }
     if (newTenantId === 'free-tier') {
       throw new BadRequestException('Migration to free tier not supported');
@@ -212,7 +217,7 @@ export class TenantsService {
       .authForTenant(newTenantId);
     const newDecodedToken = await newTenantAuth.verifyIdToken(newUserToken);
     if (decodedToken.email !== newDecodedToken.email) {
-      return HttpErrorByCode[403];
+      throw new ForbiddenException('Unauthorized');
     }
 
     const oldTenantDoc = admin
@@ -230,7 +235,7 @@ export class TenantsService {
       oldTenant.tier !== TenantTier.FREE &&
       oldTenant.adminEmail !== decodedToken.email
     ) {
-      return HttpErrorByCode[403];
+      throw new ForbiddenException('Not an admin');
     }
 
     const newTenantDoc = admin
@@ -245,7 +250,7 @@ export class TenantsService {
       throw new BadRequestException('New tenant information not found');
     }
     if (newTenant.adminEmail !== newDecodedToken.email) {
-      return HttpErrorByCode[403];
+      throw new ForbiddenException('Not an admin');
     }
     const creds = {
       credential:
@@ -268,17 +273,28 @@ export class TenantsService {
     admin.initializeApp(creds, 'old');
     admin.initializeApp(creds, 'new');
     const firestoreOld = admin.firestore(admin.app('old'));
+    const oldDbName =
+      oldTenant.tier === TenantTier.FREE
+        ? 'free-tier'
+        : oldTenant.tier === TenantTier.PRO
+          ? 'pro-tier'
+          : oldTenantId;
     firestoreOld.settings({
-      databaseId: 'property-management-' + oldTenantId,
+      databaseId: 'property-management-' + oldDbName,
       ignoreUndefinedProperties: true,
     });
     const firestoreNew = admin.firestore(admin.app('new'));
+    const newDbName =
+      oldTenant.tier === TenantTier.PRO ? 'pro-tier' : newTenantId;
     firestoreNew.settings({
-      databaseId: 'property-management-' + newTenantId,
+      databaseId: 'property-management-' + newDbName,
       ignoreUndefinedProperties: true,
     });
 
-    if (newTenant.tier === TenantTier.PRO) {
+    if (
+      newTenant.tier === TenantTier.PRO &&
+      oldTenant.tier === TenantTier.ENTERPRISE
+    ) {
       const properties = await firestoreOld
         .collection('ParkingProperties')
         .listDocuments();

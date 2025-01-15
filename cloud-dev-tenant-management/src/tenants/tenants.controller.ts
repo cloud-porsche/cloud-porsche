@@ -167,7 +167,7 @@ export class TenantsController {
   async migrateTenant(
     @Param('tenantId') tenantId: string,
     @Param('newTenantId') newTenantId: string,
-    @Headers('authorization') token: string,
+    @Headers('authorization-old') token: string,
     @Headers('authorization-new') newUserToken: string,
   ) {
     return await this.tenantsService.migrateTenant(
