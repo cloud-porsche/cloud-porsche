@@ -104,7 +104,7 @@
               <v-list-item-title>No settings available.</v-list-item-title>
             </v-list-item>
           </v-list>
-          <v-expansion-panels v-if="tab.migration" rounded class="mt-8">
+          <v-expansion-panels v-if="tab.migration" rounded class="mt-4">
             <v-expansion-panel>
               <v-expansion-panel-title>
                 <v-list-item>
@@ -357,7 +357,7 @@ const tabs = computed(() => [
         },
       },
     ],
-    migration: true,
+    migration: !["free-tier", "free"].includes(tenantId.value),
   },
   {
     title: "User Management",
