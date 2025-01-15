@@ -12,7 +12,7 @@ const SIMULATION_SPEEDS = {
   fast: 1000, // 1 Sekunde
 };
 
-type SimulationSpeed = keyof typeof SIMULATION_SPEEDS;
+export type SimulationSpeed = keyof typeof SIMULATION_SPEEDS;
 
 @Injectable()
 export class SimulationService {

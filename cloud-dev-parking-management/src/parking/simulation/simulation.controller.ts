@@ -1,5 +1,14 @@
-import { Controller, Get, Logger, Param, Post, Headers } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Post,
+  Headers,
+  Body,
+} from '@nestjs/common';
 import { SimulationService } from './simulation.service';
+import { SimulationSpeed } from './simulation.service';
 
 @Controller('simulation')
 export class SimulationController {
@@ -12,12 +21,14 @@ export class SimulationController {
     @Headers('tenant-id') tenantId: string,
     @Headers('authorization') token: string,
     @Param('propertyId') propertyId: string,
+    @Body('speed') speed: SimulationSpeed = 'normal',
   ) {
     try {
       return await this.simulationService.startSimulation(
         token,
         tenantId,
         propertyId,
+        speed,
       );
     } catch (error) {
       this.logger.error(
@@ -26,6 +37,20 @@ export class SimulationController {
       );
       await this.simulationService.stopSimulation(token, tenantId, propertyId);
       return error;
+    }
+  }
+
+  @Post(':propertyId/update-speed')
+  async updateSimulationSpeed(
+    @Param('propertyId') propertyId: string,
+    @Body('speed') speed: SimulationSpeed,
+  ) {
+    try {
+      await this.simulationService.updateSimulationSpeed(propertyId, speed);
+      return { message: `Simulation speed updated to ${speed}` };
+    } catch (error) {
+      this.logger.error('Error updating simulation speed', error);
+      return { error: error.message };
     }
   }
 
