@@ -40,6 +40,12 @@
       </v-btn>
       <v-divider vertical inset></v-divider>
       <v-spacer></v-spacer>
+      <v-select
+        label="Select Simulation Speed"
+        :items="['normal', 'fast', 'slow']"
+        v-model="selectedSpeed"
+        outlined
+      ></v-select>
       <v-btn
         :disabled="!useAppStore().wsStatus"
         density="comfortable"
@@ -48,7 +54,7 @@
         @click="
           simulationState
             ? propertyStore.setSimulationInactive(property.id)
-            : propertyStore.setSimulationActive(property.id)
+            : propertyStore.setSimulationActive(property.id, selectedSpeed)
         "
       />
     </v-toolbar>
@@ -276,6 +282,8 @@ const propertyStore = usePropertyStore();
 const route = useRoute();
 const id = computed(() => (route.params as any)["id"]);
 const tenantId = computed(() => (route.params as any)["tenantId"]);
+
+const selectedSpeed = ref("normal");
 
 await propertyStore.fetchSimulationStatus(id.value);
 

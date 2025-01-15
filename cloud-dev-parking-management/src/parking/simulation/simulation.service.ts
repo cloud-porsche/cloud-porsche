@@ -36,7 +36,7 @@ export class SimulationService {
     token: string,
     tenantId: string,
     propertyId: string,
-    speed: SimulationSpeed = 'normal',
+    speed?: string,
   ) {
     if (this.simulationIds.has(propertyId)) {
       this.logger.error('Simulation already running');
@@ -44,7 +44,7 @@ export class SimulationService {
     }
 
     this.simulationIds.add(propertyId);
-    this.simulationIntervals.set(propertyId, speed);
+    this.simulationIntervals.set(propertyId, SIMULATION_SPEEDS[speed]);
 
     this.schedulerRegistry.addInterval(
       propertyId,

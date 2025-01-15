@@ -21,7 +21,7 @@ export class SimulationController {
     @Headers('tenant-id') tenantId: string,
     @Headers('authorization') token: string,
     @Param('propertyId') propertyId: string,
-    @Body('speed') speed: SimulationSpeed = 'normal',
+    @Body('speed') speed: string,
   ) {
     try {
       return await this.simulationService.startSimulation(
@@ -42,6 +42,8 @@ export class SimulationController {
 
   @Post(':propertyId/update-speed')
   async updateSimulationSpeed(
+    @Headers('tenant-id') tenantId: string,
+    @Headers('authorization') token: string,
     @Param('propertyId') propertyId: string,
     @Body('speed') speed: SimulationSpeed,
   ) {
