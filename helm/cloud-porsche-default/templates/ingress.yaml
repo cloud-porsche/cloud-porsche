@@ -14,7 +14,8 @@ spec:
       secretName: cloud-porsche-com-tls
   ingressClassName: nginx
   rules:
-    - http:
+    - host: {{ .Values.tenantId }}.cloud-porsche.com
+      http:
         paths:
           - path: /property-management(/|$)(.*)
             pathType: ImplementationSpecific
