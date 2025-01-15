@@ -10,6 +10,17 @@
             :icon="'mdi-plus'"
             v-tooltip="'Add new Property'"
             @click="newPropertyDialog = true"
+            :disabled="!appStore.hasAdminAccess || propertyLimitReached()"
+          />
+          <v-btn
+            class="ml-4"
+            :icon="'mdi-delete'"
+            color="error"
+            v-tooltip="'Delete'"
+            :disabled="
+              propertyStore.properties.length <= 0 || !appStore.hasAdminAccess
+            "
+            @click="deleteDialog = true"
           />
           <v-btn
             class="ml-4"
@@ -17,14 +28,6 @@
             :color="propertyStore.error ? 'error' : undefined"
             v-tooltip="'Refresh'"
             @click="propertyStore.fetchProperties()"
-          />
-          <v-btn
-            class="ml-4"
-            :icon="'mdi-delete'"
-            color="error"
-            v-tooltip="'Delete'"
-            :disabled="propertyStore.properties.length <= 0"
-            @click="deleteDialog = true"
           />
         </span>
       </h1>
@@ -50,7 +53,7 @@
                 parkingSpots(property.id).filter(
                   (s) =>
                     s.state === ParkingSpotState.OCCUPIED ||
-                    s.state === ParkingSpotState.CHARGING
+                    s.state === ParkingSpotState.CHARGING,
                 ).length
               }}
               / {{ parkingSpots(property.id).length }}
@@ -220,7 +223,26 @@
               </v-row>
               <v-row>
                 <v-col class="d-flex justify-center">
+                  <ProTier v-if="newLayers.length > 0">
+                    <v-btn
+                      prepend-icon="mdi-plus"
+                      @click="
+                        newLayers.push({
+                          floor: newLayers.length + 1,
+                          name: '',
+                          description: '',
+                          spotCount: 100,
+                          columns: 25,
+                          idPattern: '${layer}-${index}',
+                          parkingSpots: [],
+                        })
+                      "
+                    >
+                      Add Layer
+                    </v-btn>
+                  </ProTier>
                   <v-btn
+                    v-else
                     prepend-icon="mdi-plus"
                     @click="
                       newLayers.push({
@@ -233,7 +255,8 @@
                         parkingSpots: [],
                       })
                     "
-                    >Add Layer
+                  >
+                    Add Layer
                   </v-btn>
                 </v-col>
               </v-row>
@@ -267,44 +290,46 @@
                   ></v-text-field>
                 </v-col>
               </v-row>
-              <v-row>
-                <v-col>
-                  <v-divider></v-divider>
-                  <small
-                    class="pa-2 d-flex justify-center align-center text-grey text-center"
-                    >Left click a spot to replace it with a placeholder.<br />
-                    Right click to mark it as electric charger.</small
-                  ></v-col
-                >
-              </v-row>
-              <v-row>
-                <v-col>
-                  <div
-                    id="spot-container"
-                    :style="{
-                      gridTemplateColumns: `repeat(${layer.columns}, 1fr)`,
-                    }"
-                  >
-                    <Suspense>
-                      <ParkingSpotComponent
-                        v-for="spot in layer.parkingSpots"
-                        :key="spot.id"
-                        :spot="spot"
-                        disable-dialog
-                        @click="togglePlaceholder(layer, spot)"
-                        @contextmenu.prevent="
-                          spot.electricCharging = !spot.electricCharging
-                        "
-                      ></ParkingSpotComponent>
-                      <template v-slot:fallback>
-                        <v-progress-circular
-                          indeterminate
-                        ></v-progress-circular>
-                      </template>
-                    </Suspense>
-                  </div>
-                </v-col>
-              </v-row>
+              <ProTier>
+                <v-row>
+                  <v-col>
+                    <v-divider></v-divider>
+                    <small
+                      class="pa-2 d-flex justify-center align-center text-grey text-center"
+                      >Left click a spot to replace it with a placeholder.<br />
+                      Right click to mark it as electric charger.
+                    </small>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <div
+                      id="spot-container"
+                      :style="{
+                        gridTemplateColumns: `repeat(${layer.columns}, 1fr)`,
+                      }"
+                    >
+                      <Suspense>
+                        <ParkingSpotComponent
+                          v-for="spot in layer.parkingSpots"
+                          :key="spot.id"
+                          :spot="spot"
+                          disable-dialog
+                          @click="togglePlaceholder(layer, spot)"
+                          @contextmenu.prevent="
+                            spot.electricCharging = !spot.electricCharging
+                          "
+                        ></ParkingSpotComponent>
+                        <template v-slot:fallback>
+                          <v-progress-circular
+                            indeterminate
+                          ></v-progress-circular>
+                        </template>
+                      </Suspense>
+                    </div>
+                  </v-col>
+                </v-row>
+              </ProTier>
             </v-form>
           </v-stepper-window-item>
           <v-stepper-window-item :value="stepperPages.length">
@@ -401,7 +426,7 @@
                           {{
                             newLayers.reduce(
                               (acc, layer) => acc + layer.spotCount,
-                              0
+                              0,
                             )
                           }}
                           spots in total
@@ -484,11 +509,13 @@ import {
   ParkingSpot,
   ParkingSpotLayer,
   ParkingSpotState,
+  TenantTier,
 } from "@cloud-porsche/types";
 import { useDisplay } from "vuetify";
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useMonitoringStore } from "@/stores/monitoring";
+import { useAppStore } from "@/stores/app";
 
 const route = useRoute();
 const tenantId = computed(() => (route.params as any)["tenantId"]);
@@ -496,6 +523,8 @@ const tenantId = computed(() => (route.params as any)["tenantId"]);
 const mobile = useDisplay().mobile;
 const propertyStore = usePropertyStore();
 const monitoringStore = useMonitoringStore();
+const appStore = useAppStore();
+
 await monitoringStore.fetchMonitoringData();
 const { parkingSpots } = storeToRefs(propertyStore);
 const required = (v: string | undefined) => !!v || "This field is required.";
@@ -573,7 +602,7 @@ function nextOrGenerate(next: () => void) {
               .replace("${index}", index.toString())
               .replace("${layer}", layer.floor.toString());
         return spot;
-      })
+      }),
     );
   }
   next();
@@ -596,7 +625,7 @@ function togglePlaceholder(layer: ParkingSpotLayer, spot: ParkingSpot) {
   spot.electricCharging = false;
   if (spot.placeholder) {
     layer.parkingSpots = layer.parkingSpots.filter(
-      (s) => s.placeholder || s.id !== spot.id
+      (s) => s.placeholder || s.id !== spot.id,
     );
     spot.placeholder = !spot.placeholder;
   } else {
@@ -619,7 +648,7 @@ async function saveNewProperty() {
     lastModified: new Date(),
     layers: newLayers,
     defects: [],
-    tenantId: ""
+    tenantId: "",
   };
 
   await propertyStore.addProperty(finalProperty);
@@ -638,7 +667,7 @@ function getStateColor(property: IParkingProperty) {
     return undefined;
   }
   const occupied = spots.filter(
-    (s) => s.state === ParkingSpotState.OCCUPIED
+    (s) => s.state === ParkingSpotState.OCCUPIED,
   ).length;
   if (occupied === spots.length) {
     return "tomato";
@@ -657,6 +686,19 @@ function toParkingTypeText(item: ParkingPropertyType) {
       return "Total";
     default:
       return "Unknown";
+  }
+}
+
+function propertyLimitReached() {
+  switch (appStore.tenant.info?.tier) {
+    case TenantTier.FREE:
+      return propertyStore.properties.length >= 1;
+    case TenantTier.PRO:
+      return propertyStore.properties.length >= 5;
+    case TenantTier.ENTERPRISE:
+      return false;
+    default:
+      return true;
   }
 }
 

@@ -1,7 +1,10 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, UseGuards } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
 import { Tenant } from './dto/tenant.dto';
+import { Roles } from 'src/guards/roles.decorator';
+import { Role } from '@cloud-porsche/types';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 @Controller('tenants')
 export class TenantsController {
@@ -50,6 +53,21 @@ export class TenantsController {
     return await this.tenantsService.deleteTenant(tenantId);
   }
 
+  @Get(':tenantId/users/:uid')
+  @ApiParam({
+    name: 'tenantId',
+    description: 'The ID of the tenant to which the user will be added.',
+    example: 'tenant123',
+  })
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  getTenantUser(
+    @Param('tenantId') tenantId: string,
+    @Param('uid') uid: string,
+  ): Promise<any> {
+    return this.tenantsService.getTenantUsers(tenantId, uid);
+  }
+
   @Post(':tenantId/users')
   @ApiParam({
     name: 'tenantId',
@@ -65,14 +83,98 @@ export class TenantsController {
           description: 'The email of the user to be added to the tenant.',
           example: 'user@example.com',
         },
+        role: {
+          type: 'string',
+          description: 'The role of the user to be added to the tenant.',
+          example: 'admin',
+        },
       },
-      required: ['email'],
+      required: ['email', 'role'],
     },
   })
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   addTenantUser(
     @Param('tenantId') tenantId: string,
     @Body('email') email: string,
+    @Body('role') role: string,
   ): Promise<any> {
-    return this.tenantsService.addTenantUser(tenantId, email);
+    return this.tenantsService.addTenantUser(tenantId, email, role);
+  }
+
+  @Delete(':tenantId/users/:uid')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  async deleteTenantUser(
+    @Param('tenantId') tenantId: string,
+    @Param('uid') uid: string,
+  ) {
+    return await this.tenantsService.deleteTenantUser(tenantId, uid);
+  }
+
+  @Post(':tenantId/users/setRole')
+  @ApiParam({
+    name: 'tenantId',
+    description: 'The ID of the tenant to which the user role will be set.',
+    example: 'tenant123',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        uid: {
+          type: 'string',
+          description: 'The ID of the user to set the role for.',
+          example: 'user123',
+        },
+        role: {
+          type: 'string',
+          description: 'The role to set for the user.',
+          example: 'admin',
+        },
+      },
+      required: ['uid', 'role'],
+    },
+  })
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  async setTenantUserRole(
+    @Param('tenantId') tenantId: string,
+    @Body('uid') uid: string,
+    @Body('role') role: string,
+  ) {
+    return await this.tenantsService.setUserRole(tenantId, uid, role);
+  }
+
+  @Get('test')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  async test() {
+    return 'test';
+  }
+
+  @Post(':tenantId/migrate/:newTenantId')
+  @ApiParam({
+    name: 'tenantId',
+    description: 'The ID of the tenant to migrate.',
+    example: 'tenant-123gh',
+  })
+  @ApiParam({
+    name: 'newTenantId',
+    description: 'The new tenant id.',
+    example: 'tenant-428ux',
+  })
+  async migrateTenant(
+    @Param('tenantId') tenantId: string,
+    @Param('newTenantId') newTenantId: string,
+    @Headers('authorization') token: string,
+    @Headers('authorization-new') newUserToken: string,
+  ) {
+    return await this.tenantsService.migrateTenant(
+      tenantId,
+      newTenantId,
+      token,
+      newUserToken,
+    );
   }
 }

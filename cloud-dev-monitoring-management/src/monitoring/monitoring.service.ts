@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { ApiCall } from './entities/api-call.entity';
 import { getRepository } from 'fireorm';
 import { ParkingAction } from './entities/parking-action-entity';
@@ -10,6 +10,7 @@ import { getApp } from 'firebase-admin/app';
 import { TenantTier } from '@cloud-porsche/types';
 import { ConfigService } from '@nestjs/config';
 import { DefectAction } from './entities/defect-action.entity';
+import { DefectState } from '@cloud-porsche/types';
 
 @Injectable()
 export class MonitoringService {
@@ -292,8 +293,40 @@ export class MonitoringService {
   private async getDefectDistribution(
     timeframe: string,
     defectActions: DefectAction[],
-  ) {
-    
+  ): Promise<Record<string, Record<DefectState, number>>> {
+    const startDate = this.calculateDateRanges(timeframe).currentStart;
+  
+    const actionsInTimeframe = defectActions.filter(
+      (action) => new Date(action.date) >= startDate,
+    );
+  
+    const latestActions = actionsInTimeframe.reduce((acc, action) => {
+      const existingAction = acc.get(action.defectId);
+      if (!existingAction || new Date(action.date) > new Date(existingAction.date)) {
+        acc.set(action.defectId, action);
+      }
+      return acc;
+    }, new Map<string, DefectAction>());
+  
+    const defectDistribution: Record<string, Record<DefectState, number>> = {};
+  
+    latestActions.forEach((action) => {
+      const propertyName = action.propertyName;
+      const defectState =
+        action.action === 'delete' ? DefectState.DONE : action.defectState;
+  
+      if (!defectDistribution[propertyName]) {
+        defectDistribution[propertyName] = {
+          [DefectState.OPEN]: 0,
+          [DefectState.IN_WORK]: 0,
+          [DefectState.REJECTED]: 0,
+          [DefectState.DONE]: 0,
+        };
+      }
+  
+      defectDistribution[propertyName][defectState]++;
+    });
+    return defectDistribution;
   }
 
   private generateDateRange(startDate: Date, endDate: Date): string[] {
@@ -334,28 +367,60 @@ export class MonitoringService {
       await this.tenantDb.collection('Tenants').doc(tenantId).get()
     ).data() as Tenant;
     if (!tenant) {
-      tenant = (
-        await this.tenantDb.collection('Tenants').doc('free').get()
-      ).data() as Tenant;
+      return {
+        data: {
+          customers: {
+            1: 39,
+            2: 49,
+            3: 59,
+            4: 69,
+          },
+          customer_distribution: {
+            '69': 69,
+            '420': 69,
+            '1337': 69,
+          },
+          avg_utilization: {
+            '69': {
+              1: 59,
+              2: 79,
+              3: 69,
+              4: 89,
+            },
+          },
+          api_calls: {
+            current_period_api_calls: 69,
+            percent_change: 69,
+          },
+          parking_income: {
+            current_period_income: 69,
+            percent_change: 69,
+          },
+          defect_distribution: {
+            '69': {
+              "0": 69,
+              "1": 69,
+              "2": 69,
+              "3": 69,
+            }
+          },
+        }
+      }
     }
 
     const [
       customers,
       customerDistribution,
       apiCalls,
-      customerCount,
       parkingIncome,
       avgUtilization,
-      leftFreeApiCalls,
       defectDistribution,
     ] = await Promise.all([
       this.getCustomerData(timeframe, allParkingActions),
       this.getCustomerDistribution(timeframe, allParkingActions),
       this.getApiCalls(timeframe, allApiCalls),
-      this.getCustomerCount(timeframe, allParkingActions),
       this.getParkingIncome(timeframe, allParkingActions),
       this.getDailyAvgUtilization(timeframe, allParkingActions),
-      this.getLeftFreeApiCalls('monthly', tenant, allApiCalls),
       this.getDefectDistribution(timeframe, allDefectActions),
     ]);
 
@@ -364,10 +429,42 @@ export class MonitoringService {
         customers: customers,
         customer_distribution: customerDistribution,
         api_calls: apiCalls,
-        customer_count_change: customerCount,
         parking_income: parkingIncome,
         avg_utilization: avgUtilization,
+        defect_distribution: defectDistribution,
+      },
+    };
+  }
+
+  async getFreeData(tenantId: string, timeframe: string) {
+    const allParkingActions = await this.parkingActionRepository
+    .whereEqualTo('tenantId', tenantId)
+    .find();
+    const allApiCalls = await this.apiCallRepository
+      .whereEqualTo('tenantId', tenantId)
+      .find();
+    
+    let tenant = (
+      await this.tenantDb.collection('Tenants').doc(tenantId).get()
+    ).data() as Tenant;
+    if (!tenant) {
+      tenant = (
+        await this.tenantDb.collection('Tenants').doc('free').get()
+      ).data() as Tenant;
+    }
+
+    const [
+      leftFreeApiCalls,
+      customerCount,
+    ] = await Promise.all([
+      this.getLeftFreeApiCalls('monthly', tenant, allApiCalls),
+      this.getCustomerCount(timeframe, allParkingActions),
+    ]);
+
+    return {
+      data: {
         left_free_api_calls: leftFreeApiCalls,
+        customer_count_change: customerCount,
       },
     };
   }

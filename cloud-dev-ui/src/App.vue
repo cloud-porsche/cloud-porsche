@@ -1,7 +1,7 @@
 <template>
   <v-app :theme="isDark ? 'dark' : 'light'">
     <v-app-bar
-      :title="mobile ? 'P. Software' : 'Porsche Software Premium'"
+      :title="appStore.tenant.info?.tenantName"
       density="comfortable"
     >
       <template v-slot:prepend>
@@ -121,7 +121,7 @@
     </v-bottom-sheet>
     <v-bottom-sheet
       :model-value="
-        monitoringStore.data.left_free_api_calls === 0 && !user?.tenantId
+        monitoringStore.free_data.left_free_api_calls === 0 && !user?.tenantId
       "
       fullscreen
       :close-on-content-click="false"
@@ -137,25 +137,24 @@
 
 <script lang="ts" setup>
 import router from "@/router";
-import { useDisplay } from "vuetify";
 import { useAppStore } from "@/stores/app";
 import { useCurrentUser, useFirebaseAuth } from "vuefire";
 import Login from "@/components/Login.vue";
-import { connectAuthEmulator } from "firebase/auth";
+import { connectAuthEmulator, signOut } from "firebase/auth";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { usePropertyStore } from "@/stores/properties";
 import { initWs } from "./stores/ws";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { ITenant } from "@cloud-porsche/types";
 import { useMonitoringStore } from "./stores/monitoring";
-
-const { mobile } = useDisplay();
+import { useUserStore } from "./stores/user";
 
 const drawerOpen = ref(true);
 const openNavigations = ref([]);
 
 const appStore = useAppStore();
 const monitoringStore = useMonitoringStore();
+const userStore = useUserStore();
 const isDark = computed(() => appStore.isDark);
 
 const user = useCurrentUser();
@@ -176,16 +175,36 @@ const tenantId = computed(() => {
 });
 
 auth?.onAuthStateChanged(async (user) => {
-  appStore.setAuthLoading(false);
+  appStore.setAuthLoading(true);
+  appStore.$reset();
+  monitoringStore.$reset();
+  userStore.$reset();
+
   await router.isReady();
   await determineCurrentTenantId();
   if (user) {
     const token = await useCurrentUser().value?.getIdToken(true)!;
+    const idTokenResult = await user.getIdTokenResult();
+    try {
+      await auth.updateCurrentUser(user);
+    } catch (e) {
+      console.error(e);
+      signOut(auth);
+      return;
+    }
+    appStore.setCurrUid(user.uid);
     await fetchTenantInfo(tenantId.value);
+    if (idTokenResult.claims.role) {
+      appStore.setCurrUserRole(idTokenResult.claims.role as string);
+    } else {
+      appStore.setCurrUserRole("user");
+    }
     initWs(token, tenantId.value);
-
-    await monitoringStore.fetchMonitoringData();
+    await propertyStore.fetchProperties();
+    await monitoringStore.fetchAllData();
+    await userStore.fetchUsers(tenantId.value, user.uid);
   }
+  appStore.setAuthLoading(false);
 });
 
 const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
@@ -194,11 +213,6 @@ if (authDomain && auth && authDomain.includes("localhost")) {
 }
 
 const propertyStore = usePropertyStore();
-
-onMounted(async () => {
-  await router.isReady();
-  await propertyStore.fetchProperties();
-});
 
 const fetchTenantInfo = async (tenantId: string) => {
   const db = getFirestore();

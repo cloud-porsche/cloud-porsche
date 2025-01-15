@@ -19,7 +19,7 @@ resources:
     cpu: 500m
     memory: 1024Mi
   requests:
-    cpu: 500m
+    cpu: 200m
     memory: 512Mi
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
@@ -35,7 +35,7 @@ autoscaling:
 
 sharedEnvs:
   FIREBASE_OVERWRITE_CREDENTIALS: true
-  CORS_ORIGINS: https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
+  CORS_ORIGINS: https://app.cloud-porsche.com,https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
 
 propertyManagement:
   port: 8080

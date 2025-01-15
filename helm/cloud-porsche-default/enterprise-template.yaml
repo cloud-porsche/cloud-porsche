@@ -2,11 +2,11 @@ tenantId: ${TENANT_ID}
 
 resources:
   limits:
-    cpu: 1500m
-    memory: 2048Mi
-  requests:
-    cpu: 1000m
+    cpu: 500m
     memory: 1024Mi
+  requests:
+    cpu: 200m
+    memory: 512Mi
 
 propertyManagement:
   envs:

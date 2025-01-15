@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -13,6 +13,7 @@ import * as admin from 'firebase-admin';
   cors: {
     origin: [
       'https://cloud-porsche.github.io',
+      'https://app.cloud-porsche.com',
       'https://cloud-dev.ostabo.com',
       'http://localhost:3000',
     ],
@@ -36,7 +37,6 @@ export class ParkingPropertiesGateway {
 
     collectionRef.onSnapshot(
       (snapshot) => {
-
         this.client_tenantIds.forEach((tenantId, clientId) => {
           const parkingProperties: ParkingProperty[] = [];
           snapshot.forEach((doc) => {
@@ -46,7 +46,7 @@ export class ParkingPropertiesGateway {
                 ...doc.data(),
               } as ParkingProperty);
             }
-          })
+          });
           this.logger.debug('Parking property changed - Sending to clients');
           this.io.to(clientId).emit('parking-properties', parkingProperties);
         });
@@ -66,8 +66,12 @@ export class ParkingPropertiesGateway {
     const token = client.handshake.headers['authorization'];
     let tenantId = client.handshake.headers['tenant-id'];
 
-    if(client.handshake.headers['origin'].includes('localhost')) {
-      this.client_tenantIds.set(client.id, 'localhost');
+    if (client.handshake.headers['origin'].includes('localhost')) {
+      if (!client.handshake.headers['tenant-id']) {
+        this.client_tenantIds.set(client.id, 'localhost');
+      } else {
+        this.client_tenantIds.set(client.id, tenantId);
+      }
       return;
     }
 

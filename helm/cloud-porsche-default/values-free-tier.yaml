@@ -2,11 +2,11 @@ tenantId: free-tier
 
 resources:
   limits:
-    cpu: 500m
-    memory: 1024Mi
-  requests:
-    cpu: 500m
+    cpu: 200m
     memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -18,7 +18,7 @@ autoscaling:
 
 envs:
   FIREBASE_OVERWRITE_CREDENTIALS: true
-  CORS_ORIGINS: https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
+  CORS_ORIGINS: https://app.cloud-porsche.com,https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
   FIREBASE_STORAGE_BUCKET: property-management-free-tier
   FIRESTORE_DB: property-management-free-tier
 
