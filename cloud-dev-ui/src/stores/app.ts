@@ -73,6 +73,9 @@ export const useAppStore = defineStore("app", {
         state.currUser.role === "user"
       );
     },
+    isFreeTenant(state) {
+      return state.tenant.info?.tier === TenantTier.FREE;
+    }
   },
   actions: {
     updateWsConnection(socket: Socket) {

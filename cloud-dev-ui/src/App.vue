@@ -1,7 +1,7 @@
 <template>
   <v-app :theme="isDark ? 'dark' : 'light'">
     <v-app-bar
-      :title="mobile ? 'P. Software' : 'Porsche Software Premium'"
+      :title="appStore.tenant.info?.tenantName"
       density="comfortable"
     >
       <template v-slot:prepend>
@@ -137,25 +137,24 @@
 
 <script lang="ts" setup>
 import router from "@/router";
-import { useDisplay } from "vuetify";
 import { useAppStore } from "@/stores/app";
 import { useCurrentUser, useFirebaseAuth } from "vuefire";
 import Login from "@/components/Login.vue";
-import { connectAuthEmulator } from "firebase/auth";
+import { connectAuthEmulator, signOut } from "firebase/auth";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { usePropertyStore } from "@/stores/properties";
 import { initWs } from "./stores/ws";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { ITenant } from "@cloud-porsche/types";
 import { useMonitoringStore } from "./stores/monitoring";
-
-const { mobile } = useDisplay();
+import { useUserStore } from "./stores/user";
 
 const drawerOpen = ref(true);
 const openNavigations = ref([]);
 
 const appStore = useAppStore();
 const monitoringStore = useMonitoringStore();
+const userStore = useUserStore();
 const isDark = computed(() => appStore.isDark);
 
 const user = useCurrentUser();
@@ -176,22 +175,36 @@ const tenantId = computed(() => {
 });
 
 auth?.onAuthStateChanged(async (user) => {
+  appStore.setAuthLoading(true);
+  appStore.$reset();
+  monitoringStore.$reset();
+  userStore.$reset();
+
   await router.isReady();
   await determineCurrentTenantId();
   if (user) {
     const token = await useCurrentUser().value?.getIdToken(true)!;
-    await fetchTenantInfo(tenantId.value);
-    appStore.setCurrUid(user.uid);
     const idTokenResult = await user.getIdTokenResult();
+    try {
+      await auth.updateCurrentUser(user);
+    } catch (e) {
+      console.error(e);
+      signOut(auth);
+      return;
+    }
+    appStore.setCurrUid(user.uid);
+    await fetchTenantInfo(tenantId.value);
     if (idTokenResult.claims.role) {
       appStore.setCurrUserRole(idTokenResult.claims.role as string);
     } else {
       appStore.setCurrUserRole("user");
     }
     initWs(token, tenantId.value);
+    if (appStore.hasAdminAccess) {
+      await userStore.fetchUsers(user.uid, tenantId.value);
+    }
     await propertyStore.fetchProperties();
-    await monitoringStore.fetchFreeMonitoringData();
-    await monitoringStore.fetchMonitoringData();
+    await monitoringStore.fetchAllData();
   }
   appStore.setAuthLoading(false);
 });
@@ -207,7 +220,6 @@ const fetchTenantInfo = async (tenantId: string) => {
   const db = getFirestore();
   const docRef = doc(db, "Tenants", tenantId);
   const docData = (await getDoc(docRef)).data() as ITenant;
-  console.log(docData);
   appStore.setTenantInfo(docData);
 };
 </script>

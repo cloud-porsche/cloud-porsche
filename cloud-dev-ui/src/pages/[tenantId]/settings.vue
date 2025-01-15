@@ -40,65 +40,64 @@
               >
               </v-select>
             </v-list-item>
-            <v-list-item
-              v-else-if="
+            <ProTier v-else-if="
                 tab.title === 'User Management' && useAppStore().hasAdminAccess
-              "
-              class="pa-5"
-            >
-              <div class="d-flex justify-space-between pb-10">
-                <h2>User Management</h2>
-                <div class="d-flex justify-end">
-                  <v-btn
-                    color="primary"
-                    @click="
-                      userStore.fetchUsers(tenantId, appStore.currUser.uid)
-                    "
-                  >
-                    Refresh
-                  </v-btn>
-                  <v-spacer class="pl-5"></v-spacer>
-                  <v-btn color="primary" @click="openAddUserDialog">
-                    Add User
-                  </v-btn>
-                </div>
-              </div>
-              <v-data-table v-if="userStore.users.length > 0"
-                class="data-table rounded"
-                density="comfortable"
-                :items="userStore.users"
-                :headers="userTableHeaders"
-                :items-per-page-options="[
-                  { value: 5, title: '5' },
-                  { value: 10, title: '10' },
-                  { value: 25, title: '25' },
-                  { value: -1, title: 'All' },
-                ]"
-                item-value="email"
-                dense
-                outlined
-              >
-                <template #item.email="{ item }">
-                  {{ item.email }}
-                </template>
-                <template #item.uid="{ item }">
-                  {{ item.uid }}
-                </template>
-                <template #item.role="{ item }">
-                  {{ item.role }}
-                </template>
-                <template #item.action="{ item }">
-                  <div>
-                    <v-icon class="me-3" @click="openEditUserDialog(item)">
-                      mdi-pencil
-                    </v-icon>
-                    <v-icon color="red" @click="openDeleteUserDialog(item)">
-                      mdi-delete
-                    </v-icon>
+              ">
+              <v-list-item class="pa-5">
+                <div class="d-flex justify-space-between pb-10">
+                  <h2>User Management</h2>
+                  <div class="d-flex justify-end">
+                    <v-btn
+                      color="primary"
+                      @click="
+                        userStore.fetchUsers(tenantId, appStore.currUser.uid)
+                      "
+                    >
+                      Refresh
+                    </v-btn>
+                    <v-spacer class="pl-5"></v-spacer>
+                    <v-btn color="primary" @click="openAddUserDialog">
+                      Add User
+                    </v-btn>
                   </div>
-                </template>
-              </v-data-table>
-            </v-list-item>
+                </div>
+                <v-data-table v-if="userStore.users.length > 0"
+                  class="data-table rounded"
+                  density="comfortable"
+                  :items="userStore.users"
+                  :headers="userTableHeaders"
+                  :items-per-page-options="[
+                    { value: 5, title: '5' },
+                    { value: 10, title: '10' },
+                    { value: 25, title: '25' },
+                    { value: -1, title: 'All' },
+                  ]"
+                  item-value="email"
+                  dense
+                  outlined
+                >
+                  <template #item.email="{ item }">
+                    {{ item.email }}
+                  </template>
+                  <template #item.uid="{ item }">
+                    {{ item.uid }}
+                  </template>
+                  <template #item.role="{ item }">
+                    {{ item.role }}
+                  </template>
+                  <template #item.action="{ item }">
+                    <div>
+                      <v-icon class="me-3" @click="openEditUserDialog(item)">
+                        mdi-pencil
+                      </v-icon>
+                      <v-icon color="red" @click="openDeleteUserDialog(item)">
+                        mdi-delete
+                      </v-icon>
+                    </div>
+                  </template>
+                </v-data-table>
+              </v-list-item>
+            </ProTier>
             <v-list-item v-else class="pa-5">
               <v-list-item-title>No settings available.</v-list-item-title>
             </v-list-item>
@@ -349,15 +348,6 @@ const handleDeleteUser = async () => {
     deleteUserDialog.value = false;
   }
 };
-
-watch(
-  () => useAppStore().authLoading,
-  async (loading) => {
-    if (!loading && useAppStore().hasAdminAccess) {
-      await userStore.fetchUsers(tenantId, appStore.currUser.uid);
-    }
-  },
-);
 
 const openAddUserDialog = () => {
   newUserEmail.value = "";

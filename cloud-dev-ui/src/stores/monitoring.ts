@@ -40,35 +40,30 @@ export const useMonitoringStore = defineStore("monitoring", {
   }),
   actions: {
     async fetchFreeMonitoringData() {
-      this.$state.loading = true;
-      try {
-        const res = await (
-          await get(
-            `/v1/monitoring/free_data?timeframe=${this.$state.timeframe}`,
-            undefined,
-            "monitoringManagement",
-          )
-        ).json();
-        this.$state.free_data = res.data;
-      } catch (error) {
-        this.$state.loading = false;
-        this.$state.error = error;
-      } finally {
-        this.$state.loading = false;
-        this.$state.error = null;
-      }
+      const res = await (
+        await get(
+          `/v1/monitoring/free_data?timeframe=${this.$state.timeframe}`,
+          undefined,
+          "monitoringManagement",
+        )
+      ).json();
+      this.$state.free_data = res.data;
     },
     async fetchMonitoringData() {
+      const res = await (
+        await get(
+          `/v1/monitoring/data?timeframe=${this.$state.timeframe}`,
+          undefined,
+          "monitoringManagement",
+        )
+      ).json();
+      this.$state.data = res.data;
+    },
+    async fetchAllData() {
       this.$state.loading = true;
       try {
-        const res = await (
-          await get(
-            `/v1/monitoring/data?timeframe=${this.$state.timeframe}`,
-            undefined,
-            "monitoringManagement",
-          )
-        ).json();
-        this.$state.data = res.data;
+        await this.fetchFreeMonitoringData();
+        await this.fetchMonitoringData();
       } catch (error) {
         this.$state.loading = false;
         this.$state.error = error;

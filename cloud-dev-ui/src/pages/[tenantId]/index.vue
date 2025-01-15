@@ -20,7 +20,7 @@
     ></v-progress-linear>
 
     <!-- Dashboard Container -->
-    <v-responsive>
+    <v-responsive v-show="!appStore.authLoading">
       <div id="dashboard_free"></div>
       <ProTier>
         <div id="dashboard_container" style="min-height: 100%;"></div>
@@ -391,8 +391,7 @@ onMounted(async () => {
       newVal ? "dark" : "light"
     }`;
   });
-  await monitoringStore.fetchFreeMonitoringData();
-  await monitoringStore.fetchMonitoringData();
+  await monitoringStore.fetchAllData();
 });
 </script>
 

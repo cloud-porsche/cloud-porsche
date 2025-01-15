@@ -11,12 +11,13 @@ interface UserStoreState {
 export const useUserStore = defineStore("user", {
   state: (): UserStoreState =>
     <UserStoreState>{
-      users: {},
+      users: [],
       loading: false,
       error: null,
     },
   actions: {
     async fetchUsers(tenantId: string, adminUid: string) {
+      console.log("fetchUsers");
       this.$state.loading = true;
       this.$state.error = null;
       try {
