@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { UpdateParkingPropertyDto } from './dto/update-parking-property.dto';
 import {
   BaseFirestoreRepository,
@@ -8,18 +8,43 @@ import {
 import { ParkingProperty } from './entities/parking-property.entity';
 import { CreateParkingPropertyDto } from './dto/create-parking-property.dto';
 import { UpdateParkingSpotDto } from './dto/update-parking-spot.dto';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getApp } from 'firebase-admin/app';
+import { ITenant, TenantTier } from '@cloud-porsche/types';
 
 @Injectable()
 export class ParkingPropertiesService {
+  private tenantDb = getFirestore(getApp('tenant'));
   parkingPropertyRepository: BaseFirestoreRepository<ParkingProperty>;
 
   constructor(repositoryClass: EntityConstructorOrPath<ParkingProperty>) {
     this.parkingPropertyRepository = getRepository(repositoryClass);
   }
 
-  async create(createDefectDto: CreateParkingPropertyDto, tenantId: string) {
+  async create(createParkingPropertyDto: CreateParkingPropertyDto, tenantId: string) {
+    const properties = await this.parkingPropertyRepository.whereEqualTo('tenantId', tenantId).find();
+    const tenant = (
+      await this.tenantDb.collection('Tenants').doc(tenantId).get()
+    ).data() as ITenant;
+    if (!tenant) {
+      console.log("free tier tenant");
+      console.log(createParkingPropertyDto.layers.some((layer) => 
+        layer.parkingSpots.some((spot) => spot.placeholder)));
+      console.log(createParkingPropertyDto.layers.length);
+      console.log(properties.length);
+      if(createParkingPropertyDto.layers.some((layer) => 
+        layer.parkingSpots.some((spot) => spot.placeholder)) ||
+        createParkingPropertyDto.layers.length > 1 ||
+        properties.length > 0) {
+        throw new HttpException('Not allowed as free tenant', 403);
+      }
+    } else if(tenant.tier === TenantTier.PRO) {
+      if(properties.length > 4) {
+        throw new HttpException('Not allowed as pro tenant', 403);
+      }
+    }
     const newProperty = new ParkingProperty({
-      ...createDefectDto,
+      ...createParkingPropertyDto,
       tenantId: tenantId,
     });
     return await this.parkingPropertyRepository.create(newProperty);

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { ApiCall } from './entities/api-call.entity';
 import { getRepository } from 'fireorm';
 import { ParkingAction } from './entities/parking-action-entity';
@@ -11,7 +11,6 @@ import { TenantTier } from '@cloud-porsche/types';
 import { ConfigService } from '@nestjs/config';
 import { DefectAction } from './entities/defect-action.entity';
 import { DefectState } from '@cloud-porsche/types';
-import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 
 @Injectable()
 export class MonitoringService {
@@ -368,7 +367,7 @@ export class MonitoringService {
       await this.tenantDb.collection('Tenants').doc(tenantId).get()
     ).data() as Tenant;
     if (!tenant) {
-      throw new HttpErrorByCode['403']('Forbidden');
+      throw new HttpException('Not allowed as free tenant', 403);
     }
 
     const [
