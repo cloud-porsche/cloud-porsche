@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar density="comfortable" class="d-flex align-center pa-1 pl-8 pr-4">
-      <h1 class="text-h5 bold">Cloud Porsche Management Dashboard</h1>
+      <h1 class="text-h5 bold">Management Dashboard</h1>
       <v-spacer></v-spacer>
       <v-select
         max-width="200"
