@@ -44,7 +44,8 @@
         label="Select Simulation Speed"
         :items="['normal', 'fast', 'slow']"
         v-model="selectedSpeed"
-        outlined
+        density="comfortable"
+        style="height: 40px"
       ></v-select>
       <v-btn
         :disabled="!useAppStore().wsStatus"
