@@ -16,6 +16,7 @@ export function initWs(authToken: string, tenantId: string) {
   const socket = io(propertyManagementUrl.replace(path, ""), {
     path: (path ? "/" + path : "") + "/socket.io/",
     extraHeaders: extraHeaders,
+    reconnectionAttempts: 5,
   });
 
   socket.on("connect", function () {

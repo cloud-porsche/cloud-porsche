@@ -138,10 +138,7 @@ function request<T extends BodyInit>(
       tenantId &&
       tenantId !== (import.meta.env.PROD ? "free-tier" : "free")
     ) {
-      headers.set(
-        "tenant-id",
-        tenantId.includes(":") ? tenantId.split(":")[1] : tenantId,
-      );
+      headers.set("tenant-id", tenantId);
     }
     if (token) headers.set("authorization", token);
     const req = new Request(input, {
