@@ -11,7 +11,7 @@ export function initWs(authToken: string, tenantId: string) {
   const extraHeaders = {
     authorization: authToken,
   };
-  if (tenantId === (import.meta.env.PROD ? "free-tier" : "free"))
+  if (tenantId !== (import.meta.env.PROD ? "free-tier" : "free"))
     Object.assign(extraHeaders, { "tenant-id": tenantId });
   const socket = io(propertyManagementUrl.replace(path, ""), {
     path: (path ? "/" + path : "") + "/socket.io/",
