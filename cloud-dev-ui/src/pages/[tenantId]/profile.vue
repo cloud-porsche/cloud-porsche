@@ -126,7 +126,80 @@
             </v-col>
           </v-row>
         </v-card-actions>
+
+        <div v-if="!['free', 'free-tier'].includes(tenantId)">
+          <v-divider class="ma-4"></v-divider>
+
+          <span class="d-flex justify-center text-center pa-2 text-body-2">
+            <v-btn
+              text="Delete Account"
+              variant="text"
+              size="8"
+              color="error"
+              flat
+              @click="openDeleteDialog"
+            ></v-btn>
+          </span>
+        </div>
       </v-card>
+
+      <v-dialog
+        v-model="deleteDialogOpen"
+        max-width="400"
+        @afterLeave="closeDeleteDialog"
+      >
+        <v-card class="pa-4">
+          <v-card-title
+            >Delete
+            {{
+              appStore.hasAdminAccess &&
+              !["free", "free-tier"].includes(tenantId)
+                ? "Tenant"
+                : "Account"
+            }}
+          </v-card-title>
+          <v-divider class="pb-4"></v-divider>
+          <v-card-subtitle>
+            <p class="text-body-1">
+              {{
+                appStore.hasAdminAccess &&
+                !["free", "free-tier"].includes(tenantId)
+                  ? "WARNING! You are about to delete your whole Subscription and all associated data with it!"
+                  : "Are you sure you want to delete your account?"
+              }}
+              <br />
+              <br />
+              This action cannot be undone.
+              <br />
+              Confirm key: <b>{{ tenantId }}</b>
+            </p>
+          </v-card-subtitle>
+          <v-card-text>
+            <v-form ref="deleteForm" v-model="deleteFormValid">
+              <v-text-field
+                label="Confirm deletion"
+                v-model="deleteConfirm"
+                variant="outlined"
+                :rules="[
+                  (v) =>
+                    !!v || deleteConfirm !== tenantId
+                      ? 'Does not match'
+                      : 'Confirm deletion needed',
+                ]"
+                required
+              ></v-text-field>
+              <v-divider class="pa-2 mt-4" />
+              <v-btn
+                color="error"
+                text="true"
+                class="w-100"
+                @click="confirmDelete"
+                >Delete
+              </v-btn>
+            </v-form>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
 
       <v-alert
         v-if="successMessage"
@@ -185,12 +258,17 @@ const appStore = useAppStore();
 const auth = useFirebaseAuth();
 const user = useCurrentUser();
 
+const tenantId = computed(
+  () => (router.currentRoute.value.params as any).tenantId,
+);
+
 const editDialog = ref(false);
 const editData = ref({
   displayName: user.value?.displayName ?? "",
   photo: null as File | null,
 });
 const formValid = ref(false);
+const deleteFormValid = ref(false);
 const userPhoto = ref(null);
 
 if (user.value?.photoURL) {
@@ -286,6 +364,35 @@ function resetPassword() {
         console.error("Error sending reset email:", error);
       });
   }
+}
+
+const deleteDialogOpen = ref(false);
+const deleteConfirm = ref("");
+const confirmDelete = async () => {
+  if (
+    deleteConfirm.value === tenantId.value &&
+    !["free", "free-tier"].includes(tenantId.value)
+  ) {
+    if (appStore.hasAdminAccess) {
+      await del(`/v1/tenants/${tenantId.value}`, undefined, "tenantManagement");
+    } else {
+      await del(
+        `/v1/tenants/${tenantId.value}/users/${auth?.currentUser?.uid}`,
+        undefined,
+        "tenantManagement",
+      );
+    }
+    await signOut(auth!);
+  }
+};
+
+function openDeleteDialog() {
+  deleteDialogOpen.value = true;
+}
+
+function closeDeleteDialog() {
+  deleteDialogOpen.value = false;
+  deleteConfirm.value = "";
 }
 </script>
 
