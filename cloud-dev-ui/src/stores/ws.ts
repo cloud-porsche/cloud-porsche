@@ -8,12 +8,14 @@ export function initWs(authToken: string, tenantId: string) {
   const propertyManagementUrl = useAppStore().api.propertyManagement;
   const path = propertyManagementUrl.split("/").at(3);
   console.debug("WS Path: ", path);
+  const extraHeaders = {
+    authorization: authToken,
+  };
+  if (tenantId === (import.meta.env.PROD ? "free-tier" : "free"))
+    Object.assign(extraHeaders, { "tenant-id": tenantId });
   const socket = io(propertyManagementUrl.replace(path, ""), {
     path: (path ? "/" + path : "") + "/socket.io/",
-    extraHeaders: {
-      authorization: authToken,
-      "tenant-id": tenantId,
-    },
+    extraHeaders: extraHeaders,
   });
 
   socket.on("connect", function () {
