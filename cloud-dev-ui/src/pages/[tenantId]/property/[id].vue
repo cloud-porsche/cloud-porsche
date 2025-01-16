@@ -433,7 +433,7 @@ function dragEnd(_: MouseEvent) {
 
 function updateSpotState(spotId: string, state: ParkingSpotState) {
   propertyStore.updateParkingSpot(id.value, spotId, {
-    id: id.value,
+    id: spotId,
     state: state,
   });
 }
