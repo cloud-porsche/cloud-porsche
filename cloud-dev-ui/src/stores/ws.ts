@@ -1,10 +1,11 @@
 // Websocket Initialization
 import { io } from "socket.io-client";
 import { usePropertyStore } from "@/stores/properties";
-import { propertyManagementUrl, useAppStore } from "@/stores/app";
+import { useAppStore } from "@/stores/app";
 
 export function initWs(authToken: string, tenantId: string) {
   console.debug("Initializing WS");
+  const propertyManagementUrl = useAppStore().api.propertyManagement;
   const path = propertyManagementUrl.split("/").at(3);
   console.debug("WS Path: ", path);
   const socket = io(propertyManagementUrl.replace(path, ""), {
