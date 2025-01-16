@@ -10,38 +10,25 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const { hostname, headers } = context.switchToHttp().getRequest();
+    const { hostname, user } = context.switchToHttp().getRequest();
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    if(hostname === 'localhost') {
+     if(hostname === 'localhost') {
       return true;
     }
 
     if (!requiredRoles) {
       return true;
     }
-    const token = headers.authorization;
-    const tenantId = headers['tenant-id'];
-  
-    if (!token) {
-      return false;
+    if (!user.role) {
+      return true; // only the case for a free tenant and he is certainly allowed to do everything on his acc
     }
-  
-    try {
-      const decodedToken = tenantId
-        ? await admin
-            .auth()
-            .tenantManager()
-            .authForTenant(tenantId)
-            .verifyIdToken(token)
-        : await admin.auth().verifyIdToken(token);
-      return requiredRoles.includes(decodedToken.role);
-    } catch (error) {
-      console.error('Error verifying token:', error);
-      return false;
+    if (requiredRoles.some((role) => user.role?.includes(role))) {
+      return true;
     }
+    return false;
   }
 }
