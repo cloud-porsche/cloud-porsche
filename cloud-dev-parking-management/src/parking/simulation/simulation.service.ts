@@ -180,7 +180,9 @@ export class SimulationService {
       (spot) => spot.state === ParkingSpotState.FREE,
     );
     const occupiedSpots = totalSpots.filter(
-      (spot) => spot.state === ParkingSpotState.OCCUPIED,
+      (spot) =>
+        spot.state === ParkingSpotState.OCCUPIED ||
+        spot.state === ParkingSpotState.CHARGING,
     );
 
     const occupancyRate = occupiedSpots.length / totalSpots.length;
@@ -204,13 +206,16 @@ export class SimulationService {
       return;
     }
 
+    // Wähle einen zufälligen freien Parkplatz
+    const randomIndex = Math.floor(Math.random() * freeSpots.length);
+    const spot = freeSpots[randomIndex];
+
     const id = crypto.randomUUID();
     await this.parkingService.enter(token, tenantId, propertyId, {
       id: id,
       licensePlate: 'SIMULATION',
     });
 
-    const spot = freeSpots[0]; // Nimm den ersten freien Platz
     await this.parkingService.occupySpot(token, tenantId, propertyId, spot.id, {
       id,
       licensePlate: 'SIMULATION',
