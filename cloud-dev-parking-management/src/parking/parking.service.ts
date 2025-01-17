@@ -162,9 +162,11 @@ export class ParkingService {
       .find((s) => s.id === spotId);
     if (!spot) throw new Error('Spot not found');
     if (
-      [ParkingSpotState.OCCUPIED, ParkingSpotState.OUT_OF_ORDER].includes(
-        spot.state,
-      )
+      [
+        ParkingSpotState.OCCUPIED,
+        ParkingSpotState.CHARGING,
+        ParkingSpotState.OUT_OF_ORDER,
+      ].includes(spot.state)
     ) {
       throw new Error('Spot already occupied or out of order');
     }
@@ -188,7 +190,9 @@ export class ParkingService {
       this.newSpotState(
         parkingProperty,
         spotId,
-        ParkingSpotState.OCCUPIED,
+        !spot.electricCharging
+          ? ParkingSpotState.OCCUPIED
+          : ParkingSpotState.CHARGING,
         customer,
       ),
     );
@@ -199,6 +203,7 @@ export class ParkingService {
     tenantId: string,
     parkingPropertyId: string,
     spotId: string,
+    simulated_duration: number = 0,
   ) {
     const parkingProperty = await this.fetchParkingProperty(
       token,
@@ -209,7 +214,10 @@ export class ParkingService {
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
     if (!spot) throw new Error('Spot not found');
-    if (spot.state !== ParkingSpotState.OCCUPIED)
+    if (
+      spot.state !== ParkingSpotState.OCCUPIED &&
+      spot.state !== ParkingSpotState.CHARGING
+    )
       throw new Error('Spot not occupied');
     await this.pubSubService.publishMessage({
       messageType: 'parking',
@@ -223,57 +231,16 @@ export class ParkingService {
       costPerHour: parkingProperty.pricePerHour,
       parkingDuration:
         (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
-        1000 /
-        60 /
-        60,
+          1000 /
+          60 /
+          60 +
+        simulated_duration,
     });
     return this.updateParkingProperty(
       token,
       tenantId,
       parkingPropertyId,
       this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
-    );
-  }
-
-  async chargeSpot(
-    token: string,
-    tenantId: string,
-    parkingPropertyId: string,
-    spotId: string,
-  ) {
-    const parkingProperty = await this.fetchParkingProperty(
-      token,
-      tenantId,
-      parkingPropertyId,
-    );
-    const spot = parkingProperty.layers
-      .flatMap((l) => l.parkingSpots)
-      .find((s) => s.id === spotId);
-    if (!spot) throw new Error('Spot not found');
-    if (spot.state !== ParkingSpotState.OCCUPIED && !spot.electricCharging)
-      throw new Error('Spot already occupied or not an electric charger');
-    await this.pubSubService.publishMessage({
-      messageType: 'parking',
-      tenantId: tenantId,
-      action: 'occupy',
-      timestamp: new Date(),
-      properyId: parkingPropertyId,
-      propertyName: parkingProperty.name,
-      spotId: spot.id,
-      currentUtilization: this.getUtilization(parkingProperty),
-      costPerHour: parkingProperty.pricePerHour,
-      parkingDuration: null,
-    });
-    return this.updateParkingProperty(
-      token,
-      tenantId,
-      parkingPropertyId,
-      this.newSpotState(
-        parkingProperty,
-        spotId,
-        ParkingSpotState.CHARGING,
-        spot.customer,
-      ),
     );
   }
 

@@ -41,19 +41,32 @@
       <v-divider vertical inset></v-divider>
       <v-spacer></v-spacer>
       <ProTier>
-        <v-btn
-          :disabled="
-            !useAppStore().wsStatus || useAppStore().currUser.role !== 'admin'
-          "
-          density="comfortable"
-          :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
-          text="Simulation"
-          @click="
-            simulationState
-              ? propertyStore.setSimulationInactive(property.id)
-              : propertyStore.setSimulationActive(property.id)
-          "
-        />
+        <div class="d-flex align-center ga-2">
+          <v-tooltip
+            :model-value="!useAppStore().hasAdminAccess"
+            activator="parent"
+            text="Admin only"
+          ></v-tooltip>
+          <v-select
+            label="Simulation Speed"
+            :items="['normal', 'fast', 'slow']"
+            v-model="selectedSpeed"
+            :disabled="!useAppStore().wsStatus || !useAppStore().hasAdminAccess"
+            density="compact"
+            hide-details
+            min-width="150px"
+          ></v-select>
+          <v-btn
+            :disabled="!useAppStore().wsStatus || !useAppStore().hasAdminAccess"
+            :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
+            text="Simulation"
+            @click="
+              simulationState
+                ? propertyStore.setSimulationInactive(property.id)
+                : propertyStore.setSimulationActive(property.id, selectedSpeed)
+            "
+          />
+        </div>
       </ProTier>
     </v-toolbar>
     <v-progress-linear
@@ -303,12 +316,19 @@ function resetViewSettings() {
 
 const dragActive = ref(false);
 
-const simulationState = computed(() =>
-  propertyStore.simulationActive.includes(id.value),
-);
 const property = computed(() =>
   propertyStore.properties.find((property) => property.id === id.value),
 );
+const simulationState = computed(() =>
+  propertyStore.simulationActive.includes(id.value),
+);
+let selectedSpeed = ref("normal");
+
+watch(selectedSpeed, async () => {
+  if (propertyStore.simulationActive.includes(id.value)) {
+    await propertyStore.updateSimulationSpeed(id.value, selectedSpeed.value);
+  }
+});
 
 const page = ref(1);
 const currentLayer = computed(() => property.value?.layers?.[page.value - 1]);

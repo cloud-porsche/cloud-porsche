@@ -2,6 +2,7 @@
 import { ITenant, TenantTier } from "@cloud-porsche/types";
 import { defineStore } from "pinia";
 import { Socket } from "socket.io-client";
+import { getAuth } from "firebase/auth";
 
 export const propertyManagementUrl =
   localStorage.getItem("propertyManagement") ??
@@ -64,7 +65,8 @@ export const useAppStore = defineStore("app", {
     hasAdminAccess(state) {
       return (
         state.tenant.info?.tier === TenantTier.FREE ||
-        state.currUser.role === "admin"
+        state.currUser.role === "admin" ||
+        state.tenant.info?.adminEmail === getAuth().currentUser?.email
       );
     },
     isUserRole(state) {

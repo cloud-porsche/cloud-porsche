@@ -100,6 +100,15 @@
           </Transition>
         </template>
       </RouterView>
+      <v-alert
+        class="position-absolute bottom-0 ma-16"
+        v-if="tenantInfoError"
+        type="error"
+        closable
+        @input="tenantInfoError = undefined"
+      >
+        {{ tenantInfoError }}
+      </v-alert>
     </v-main>
     <AppFooter />
 
@@ -129,14 +138,6 @@
     >
       <FreeLock />
     </v-bottom-sheet>
-    <v-alert
-      v-if="tenantInfoError"
-      type="error"
-      dismissible
-      @input="tenantInfoError = undefined"
-    >
-      {{ tenantInfoError }}
-    </v-alert>
   </v-app>
 </template>
 

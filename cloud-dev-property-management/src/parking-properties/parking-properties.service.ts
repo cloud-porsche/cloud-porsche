@@ -10,7 +10,7 @@ import { CreateParkingPropertyDto } from './dto/create-parking-property.dto';
 import { UpdateParkingSpotDto } from './dto/update-parking-spot.dto';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getApp } from 'firebase-admin/app';
-import { ITenant, TenantTier } from '@cloud-porsche/types';
+import { ITenant, ParkingSpotState, TenantTier } from '@cloud-porsche/types';
 
 @Injectable()
 export class ParkingPropertiesService {
@@ -21,25 +21,36 @@ export class ParkingPropertiesService {
     this.parkingPropertyRepository = getRepository(repositoryClass);
   }
 
-  async create(createParkingPropertyDto: CreateParkingPropertyDto, tenantId: string) {
-    const properties = await this.parkingPropertyRepository.whereEqualTo('tenantId', tenantId).find();
+  async create(
+    createParkingPropertyDto: CreateParkingPropertyDto,
+    tenantId: string,
+  ) {
+    const properties = await this.parkingPropertyRepository
+      .whereEqualTo('tenantId', tenantId)
+      .find();
     const tenant = (
       await this.tenantDb.collection('Tenants').doc(tenantId).get()
     ).data() as ITenant;
     if (!tenant) {
-      console.log("free tier tenant");
-      console.log(createParkingPropertyDto.layers.some((layer) => 
-        layer.parkingSpots.some((spot) => spot.placeholder)));
+      console.log('free tier tenant');
+      console.log(
+        createParkingPropertyDto.layers.some((layer) =>
+          layer.parkingSpots.some((spot) => spot.placeholder),
+        ),
+      );
       console.log(createParkingPropertyDto.layers.length);
       console.log(properties.length);
-      if(createParkingPropertyDto.layers.some((layer) => 
-        layer.parkingSpots.some((spot) => spot.placeholder)) ||
+      if (
+        createParkingPropertyDto.layers.some((layer) =>
+          layer.parkingSpots.some((spot) => spot.placeholder),
+        ) ||
         createParkingPropertyDto.layers.length > 1 ||
-        properties.length > 0) {
+        properties.length > 0
+      ) {
         throw new HttpException('Not allowed as free tenant', 403);
       }
-    } else if(tenant.tier === TenantTier.PRO) {
-      if(properties.length > 4) {
+    } else if (tenant.tier === TenantTier.PRO) {
+      if (properties.length > 4) {
         throw new HttpException('Not allowed as pro tenant', 403);
       }
     }
@@ -61,6 +72,41 @@ export class ParkingPropertiesService {
 
   async findOne(id: string) {
     return await this.parkingPropertyRepository.findById(id);
+  }
+
+  async getSpotInfo(id: string) {
+    const property = await this.parkingPropertyRepository.findById(id);
+    const totalSpots = property.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => !s.placeholder).length;
+    const occupiedSpots = property.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => s.state === ParkingSpotState.OCCUPIED).length;
+    const availableSpots = totalSpots - occupiedSpots;
+    const outOfOrderSpots = property.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => s.state === ParkingSpotState.OUT_OF_ORDER).length;
+    const reservedSpots = property.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => s.state === ParkingSpotState.RESERVED).length;
+    const totalElectricSpots = property.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => s.electricCharging === true).length;
+    const occupiedElectricSpots = property.layers
+      .flatMap((l) => l.parkingSpots)
+      .filter((s) => s.state === ParkingSpotState.CHARGING).length;
+    const availableElectricSpots = totalElectricSpots - occupiedElectricSpots;
+
+    return {
+      totalSpots,
+      occupiedSpots,
+      availableSpots,
+      outOfOrderSpots,
+      reservedSpots,
+      totalElectricSpots,
+      occupiedElectricSpots,
+      availableElectricSpots,
+    };
   }
 
   async update(

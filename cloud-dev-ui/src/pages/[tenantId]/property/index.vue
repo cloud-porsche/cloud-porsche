@@ -8,7 +8,13 @@
           <v-btn
             class="ml-4"
             :icon="'mdi-plus'"
-            v-tooltip="'Add new Property'"
+            v-tooltip="
+              !useAppStore().hasAdminAccess
+                ? 'Admin only!'
+                : propertyLimitReached()
+                  ? 'Maximum Properties Reached!'
+                  : 'Add new Property'
+            "
             @click="newPropertyDialog = true"
             :disabled="!appStore.hasAdminAccess || propertyLimitReached()"
           />
@@ -16,7 +22,7 @@
             class="ml-4"
             :icon="'mdi-delete'"
             color="error"
-            v-tooltip="'Delete'"
+            v-tooltip="!useAppStore().hasAdminAccess ? 'Admin only!' : 'Delete'"
             :disabled="
               propertyStore.properties.length <= 0 || !appStore.hasAdminAccess
             "
