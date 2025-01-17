@@ -1,14 +1,13 @@
 import {
+  Body,
   Controller,
   Get,
+  Headers,
   Logger,
   Param,
   Post,
-  Headers,
-  Body,
 } from '@nestjs/common';
 import { SimulationService } from './simulation.service';
-import { SimulationSpeed } from './simulation.service';
 
 @Controller('simulation')
 export class SimulationController {

@@ -36,7 +36,7 @@ export class AppModule implements NestModule {
       .exclude(
         { path: 'v1', method: RequestMethod.GET },
         {
-          path: 'v1/parking-properties/:id/spotInfo',
+          path: 'v1/parking-properties/:id/parkingSpotInfo',
           method: RequestMethod.GET,
         },
         { path: 'api', method: RequestMethod.ALL },
