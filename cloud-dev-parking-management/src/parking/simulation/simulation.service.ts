@@ -134,7 +134,11 @@ export class SimulationService {
 
     const occupiedSpots = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
-      .filter((spot) => spot.state === ParkingSpotState.OCCUPIED);
+      .filter(
+        (spot) =>
+          spot.state === ParkingSpotState.OCCUPIED ||
+          spot.state === ParkingSpotState.CHARGING,
+      );
 
     for (const spot of occupiedSpots) {
       if (spot.customer?.licensePlate?.includes('SIMULATION')) {

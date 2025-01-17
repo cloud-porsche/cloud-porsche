@@ -210,7 +210,10 @@ export class ParkingService {
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
     if (!spot) throw new Error('Spot not found');
-    if (spot.state !== ParkingSpotState.OCCUPIED)
+    if (
+      spot.state !== ParkingSpotState.OCCUPIED &&
+      spot.state !== ParkingSpotState.CHARGING
+    )
       throw new Error('Spot not occupied');
     await this.pubSubService.publishMessage({
       messageType: 'parking',
