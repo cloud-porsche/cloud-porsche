@@ -220,20 +220,6 @@ export class SimulationService {
       id,
       licensePlate: 'SIMULATION',
     });
-
-    if (spot.electricCharging) {
-      const speed = this.simulationIntervals.get(propertyId) || 'normal';
-      const chargeDelay = SIMULATION_SPEEDS[speed] / 5;
-
-      setTimeout(async () => {
-        await this.parkingService.chargeSpot(
-          token,
-          tenantId,
-          propertyId,
-          spot.id,
-        );
-      }, chargeDelay);
-    }
   }
 
   private async simulateCarExiting(
@@ -247,7 +233,8 @@ export class SimulationService {
       return;
     }
 
-    const spot = occupiedSpots[0]; // Nimm den ersten belegten Platz
+    const randomIndex = Math.floor(Math.random() * occupiedSpots.length);
+    const spot = occupiedSpots[randomIndex];
     await this.parkingService.freeSpot(
       token,
       tenantId,
