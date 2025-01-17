@@ -11,6 +11,10 @@ import { createWebHashHistory } from "vue-router";
 import { getCurrentUser } from "vuefire";
 import { verifiedIfPassword } from "@/plugins/verify-user";
 import { getAuth, signOut } from "firebase/auth";
+import { useAppStore } from "@/stores/app";
+import { useMonitoringStore } from "@/stores/monitoring";
+import { usePropertyStore } from "@/stores/properties";
+import { useUserStore } from "@/stores/user";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -52,6 +56,14 @@ router.beforeEach(async (to, from) => {
     tenantId !== (from.params as any)["tenantId"]
   ) {
     const auth = getAuth();
+    const appStore = useAppStore();
+    if (appStore.api.ws.connected) {
+      appStore.api.ws.socket.disconnect();
+    }
+    appStore.$reset();
+    usePropertyStore().$reset();
+    useMonitoringStore().$reset();
+    useUserStore().$reset();
     await signOut(auth!);
     return {
       name: "/[tenantId]/",
