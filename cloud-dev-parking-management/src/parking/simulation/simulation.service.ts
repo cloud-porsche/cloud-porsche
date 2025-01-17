@@ -162,11 +162,6 @@ export class SimulationService {
   }
 
   async runSimulation(token: string, tenantId: string, propertyId: string) {
-    if (this.config.get('FIRESTORE_DB') === 'prod') {
-      this.logger.error('Simulation not allowed in production');
-      return;
-    }
-
     this.logger.log('Running simulation for: ' + propertyId);
     const parkingProperty = await this.fetchParkingProperty(
       token,

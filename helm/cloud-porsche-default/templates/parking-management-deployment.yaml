@@ -35,6 +35,8 @@ spec:
               value: {{ .Values.parkingManagement.port | quote }}
             - name: MONITORING_QUEUE
               value: {{ .Values.parkingManagement.envs.MONITORING_QUEUE }}
+            - name: PROPERTY_MANAGEMENT_API_URL
+              value: {{ .Values.parkingManagement.envs.PROPERTY_MANAGEMENT_API_URL }}
           image: {{ .Values.images.parkingManagement }}
           imagePullPolicy: IfNotPresent
           name: parking-management

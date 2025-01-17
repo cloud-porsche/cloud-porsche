@@ -17,6 +17,7 @@ parkingManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-${TENANT_ID}
     FIRESTORE_DB: property-management-${TENANT_ID}
+    PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
     MONITORING_QUEUE: ${TENANT_ID}-queue
 monitoringManagement:
   envs:

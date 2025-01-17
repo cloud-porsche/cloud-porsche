@@ -27,6 +27,7 @@ parkingManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-pro-tier
     FIRESTORE_DB: property-management-pro-tier
+    PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
     MONITORING_QUEUE: pro-tier-queue
 monitoringManagement:
   envs:

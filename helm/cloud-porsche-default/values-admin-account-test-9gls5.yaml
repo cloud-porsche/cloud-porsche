@@ -17,6 +17,7 @@ parkingManagement:
   envs:
     FIREBASE_STORAGE_BUCKET: property-management-admin-account-test-9gls5
     FIRESTORE_DB: property-management-admin-account-test-9gls5
+    PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
     MONITORING_QUEUE: admin-account-test-9gls5-queue
 monitoringManagement:
   envs:
