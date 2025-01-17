@@ -181,10 +181,8 @@
                 v-model="deleteConfirm"
                 variant="outlined"
                 :rules="[
-                  (v) =>
-                    !!v || deleteConfirm !== tenantId
-                      ? 'Does not match'
-                      : 'Confirm deletion needed',
+                  (v) => !!v || 'Confirm deletion needed',
+                  (v) => v === tenantId || 'Confirm key is incorrect',
                 ]"
                 required
               ></v-text-field>

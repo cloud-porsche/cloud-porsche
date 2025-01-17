@@ -7,7 +7,9 @@
       :icon="mobile ? 'mdi-plus' : undefined"
       @click="emit('add')"
       class="me-2"
-      v-tooltip="'Add Defect'"
+      v-tooltip="
+        useAppStore().isUserRole ? 'Not enough permissions!' : 'Add Defect'
+      "
       :text="mobile ? '' : 'Add Defect'"
       :disabled="useAppStore().isUserRole"
     >

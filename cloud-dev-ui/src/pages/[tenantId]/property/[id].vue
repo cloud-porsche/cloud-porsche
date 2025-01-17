@@ -43,7 +43,7 @@
       <ProTier>
         <div class="d-flex align-center ga-2">
           <v-tooltip
-            :model-value="!useAppStore().hasAdminAccess"
+            :disabled="useAppStore().hasAdminAccess"
             activator="parent"
             text="Admin only"
           ></v-tooltip>

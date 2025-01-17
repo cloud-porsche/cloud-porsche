@@ -62,6 +62,9 @@
             icon="mdi-pencil"
             @click="editDialog(item)"
             variant="plain"
+            v-tooltip="
+              useAppStore().isUserRole ? 'Not enough permissions!' : 'Edit'
+            "
             :disabled="useAppStore().isUserRole"
           >
           </v-btn>
@@ -124,6 +127,11 @@
                     class="me-2"
                     @click="editDialog(item)"
                     variant="tonal"
+                    v-tooltip="
+                      useAppStore().isUserRole
+                        ? 'Not enough permissions!'
+                        : 'Edit'
+                    "
                     :disabled="useAppStore().isUserRole"
                     >Edit
                   </v-btn>
@@ -134,6 +142,11 @@
                     variant="flat"
                     :disabled="useAppStore().isUserRole"
                     >Delete
+                    <v-tooltip
+                      :disabled="!useAppStore().isUserRole"
+                      activator="parent"
+                      text="Not enough permissions!"
+                    ></v-tooltip>
                   </v-btn>
                 </div>
                 <div v-else>{{ item[column.value as keyof SignedDefect] }}</div>
