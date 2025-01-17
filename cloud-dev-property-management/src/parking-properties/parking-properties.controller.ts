@@ -74,6 +74,11 @@ export class ParkingPropertiesController {
     );
   }
 
+  @Get(':id/parkingSpotInfo')
+  getParkingSpotInfo(@Param('id') id: string) {
+    return this.parkingPropertiesService.getSpotInfo(id);
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
