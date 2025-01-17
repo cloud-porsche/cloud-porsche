@@ -59,6 +59,25 @@
             "
           />
         </v-list-group>
+        <v-list-group>
+          <template v-slot:activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              prepend-icon="mdi-hammer-wrench"
+              title="Defects"
+            ></v-list-item>
+          </template>
+          <v-list-item
+            v-for="property in propertyStore.properties"
+            :to="`/${tenantId}/defects/${property.id}`"
+            :title="property.name ?? property.id"
+            :value="property.id"
+            :active="
+              router.currentRoute.value.path ===
+              `/${tenantId}/defects/${property.id}`
+            "
+          />
+        </v-list-group>
       </v-list>
       <template v-slot:append>
         <v-list nav>
