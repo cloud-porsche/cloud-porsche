@@ -9,7 +9,7 @@
       class="me-2"
       v-tooltip="'Add Defect'"
       :text="mobile ? '' : 'Add Defect'"
-      :disabled="useAppStore().isUserRole"
+      :disabled="useAppStore().isUserRole && !useAppStore().hasAdminAccess"
     >
     </v-btn>
     <v-btn
