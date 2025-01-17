@@ -41,26 +41,29 @@
       <v-divider vertical inset></v-divider>
       <v-spacer></v-spacer>
       <ProTier>
-        <v-select
-          label="Select Simulation Speed"
-          :items="['normal', 'fast', 'slow']"
-          v-model="selectedSpeed"
-          density="comfortable"
-          style="height: 40px"
-        ></v-select>
-        <v-btn
-          :disabled="
-            !useAppStore().wsStatus || useAppStore().currUser.role !== 'admin'
-          "
-          density="comfortable"
-          :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
-          text="Simulation"
-          @click="
-            simulationState
-              ? propertyStore.setSimulationInactive(property.id)
-              : propertyStore.setSimulationActive(property.id, selectedSpeed)
-          "
-        />
+        <div class="d-flex">
+          <v-select
+            label="Select Simulation Speed"
+            :items="['normal', 'fast', 'slow']"
+            v-model="selectedSpeed"
+            density="compact"
+            style="height: 40px; width: 200px"
+          ></v-select>
+          <v-btn
+            :disabled="
+              !useAppStore().wsStatus || useAppStore().currUser.role !== 'admin'
+            "
+            density="comfortable"
+            :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
+            text="Simulation"
+            style="height: 40px"
+            @click="
+              simulationState
+                ? propertyStore.setSimulationInactive(property.id)
+                : propertyStore.setSimulationActive(property.id, selectedSpeed)
+            "
+          />
+        </div>
       </ProTier>
     </v-toolbar>
     <v-progress-linear
