@@ -3,10 +3,15 @@ import { HttpService } from '@nestjs/axios';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ParkingService } from '../parking.service';
 import { ConfigService } from '@nestjs/config';
-import { IParkingProperty, ITenant, ParkingSpotState } from '@cloud-porsche/types';
+import {
+  IParkingProperty,
+  ITenant,
+  ParkingSpotState,
+} from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
 import { getApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { randomInt } from 'node:crypto';
 
 const SIMULATION_SPEEDS = {
   slow: 10000, // 10 Sekunden
@@ -45,7 +50,7 @@ export class SimulationService {
       await this.tenantDb.collection('Tenants').doc(tenantId).get()
     ).data() as ITenant;
     if (!tenant) {
-      this.logger.error("Not allowed as Free Tenant");
+      this.logger.error('Not allowed as Free Tenant');
       return;
     }
 
@@ -107,7 +112,6 @@ export class SimulationService {
   }
 
   async stopSimulation(token: string, tenantId: string, propertyId: string) {
-
     this.schedulerRegistry.deleteInterval(propertyId);
 
     await this.removeSimulationCars(token, tenantId, propertyId);
@@ -235,7 +239,13 @@ export class SimulationService {
     }
 
     const spot = occupiedSpots[0]; // Nimm den ersten belegten Platz
-    await this.parkingService.freeSpot(token, tenantId, propertyId, spot.id);
+    await this.parkingService.freeSpot(
+      token,
+      tenantId,
+      propertyId,
+      spot.id,
+      randomInt(1, 10),
+    );
 
     const speed = this.simulationIntervals.get(propertyId) || 'normal';
     const leaveDelay = SIMULATION_SPEEDS[speed] / 2;

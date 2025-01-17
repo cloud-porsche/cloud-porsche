@@ -199,6 +199,7 @@ export class ParkingService {
     tenantId: string,
     parkingPropertyId: string,
     spotId: string,
+    simulated_duration: number = 0,
   ) {
     const parkingProperty = await this.fetchParkingProperty(
       token,
@@ -223,9 +224,10 @@ export class ParkingService {
       costPerHour: parkingProperty.pricePerHour,
       parkingDuration:
         (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
-        1000 /
-        60 /
-        60,
+          1000 /
+          60 /
+          60 +
+        simulated_duration,
     });
     return this.updateParkingProperty(
       token,
