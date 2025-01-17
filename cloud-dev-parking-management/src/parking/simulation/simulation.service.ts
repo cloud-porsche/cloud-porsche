@@ -106,7 +106,7 @@ export class SimulationService {
     );
 
     this.simulationIntervals.set(propertyId, newIntervalSpeed);
-    this.logger.log(
+    this.logger.debug(
       `Simulation speed updated for ${propertyId} to: ${newIntervalSpeed}`,
     );
   }

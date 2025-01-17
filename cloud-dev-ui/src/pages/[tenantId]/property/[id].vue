@@ -321,9 +321,8 @@ const simulationState = computed(() =>
 );
 let selectedSpeed = ref("normal");
 
-watch(selectedSpeed, async (newValue) => {
-  console.log("Watch New speed:", newValue);
-  if (simulationState && id.value) {
+watch(selectedSpeed, async () => {
+  if (propertyStore.simulationActive.includes(id.value)) {
     await propertyStore.updateSimulationSpeed(id.value, selectedSpeed.value);
   }
 });
