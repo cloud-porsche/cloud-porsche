@@ -1,9 +1,6 @@
 <template>
   <v-app :theme="isDark ? 'dark' : 'light'">
-    <v-app-bar
-      :title="appStore.tenant.info?.tenantName"
-      density="comfortable"
-    >
+    <v-app-bar :title="appStore.tenant.info?.tenantName" density="comfortable">
       <template v-slot:prepend>
         <v-app-bar-nav-icon
           @click="drawerOpen = !drawerOpen"
@@ -132,6 +129,14 @@
     >
       <FreeLock />
     </v-bottom-sheet>
+    <v-alert
+      v-if="tenantInfoError"
+      type="error"
+      dismissible
+      @input="tenantInfoError = undefined"
+    >
+      {{ tenantInfoError }}
+    </v-alert>
   </v-app>
 </template>
 
@@ -189,7 +194,7 @@ auth?.onAuthStateChanged(async (user) => {
       await auth.updateCurrentUser(user);
     } catch (e) {
       console.error(e);
-      signOut(auth);
+      await signOut(auth);
       return;
     }
     appStore.setCurrUid(user.uid);
@@ -214,10 +219,16 @@ if (authDomain && auth && authDomain.includes("localhost")) {
 
 const propertyStore = usePropertyStore();
 
+const tenantInfoError = ref<string | undefined>(undefined);
 const fetchTenantInfo = async (tenantId: string) => {
   const db = getFirestore();
   const docRef = doc(db, "Tenants", tenantId);
   const docData = (await getDoc(docRef)).data() as ITenant;
+  if (!docData) {
+    tenantInfoError.value = "Tenant not found or offline";
+    return;
+  }
+
   appStore.setTenantInfo(docData);
 };
 </script>

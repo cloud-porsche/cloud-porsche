@@ -36,3 +36,10 @@ variable "image_tag" {
   default     = "latest"
   nullable    = false
 }
+
+variable "free_tier_overwrite" {
+  type        = bool
+  description = "Overwrite the tier info to free tier"
+  default     = false
+  nullable    = false
+}

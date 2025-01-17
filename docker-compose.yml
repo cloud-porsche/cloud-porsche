@@ -12,7 +12,13 @@ services:
       dockerfile: ./cloud-dev-ui/Dockerfile
       args:
         - VITE_PROPERTY_MANAGEMENT_API_URL=http://localhost:8080
-        - VITE_PROPERTY_MANAGEMENT_API_OPTIONS=http://localhost:8080,https://cloud-property-management.ostabo.com,https://property-management-c4okt5o2kq-ez.a.run.app
+        - VITE_PROPERTY_MANAGEMENT_API_OPTIONS=http://localhost:8080,http://localhost/property-management
+        - VITE_PARKING_MANAGEMENT_API_URL=http://localhost:8084
+        - VITE_PARKING_MANAGEMENT_API_OPTIONS=http://localhost:8084,http://localhost/parking-management
+        - VITE_MONITORING_MANAGEMENT_API_URL=http://localhost:8083
+        - VITE_MONITORING_MANAGEMENT_API_OPTIONS=http://localhost:8083,http://localhost/monitoring-management
+        - VITE_TENANT_MANAGEMENT_API_URL=http://localhost:8082
+        - VITE_TENANT_MANAGEMENT_API_OPTIONS=http://localhost:8082
     ports:
       - "3000:80"
     networks:
@@ -21,22 +27,69 @@ services:
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80" ]
   property-management:
-    image: cloud-porsche-management
+    image: cloud-porsche-property-management
     build:
       context: .
       dockerfile: ./cloud-dev-property-management/Dockerfile-local
     ports:
       - "8080:8080"
     environment:
+      - NODE_ENV=development
       - PORT=8080
       - CORS_ORIGIN=localhost
-      - FIRESTORE_EMULATOR_HOST=
-      - FIREBASE_STORAGE_EMULATOR_HOST=
-      - FIREBASE_OVERWRITE_CREDENTIALS=true
-    env_file:
-      - ./cloud-dev-property-management/.env
     networks:
       - cloud-porsche
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost:8080/v1/" ]
+  parking-management:
+    image: cloud-porsche-parking-management
+    build:
+      context: .
+      dockerfile: ./cloud-dev-parking-management/Dockerfile-local
+    ports:
+      - "8084:8084"
+    environment:
+      - NODE_ENV=development
+      - PORT=8084
+      - CORS_ORIGIN=localhost
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8084/v1/" ]
+  monitoring-management:
+    image: cloud-porsche-monitoring-management
+    build:
+      context: .
+      dockerfile: ./cloud-dev-monitoring-management/Dockerfile-local
+    ports:
+      - "8083:8083"
+    environment:
+      - NODE_ENV=development
+      - PORT=8083
+      - CORS_ORIGIN=localhost
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8083/v1/" ]
+
+  tenant-management:
+    image: cloud-porsche-tenant-management
+    build:
+      context: .
+      dockerfile: ./cloud-dev-tenant-management/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - NODE_ENV=development
+      - PORT=8082
+      - CORS_ORIGIN=localhost
+    env_file:
+      - ./cloud-dev-tenant-management/.env
+    networks:
+      - cloud-porsche
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8082/v1/" ]

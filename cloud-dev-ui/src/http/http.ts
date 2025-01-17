@@ -131,17 +131,14 @@ function request<T extends BodyInit>(
   async function _fetch() {
     // Have to wait for headers to be modified inside extendResponsePromiseWithBodyMethods
     await Promise.resolve();
-    const token = await useCurrentUser().value?.getIdToken(true);
+    const token = await useCurrentUser().value?.getIdToken();
     const tenantId = (router.currentRoute.value.params as any)["tenantId"];
 
     if (
       tenantId &&
       tenantId !== (import.meta.env.PROD ? "free-tier" : "free")
     ) {
-      headers.set(
-        "tenant-id",
-        tenantId.includes(":") ? tenantId.split(":")[1] : tenantId,
-      );
+      headers.set("tenant-id", tenantId);
     }
     if (token) headers.set("authorization", token);
     const req = new Request(input, {
@@ -176,7 +173,14 @@ function request<T extends BodyInit>(
 function getHeaders(init?: Init) {
   // We don't know if defaults.init.headers and init.headers are JSON or Headers instances
   // thus we have to make the conversion
-  return new Headers({ ...defaults.init.headers, ...init?.headers });
+  const newHeaders = new Headers();
+  new Headers(defaults.init.headers).forEach((value, key) =>
+    newHeaders.set(key, value),
+  );
+  new Headers(init?.headers).forEach((value, key) =>
+    newHeaders.set(key, value),
+  );
+  return newHeaders;
 }
 
 function getJSONHeaders(init?: Init) {

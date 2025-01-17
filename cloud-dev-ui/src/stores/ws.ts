@@ -1,18 +1,22 @@
 // Websocket Initialization
 import { io } from "socket.io-client";
 import { usePropertyStore } from "@/stores/properties";
-import { propertyManagementUrl, useAppStore } from "@/stores/app";
+import { useAppStore } from "@/stores/app";
 
 export function initWs(authToken: string, tenantId: string) {
   console.debug("Initializing WS");
+  const propertyManagementUrl = useAppStore().api.propertyManagement;
   const path = propertyManagementUrl.split("/").at(3);
   console.debug("WS Path: ", path);
+  const extraHeaders = {
+    authorization: authToken,
+  };
+  if (tenantId !== (import.meta.env.PROD ? "free-tier" : "free"))
+    Object.assign(extraHeaders, { "tenant-id": tenantId });
   const socket = io(propertyManagementUrl.replace(path, ""), {
     path: (path ? "/" + path : "") + "/socket.io/",
-    extraHeaders: {
-      authorization: authToken,
-      "tenant-id": tenantId,
-    },
+    extraHeaders: extraHeaders,
+    reconnectionAttempts: 5,
   });
 
   socket.on("connect", function () {

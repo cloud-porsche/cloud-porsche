@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
 import { Octokit } from 'octokit';
@@ -8,7 +14,6 @@ import {
   getAuth,
   sendEmailVerification,
 } from 'firebase/auth';
-import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 import { ITenant, TenantTier } from '@cloud-porsche/types';
 
 @Injectable()
@@ -60,34 +65,34 @@ export class TenantsService {
           tenant.password,
           'admin',
         );
-        // const ghResponse = await this.octokit.request(
-        //   `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
-        //   {
-        //     ref: this.targetBranch,
-        //     inputs: {
-        //       run_type: 'tenant-create',
-        //       tenant_id: newTenant.tenantId,
-        //       tenant_name: tenant.name,
-        //       tenant_type: tenant.plan,
-        //       location: tenant.location,
-        //       admin_email: tenant.email,
-        //     },
-        //     headers: {
-        //       'X-GitHub-Api-Version': '2022-11-28',
-        //     },
-        //   },
-        // );
-        // return {
-        //   res: newTenant.toJSON(),
-        //   ghResponse: await this.octokit.request(
-        //     'GET ' + ghResponse.url.replace('/dispatches', ''),
-        //   ),
-        // };
+        const ghResponse = await this.octokit.request(
+          `POST /repos/cloud-porsche/cloud-porsche/actions/workflows/${this.workflowId}/dispatches`,
+          {
+            ref: this.targetBranch,
+            inputs: {
+              run_type: 'tenant-create',
+              tenant_id: newTenant.tenantId,
+              tenant_name: tenant.name,
+              tenant_type: tenant.plan,
+              location: tenant.location,
+              admin_email: tenant.email,
+            },
+            headers: {
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
+          },
+        );
+        return {
+          res: newTenant.toJSON(),
+          ghResponse: await this.octokit.request(
+            'GET ' + ghResponse.url.replace('/dispatches', ''),
+          ),
+        };
+      })
+      .catch((error) => {
+        this.logger.error(error);
+        return error;
       });
-    // .catch((error) => {
-    //   this.logger.error(error);
-    //   return error;
-    // });
   }
 
   async deleteTenant(tenantId: string) {
@@ -198,7 +203,7 @@ export class TenantsService {
     newUserToken: string,
   ) {
     if (!oldTenantId || !newTenantId || !userToken || !newUserToken) {
-      return HttpErrorByCode[500];
+      throw new InternalServerErrorException('Missing parameters');
     }
     if (newTenantId === 'free-tier') {
       throw new BadRequestException('Migration to free tier not supported');
@@ -212,7 +217,7 @@ export class TenantsService {
       .authForTenant(newTenantId);
     const newDecodedToken = await newTenantAuth.verifyIdToken(newUserToken);
     if (decodedToken.email !== newDecodedToken.email) {
-      return HttpErrorByCode[403];
+      throw new ForbiddenException('Unauthorized');
     }
 
     const oldTenantDoc = admin
@@ -230,7 +235,7 @@ export class TenantsService {
       oldTenant.tier !== TenantTier.FREE &&
       oldTenant.adminEmail !== decodedToken.email
     ) {
-      return HttpErrorByCode[403];
+      throw new ForbiddenException('Not an admin');
     }
 
     const newTenantDoc = admin
@@ -245,7 +250,7 @@ export class TenantsService {
       throw new BadRequestException('New tenant information not found');
     }
     if (newTenant.adminEmail !== newDecodedToken.email) {
-      return HttpErrorByCode[403];
+      throw new ForbiddenException('Not an admin');
     }
     const creds = {
       credential:
@@ -265,49 +270,70 @@ export class TenantsService {
       databaseURL: process.env.FIREBASE_DATABASE_URL,
       projectId: process.env.FIREBASE_PROJECT_ID,
     };
-    admin.initializeApp(creds, 'old');
-    admin.initializeApp(creds, 'new');
-    const firestoreOld = admin.firestore(admin.app('old'));
-    firestoreOld.settings({
-      databaseId: 'property-management-' + oldTenantId,
-      ignoreUndefinedProperties: true,
-    });
-    const firestoreNew = admin.firestore(admin.app('new'));
-    firestoreNew.settings({
-      databaseId: 'property-management-' + newTenantId,
-      ignoreUndefinedProperties: true,
-    });
+    const tenantAppFrom = admin.initializeApp(creds, 'old');
+    const tenantAppTo = admin.initializeApp(creds, 'new');
 
-    if (newTenant.tier === TenantTier.PRO) {
-      const properties = await firestoreOld
-        .collection('ParkingProperties')
-        .listDocuments();
-      if (properties.length > 5)
-        throw new BadRequestException(
-          'Migration to PRO tier only supports up to 5 properties',
-        );
-    }
+    try {
+      const firestoreOld = admin.firestore(tenantAppFrom);
+      const oldDbName =
+        oldTenant.tier === TenantTier.FREE
+          ? 'free-tier'
+          : oldTenant.tier === TenantTier.PRO
+            ? 'pro-tier'
+            : oldTenantId;
+      firestoreOld.settings({
+        databaseId: 'property-management-' + oldDbName,
+        ignoreUndefinedProperties: true,
+      });
+      const firestoreNew = admin.firestore(tenantAppTo);
+      const newDbName =
+        oldTenant.tier === TenantTier.PRO ? 'pro-tier' : newTenantId;
+      firestoreNew.settings({
+        databaseId: 'property-management-' + newDbName,
+        ignoreUndefinedProperties: true,
+      });
 
-    const oldTenantIdField =
-      oldTenant.tier === TenantTier.FREE ? decodedToken.uid : oldTenantId;
+      if (
+        newTenant.tier === TenantTier.PRO &&
+        oldTenant.tier === TenantTier.ENTERPRISE
+      ) {
+        const properties = await firestoreOld
+          .collection('ParkingProperties')
+          .listDocuments();
+        if (properties.length > 5)
+          throw new BadRequestException(
+            'Migration to PRO tier only supports up to 5 properties',
+          );
+      }
 
-    const collections = await firestoreOld.listCollections();
-    for (const collection of collections) {
-      const docs = await collection.listDocuments();
-      for (const doc of docs) {
-        const data = (await doc.get()).data();
-        if (data.tenantId === oldTenantIdField) {
-          Object.assign(data, { tenantId: newTenantId });
-          await firestoreNew.collection(collection.id).doc(doc.id).set(data);
+      const oldTenantIdField =
+        oldTenant.tier === TenantTier.FREE ? decodedToken.uid : oldTenantId;
+
+      const collections = await firestoreOld.listCollections();
+      for (const collection of collections) {
+        const docs = await collection.listDocuments();
+        for (const doc of docs) {
+          const data = (await doc.get()).data();
+          if (data.tenantId === oldTenantIdField) {
+            Object.assign(data, { tenantId: newTenantId });
+            await firestoreNew.collection(collection.id).doc(doc.id).set(data);
+          }
         }
       }
-    }
 
-    return {
-      res: {
-        from: oldTenantId,
-        to: newTenantId,
-      },
-    };
+      await tenantAppFrom.delete();
+      await tenantAppTo.delete();
+
+      return {
+        res: {
+          from: oldTenantId,
+          to: newTenantId,
+        },
+      };
+    } catch (error) {
+      await tenantAppFrom.delete();
+      await tenantAppTo.delete();
+      throw error;
+    }
   }
 }
