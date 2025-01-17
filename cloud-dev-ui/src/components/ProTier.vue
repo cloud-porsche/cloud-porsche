@@ -8,11 +8,17 @@ const locked = computed(
 
 const model = defineModel();
 
-watch(locked, (locked) => {
-  if (locked) {
-    model.value = false;
-  }
-});
+watch(
+  locked,
+  (locked) => {
+    if (locked) {
+      model.value = false;
+    }
+  },
+  {
+    immediate: true,
+  },
+);
 </script>
 
 <template>
