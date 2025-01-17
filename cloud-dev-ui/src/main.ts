@@ -22,6 +22,9 @@ import {
 import Dashboards from "@highcharts/dashboards";
 import Highcharts from "highcharts";
 import LayoutModule from "@highcharts/dashboards/modules/layout";
+import { registerSW } from "virtual:pwa-register";
+
+registerSW({ immediate: true });
 
 const app = createApp(App);
 registerPlugins(app);
