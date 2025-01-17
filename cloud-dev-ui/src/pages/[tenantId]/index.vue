@@ -23,7 +23,7 @@
     <v-responsive v-show="!appStore.authLoading">
       <div id="dashboard_free"></div>
       <ProTier>
-        <div id="dashboard_container" style="min-height: 100%;"></div>
+        <div id="dashboard_container" style="min-height: 100%"></div>
       </ProTier>
     </v-responsive>
   </div>
@@ -100,24 +100,25 @@ async function initDashBoard() {
         {
           rows: [
             {
-            cells: [
-              { id: "row-1", 
-                layout: {
-                  rows: [
-                    {
-                      cells: [
-                        {id: "card-api-calls-free"},
-                        {id: "card-customers-free"}
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-            }
-          ]
-        }
-      ]
+              cells: [
+                {
+                  id: "row-1",
+                  layout: {
+                    rows: [
+                      {
+                        cells: [
+                          { id: "card-api-calls-free" },
+                          { id: "card-customers-free" },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
     },
     components: [
       {
@@ -128,18 +129,19 @@ async function initDashBoard() {
           monitoringStore.free_data.left_free_api_calls,
           0,
           false,
-        )
+        ),
       },
       {
         type: "HTML",
         renderTo: "card-customers-free",
         html: createCardHTML(
           "Customers",
-          monitoringStore.free_data.customer_count_change.current_period_customers,
-          monitoringStore.free_data.customer_count_change.percent_change
-        )
-      }
-    ]
+          monitoringStore.free_data.customer_count_change
+            .current_period_customers,
+          monitoringStore.free_data.customer_count_change.percent_change,
+        ),
+      },
+    ],
   });
   Dashboards.board("dashboard_container", {
     gui: {
@@ -385,11 +387,20 @@ onMounted(async () => {
     },
   );
 
-  watch(isDark, (newVal) => {
-    document.getElementById("dashboard_container")!.className = `highcharts-${
-      newVal ? "dark" : "light"
-    }`;
-  });
+  watch(
+    isDark,
+    (newVal) => {
+      document.getElementById("dashboard_free")!.className = `highcharts-${
+        newVal ? "dark" : "light"
+      }`;
+      document.getElementById("dashboard_container")!.className = `highcharts-${
+        newVal ? "dark" : "light"
+      }`;
+    },
+    {
+      immediate: true,
+    },
+  );
   await monitoringStore.fetchAllData();
 });
 </script>
