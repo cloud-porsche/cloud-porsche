@@ -72,7 +72,8 @@ export const useAppStore = defineStore("app", {
     isUserRole(state) {
       return (
         state.tenant.info?.tier !== TenantTier.FREE &&
-        state.currUser.role === "user"
+        state.currUser.role === "user" &&
+        state.tenant.info?.adminEmail !== getAuth().currentUser?.email
       );
     },
     isFreeTenant(state) {
