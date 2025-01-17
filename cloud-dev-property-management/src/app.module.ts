@@ -35,6 +35,10 @@ export class AppModule implements NestModule {
       .apply(AuthMiddleware, LoggingMiddleware)
       .exclude(
         { path: 'v1', method: RequestMethod.GET },
+        {
+          path: 'v1/parking-properties/:id/spotInfo',
+          method: RequestMethod.GET,
+        },
         { path: 'api', method: RequestMethod.ALL },
       )
       .forRoutes({
