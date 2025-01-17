@@ -41,22 +41,25 @@
       <v-divider vertical inset></v-divider>
       <v-spacer></v-spacer>
       <ProTier>
-        <div class="d-flex">
+        <div class="d-flex align-center ga-2">
+          <v-tooltip
+            :model-value="!useAppStore().hasAdminAccess"
+            activator="parent"
+            text="Admin only"
+          ></v-tooltip>
           <v-select
-            label="Select Simulation Speed"
+            label="Simulation Speed"
             :items="['normal', 'fast', 'slow']"
             v-model="selectedSpeed"
+            :disabled="!useAppStore().wsStatus || !useAppStore().hasAdminAccess"
             density="compact"
-            style="height: 40px; width: 200px"
+            hide-details
+            min-width="150px"
           ></v-select>
           <v-btn
-            :disabled="
-              !useAppStore().wsStatus || useAppStore().currUser.role !== 'admin'
-            "
-            density="comfortable"
+            :disabled="!useAppStore().wsStatus || !useAppStore().hasAdminAccess"
             :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
             text="Simulation"
-            style="height: 40px"
             @click="
               simulationState
                 ? propertyStore.setSimulationInactive(property.id)
