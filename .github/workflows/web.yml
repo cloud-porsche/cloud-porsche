@@ -3,6 +3,7 @@ name: Deploy website
 on:
   push:
     branches:
+      - master
       - develop
 
 jobs:
@@ -14,6 +15,8 @@ jobs:
     steps:
       # Step 1: Check out the repository
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.environment == 'prod' && 'master' || 'develop' }}
       # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -40,26 +43,12 @@ jobs:
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_BASE_URL: /
+          VITE_BASE_URL: /${{ github.ref_name == 'master' && 'prod' || 'staging' }}/
           VITE_TENANT_MANAGEMENT_API_URL: https://tenant-management.${{ github.ref_name == 'master' && 'prod' || 'staging' }}.cloud-porsche.com
-      # Step 6: Upload the build output as an artifact
-      - name: Upload static files as artifact
-        id: deployment
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to GH Pages 🚀
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: ./cloud-dev-ui/dist
-
-  deploy:
-    name: Deploy to GH Pages 🚀
-    needs: build
-    runs-on: ubuntu-22.04
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./cloud-dev-ui/dist
+          destination_dir: ${{ matrix.environment }}
+          cname: app.cloud-porsche.com
