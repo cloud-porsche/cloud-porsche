@@ -39,7 +39,7 @@ jobs:
       # Step 5: Build the project in the working directory
       - name: Build project
         working-directory: ./cloud-dev-ui  # Change working directory to ./cloud-dev-ui
-        run: pnpm build  # Adjust the build command if necessary (e.g., pnpm run build)
+        run: pnpm run build:${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
