@@ -2,14 +2,13 @@
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const plan = computed(() => router.currentRoute.value.query.plan);
 const tenantId = computed(() => router.currentRoute.value.query.tenantId);
 const badgeUrl = computed(() => {
   const url = router.currentRoute.value.query.badgeUrl;
   return Array.isArray(url) ? url[0] : url;
 });
 
-const baseUrl = "https://cloud-porsche.github.io/cloud-porsche/#/";
+const baseUrl = "https://app.cloud-porsche.com/#/";
 </script>
 
 <template>
