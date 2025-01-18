@@ -2,6 +2,7 @@ name: Google Cloud Tenant Management
 on:
   push:
     branches:
+      - master
       - develop
 jobs:
   build-and-push-to-gcr:
@@ -56,6 +57,7 @@ jobs:
             VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
             VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
             GITHUB_TOKEN=${{ secrets.A_GITHUB_TOKEN }}
+            TARGET_BRANCH=${{ github.ref_name }}
           flags: |-
             --max-instances=1
       - name: Print the URL
