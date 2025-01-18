@@ -5,6 +5,10 @@ resource "google_firestore_database" "enterprise_tenant_property_management" {
   concurrency_mode = "PESSIMISTIC"
   project          = "cloud-porsche"
   deletion_policy  = "DELETE"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "google_firestore_database" "enterprise_tenant_monitoring" {
@@ -14,11 +18,20 @@ resource "google_firestore_database" "enterprise_tenant_monitoring" {
   concurrency_mode = "PESSIMISTIC"
   project          = "cloud-porsche"
   deletion_policy  = "DELETE"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "google_storage_bucket" "enterprise_tenant" {
-  location = var.location
-  name     = "property-management-${var.tenant_id}"
+  location      = var.location
+  name          = "property-management-${var.tenant_id}"
+  force_destroy = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "google_pubsub_topic" "enterprise_queue" {
