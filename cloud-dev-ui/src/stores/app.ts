@@ -109,7 +109,7 @@ export const useAppStore = defineStore("app", {
       this.auth.loading = loading;
     },
     setTenantInfo(info: ITenant) {
-      if (import.meta.env.PROD) {
+      if (import.meta.env.PROD || import.meta.env.MODE === "staging") {
         this.changePropertyManagementApiURL(
           `https://${info.ip}/property-management`,
         );
