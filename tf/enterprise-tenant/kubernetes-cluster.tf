@@ -142,6 +142,6 @@ resource "helm_release" "enterprise_tenant" {
 data "kubernetes_service" "ingress" {
   depends_on = [helm_release.enterprise_tenant, google_container_cluster.enterprise_tenant]
   metadata {
-    name = "${var.tenant_id}-ingress-nginx-controller"
+    name = "${var.tenant_id}${var.prod ? "" : "-staging"}-ingress-nginx-controller"
   }
 }

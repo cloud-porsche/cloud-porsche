@@ -24,7 +24,7 @@ module "pro-tier" {
   tenant_name    = "pro-tier"
   admin_email    = "osi.borkenhagen@gmail.com"
   firebase_token = var.firebase_token
-  location       = "europe-west4"
+  location       = "europe-west1"
   image_tag      = var.image_tag
   providers = {
     helm       = helm.pro-tier

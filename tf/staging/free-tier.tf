@@ -24,7 +24,7 @@ module "free-tier" {
   tenant_id           = "free-tier"
   tenant_name         = "free-tier"
   firebase_token      = var.firebase_token
-  location            = "europe-west4"
+  location            = "europe-north1"
   image_tag           = var.image_tag
   admin_email         = "osi.borkenhagen@gmail.com"
   free_tier_overwrite = true
