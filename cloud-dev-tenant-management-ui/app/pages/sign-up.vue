@@ -44,7 +44,7 @@ const validate = (state: any): FormError[] => {
       message: "Password must be at least 6 characters",
     });
 
-  if (!/^[a-zA-Z][a-zA-Z0-9- ]{3,19}$/.test(state.name))
+  if (!/^[a-zA-Z][a-zA-Z0-9- ]{3,17}$/.test(state.name))
     errors.push({
       path: "name",
       message:
