@@ -106,7 +106,7 @@ resource "helm_release" "enterprise_tenant" {
   }
   set {
     name  = "certificateUrl"
-    value = "https://acme-${var.prod ? "staging-" : ""}v02.api.letsencrypt.org/directory"
+    value = "https://acme-${var.prod ? "" : "staging-"}v02.api.letsencrypt.org/directory"
   }
 
   set {

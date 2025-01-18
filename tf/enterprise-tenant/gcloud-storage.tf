@@ -18,7 +18,7 @@ resource "google_firestore_database" "enterprise_tenant_monitoring" {
 
 resource "google_storage_bucket" "enterprise_tenant" {
   location      = var.location
-  name          = "property-management-${var.tenant_id}"
+  name          = "property-management-${var.tenant_id}${var.prod ? "" : "-staging"}"
   force_destroy = var.prod ? false : true
 }
 
