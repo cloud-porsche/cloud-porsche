@@ -1,9 +1,9 @@
 .npmrc
-/tf/.terraform/
-/tf/terraform.tfstate
-/tf/terraform.tfstate.backup
-/tf/.terraform.tfstate.lock.info
-/tf/.terraform.lock.hcl
+/**/.terraform/
+/**/terraform.tfstate
+/**/terraform.tfstate.backup
+/**/.terraform.tfstate.lock.info
+/**/.terraform.lock.hcl
 /helm/cloud-porsche-default/values-secrets.yaml
 /helm/*.tgz
-/tf/.auto.tfvars
+/**/.auto.tfvars

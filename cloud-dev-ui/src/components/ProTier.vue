@@ -26,7 +26,7 @@ watch(
     <a
       class="star-anchor"
       target="_blank"
-      href="https://tenant-management-750687370557.europe-west4.run.app/#pricing"
+      href="https://tenant-management.prod.cloud-porsche.com/#pricing"
     >
       <v-icon
         icon="mdi-shimmer"

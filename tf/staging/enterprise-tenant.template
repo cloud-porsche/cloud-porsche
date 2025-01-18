@@ -19,7 +19,7 @@ provider "kubernetes" {
 }
 
 module "${TENANT_ID}" {
-  source         = "./enterprise-tenant"
+  source         = "../enterprise-tenant"
   tenant_id      = "${TENANT_ID}"
   tenant_name    = "${TENANT_NAME}"
   firebase_token = var.firebase_token

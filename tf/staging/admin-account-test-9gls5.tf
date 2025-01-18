@@ -19,7 +19,7 @@ provider "kubernetes" {
 }
 
 module "admin-account-test-9gls5" {
-  source         = "./enterprise-tenant"
+  source         = "../enterprise-tenant"
   tenant_id      = "admin-account-test-9gls5"
   tenant_name    = "Admin Account Test"
   firebase_token = var.firebase_token

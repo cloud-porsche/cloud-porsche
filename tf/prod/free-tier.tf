@@ -20,7 +20,7 @@ provider "kubernetes" {
 
 module "free-tier" {
   # 1 Enterprise Tenant equals our free-tier
-  source              = "./enterprise-tenant"
+  source              = "../enterprise-tenant"
   tenant_id           = "free-tier"
   tenant_name         = "free-tier"
   firebase_token      = var.firebase_token
@@ -28,6 +28,7 @@ module "free-tier" {
   image_tag           = var.image_tag
   admin_email         = "osi.borkenhagen@gmail.com"
   free_tier_overwrite = true
+  prod                = true
   providers = {
     helm       = helm.free-tier
     kubernetes = kubernetes.free-tier

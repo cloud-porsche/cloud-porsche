@@ -16,9 +16,9 @@ terraform {
 }
 
 resource "google_service_account" "tenant_service_account" {
-  account_id                   = var.tenant_id
+  account_id                   = "${var.tenant_id}${var.prod ? "" : "-staging"}"
   description                  = "Tenant Service account"
-  display_name                 = var.tenant_id
+  display_name                 = "${var.tenant_id}${var.prod ? "" : "-staging"}"
   project                      = "cloud-porsche"
   create_ignore_already_exists = true
 }

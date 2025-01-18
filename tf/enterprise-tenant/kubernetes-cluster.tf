@@ -1,5 +1,5 @@
 resource "google_dns_record_set" "tenant_domain" {
-  name = "${var.tenant_id}.cloud-porsche.com."
+  name = "${var.tenant_id}${var.prod ? "" : "-staging"}.cloud-porsche.com."
   type = "A"
   ttl  = 300
 
@@ -21,7 +21,7 @@ resource "kubernetes_secret" "google-credentials" {
 
 ### Cluster Configuration
 resource "google_container_cluster" "enterprise_tenant" {
-  name = var.tenant_id
+  name = "${var.tenant_id}${var.prod ? "" : "-staging"}"
 
   location = var.location
 
@@ -30,7 +30,7 @@ resource "google_container_cluster" "enterprise_tenant" {
   service_external_ips_config {
     enabled = false
   }
-  
+
   node_config {
     disk_size_gb = 20
   }
@@ -85,7 +85,7 @@ resource "helm_release" "cert_manager" {
 resource "helm_release" "enterprise_tenant" {
   depends_on = [helm_release.cert_manager]
   chart         = "cloud-porsche-default"
-  name          = var.tenant_id
+  name          = "${var.tenant_id}${var.prod ? "" : "-staging"}"
   repository    = "oci://europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/"
   timeout       = 900
   wait_for_jobs = true
@@ -94,15 +94,25 @@ resource "helm_release" "enterprise_tenant" {
     file("${path.module}/../../helm/cloud-porsche-default/values.yaml"),
       fileexists("${path.module}/../../helm/cloud-porsche-default/values-secrets.yaml") ?
       file("${path.module}/../../helm/cloud-porsche-default/values-secrets.yaml") : null,
-      fileexists("${path.module}/../../helm/cloud-porsche-default/values-${var.tenant_id}.yaml") ?
-      file("${path.module}/../../helm/cloud-porsche-default/values-${var.tenant_id}.yaml") : null,
+      fileexists("${path.module}/../../helm/cloud-porsche-default/values-${var.tenant_id}${var.prod ? "" : "-staging"}.yaml")
+      ?
+      file("${path.module}/../../helm/cloud-porsche-default/values-${var.tenant_id}${var.prod ? "" : "-staging"}.yaml")
+      : null,
   ])
 
   set {
     name  = "global.leaderElection.namespace"
     value = "cert-manager"
   }
+  set {
+    name  = "certificateUrl"
+    value = "https://acme-${var.prod ? "staging-" : ""}v02.api.letsencrypt.org/directory"
+  }
 
+  set {
+    name  = "tenantId"
+    value = "${var.tenant_id}${var.prod ? "" : "-staging"}"
+  }
   set {
     name  = "images.propertyManagement"
     value = "europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/property-management:${var.image_tag}"

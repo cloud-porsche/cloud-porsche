@@ -68,10 +68,10 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Using IMAGE_TAG: $IMAGE_TAG"
       - name: Terraform init
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         run: terraform init -input=false
       - name: Terraform apply
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         run: |
           terraform apply \
             -input=false \
@@ -107,10 +107,10 @@ jobs:
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - name: Terraform init
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         run: terraform init -input=false
       - name: Terraform destroy
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         run: |
           terraform destroy \
             -input=false \
@@ -157,20 +157,20 @@ jobs:
           LOCATION: ${{ inputs.location }}
           ADMIN_EMAIL: ${{ inputs.admin_email }}
         with:
-          input: ./tf/${{ inputs.tenant_type }}-tenant.template
-          output: ./tf/${{ inputs.tenant_id }}.tf
+          input: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}/${{ inputs.tenant_type }}-tenant.template
+          output: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}/${{ inputs.tenant_id }}.tf
       - uses: danielr1996/envsubst-action@1.0.0
         if: inputs.tenant_type == 'enterprise'
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
         with:
           input: ./helm/cloud-porsche-default/enterprise-template.yaml
-          output: ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+          output: ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}${{ github.ref_name == 'master' && '' || '-staging' }}.yaml
       - name: Terraform init
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         run: terraform init -input=false
       - name: Terraform create tenant
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         run: |
           terraform apply \
               -target helm.${{ inputs.tenant_id }} \
@@ -183,7 +183,7 @@ jobs:
               -var image_tag=${{ env.IMAGE_TAG }}
       - name: Delete on Terraform fail
         if: failure()
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         run: |
           terraform destroy \
               -target helm.${{ inputs.tenant_id }} \
@@ -199,7 +199,7 @@ jobs:
           git config --global user.name 'Tenant Creation Bot'
           git config --global user.email 'tenant-bot@noreply.com'
           git pull --rebase --strategy-option=theirs
-          git add ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+          git add ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}${{ github.ref_name == 'master' && '' || '-staging' }}.yaml
           git commit -am "Created enterprise tenant: ${{ inputs.tenant_id }}"
           git push
       - name: Commit and push changes (pro)
@@ -208,7 +208,7 @@ jobs:
           git config --global user.name 'Tenant Creation Bot'
           git config --global user.email 'tenant-bot@noreply.com'
           git pull --rebase --strategy-option=theirs
-          git add ./tf/${{ inputs.tenant_id }}.tf
+          git add ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}/${{ inputs.tenant_id }}.tf
           git commit -am "Created pro tenant: ${{ inputs.tenant_id }}"
           git push
 
@@ -239,10 +239,10 @@ jobs:
       - name: Configure Docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
       - name: Terraform init
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         run: terraform init -input=false
       - name: Terraform plan tenant destruction
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         id: plan
         run: |
           trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
@@ -256,7 +256,7 @@ jobs:
               -detailed-exitcode \
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Terraform destroy tenant
-        working-directory: ./tf
+        working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}
         if: ${{ steps.plan.outputs.exit_code }} == 2
         run: |
           terraform destroy \
@@ -269,7 +269,7 @@ jobs:
               -var firebase_token=${{ secrets.FIREBASE_TOKEN }}
       - name: Delete tenant files
         if: ${{ steps.plan.outputs.exit_code }} == 2
-        run: rm -rf ./tf/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}.yaml
+        run: rm -rf ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}/${{ inputs.tenant_id }}.tf ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}${{ github.ref_name == 'master' && '' || '-staging' }}.yaml
       - name: Commit and push changes
         if: ${{ steps.plan.outputs.exit_code }} == 2
         run: |

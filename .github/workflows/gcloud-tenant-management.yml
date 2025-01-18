@@ -23,11 +23,11 @@ jobs:
       - name: Build the Docker image
         run: |
           export IMAGE_URL=europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/tenant-management
-          docker build -t $IMAGE_URL:latest \
+          docker build -t $IMAGE_URL:${{ github.ref_name == 'master' && 'stable' || 'latest' }} \
                        -t $IMAGE_URL:${{ github.sha }} \
                        -f ./cloud-dev-tenant-management/Dockerfile .
           docker push $IMAGE_URL:${{ github.sha }}
-          docker push $IMAGE_URL:latest
+          docker push $IMAGE_URL:${{ github.ref_name == 'master' && 'stable' || 'latest' }}
 
   cloud-run:
     name: Deploy to Cloud Run 🚀
@@ -49,8 +49,8 @@ jobs:
       - uses: google-github-actions/deploy-cloudrun@v2
         id: deploy
         with:
-          service: tenant-management
-          image: europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/tenant-management:latest
+          service: tenant-management-${{ github.ref_name == 'master' && 'prod' || 'staging' }}
+          image: europe-west4-docker.pkg.dev/cloud-porsche/cloud-porsche/tenant-management:${{ github.ref_name == 'master' && 'stable' || 'latest' }}
           region: europe-west4
           env_vars: |-
             VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}

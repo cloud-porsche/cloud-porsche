@@ -18,7 +18,7 @@ terraform {
 
   backend "gcs" {
     bucket = "cloud-porsche-terraform"
-    prefix = "terraform"
+    prefix = "terraform/prod"
   }
 }
 

@@ -43,3 +43,10 @@ variable "free_tier_overwrite" {
   default     = false
   nullable    = false
 }
+
+variable "prod" {
+  type        = bool
+  description = "Is this a prod environment"
+  default     = false
+  nullable    = false
+}

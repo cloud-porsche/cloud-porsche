@@ -1,0 +1,39 @@
+tenantId: free-tier-staging
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+#This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: [ ] # Disable autoscaling in free-tier-staging plan
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+envs:
+  FIREBASE_OVERWRITE_CREDENTIALS: true
+  CORS_ORIGINS: https://app.cloud-porsche.com,https://cloud-porsche.github.io,https://cloud-dev.ostabo.com,http://localhost:3000
+  FIREBASE_STORAGE_BUCKET: property-management-free-tier-staging
+  FIRESTORE_DB: property-management-free-tier-staging
+
+propertyManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: cloud-porsche-prod
+    FIRESTORE_DB: property-management-free-tier-staging
+    MONITORING_QUEUE: free-tier-staging-queue
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: cloud-porsche-prod
+    FIRESTORE_DB: parking-management-free-tier-staging
+    PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
+    MONITORING_QUEUE: free-tier-staging-queue
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-free-tier-staging
+    QUEUE_SUBSCRIPTION: free-tier-staging-subscription
