@@ -8,7 +8,7 @@ const badgeUrl = computed(() => {
   return Array.isArray(url) ? url[0] : url;
 });
 
-const baseUrl = "https://app.cloud-porsche.com/#/";
+const baseUrl = "https://app.cloud-porsche.com/prod/#/";
 </script>
 
 <template>
