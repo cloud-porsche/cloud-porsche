@@ -59,6 +59,7 @@ export default ({ mode }) => {
         },
       }),
       VitePWA({
+        disable: mode !== "production",
         registerType: "autoUpdate",
         devOptions: {
           enabled: false,
