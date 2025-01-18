@@ -381,6 +381,8 @@ const confirmDelete = async () => {
       );
     }
     await signOut(auth!);
+    deleteDialogOpen.value = false;
+    deleteConfirm.value = "";
   }
 };
 
