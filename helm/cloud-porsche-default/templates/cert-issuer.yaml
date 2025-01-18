@@ -5,7 +5,7 @@ metadata:
   namespace: cert-manager
 spec:
   acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
+    server: {{ .Values.certificateUrl }}
     email: osi.borkenhagen@gmail.com
     privateKeySecretRef:
       name: letsencrypt-key

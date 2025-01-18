@@ -5,6 +5,8 @@
 cert-manager:
   enabled: true
 
+certificateUrl: https://acme-staging-v02.api.letsencrypt.org/directory
+
 images:
   propertyManagement: cloud-porsche/property-management:latest
   parkingManagement: cloud-porsche/parking-management:latest
