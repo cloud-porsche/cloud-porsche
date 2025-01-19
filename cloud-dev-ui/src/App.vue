@@ -129,6 +129,19 @@
         {{ tenantInfoError }}
       </v-alert>
     </v-main>
+    <v-footer v-if="isStaging" app height="40" elevation="8" color="warning">
+      <span class="d-flex align-center flex-grow-1">
+        This is a staging environment, this is not secure and meant for testing
+        purposes.
+        <v-spacer></v-spacer>
+        <v-btn
+          append-icon="mdi-open-in-new"
+          variant="text"
+          @click="navigateToProd()"
+          >Navigate to Production</v-btn
+        >
+      </span>
+    </v-footer>
     <AppFooter />
 
     <v-bottom-sheet
@@ -173,6 +186,11 @@ import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { ITenant } from "@cloud-porsche/types";
 import { useMonitoringStore } from "./stores/monitoring";
 import { useUserStore } from "./stores/user";
+
+const isStaging = import.meta.env.MODE === "staging";
+const navigateToProd = () => {
+  window.open("https://app.cloud-porsche.com/prod/#/", "_blank");
+};
 
 const drawerOpen = ref(true);
 const openNavigations = ref([]);
