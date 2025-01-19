@@ -357,7 +357,9 @@ const tabs = computed(() => [
         },
       },
     ],
-    migration: !["free-tier", "free"].includes(tenantId.value),
+    migration:
+      !["free-tier", "free"].includes(tenantId.value) &&
+      appStore.hasAdminAccess,
   },
   {
     title: "User Management",
