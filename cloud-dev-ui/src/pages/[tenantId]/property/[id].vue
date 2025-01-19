@@ -263,6 +263,7 @@
                   v-for="spot in layer.parkingSpots"
                   :key="spot.id"
                   :spot="spot"
+                  @stateChange="updateSpotState(spot.id, $event)"
                 ></ParkingSpotComponent>
                 <template v-slot:fallback>
                   <v-progress-circular indeterminate></v-progress-circular>
