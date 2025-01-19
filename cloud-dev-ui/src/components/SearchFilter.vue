@@ -56,7 +56,7 @@
     <v-chip text="ID" value="id" variant="outlined"></v-chip>
     <v-chip text="Name" value="name" variant="outlined"></v-chip>
     <v-chip text="Location" value="location" variant="outlined"></v-chip>
-    <!--<v-chip text="Date" value="reportedDate" variant="outlined"></v-chip>-->
+    <v-chip text="Date" value="reportedDate" variant="outlined" v-tooltip="'e.g. YYYY-MM-DD'"></v-chip>
   </v-chip-group>
 
   <v-divider class="pa-1" thickness="0" />

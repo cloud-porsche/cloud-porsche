@@ -3,7 +3,17 @@
     <v-toolbar density="comfortable" class="d-flex align-center pa-1 pl-8 pr-4">
       <h1 class="text-h5 bold">Management Dashboard</h1>
       <v-spacer></v-spacer>
+      <v-btn
+      class="mr-4"
+      icon="mdi-refresh"
+      @click="monitoringStore.fetchAllData()"
+      :loading="monitoringStore.loading"
+      :color="monitoringStore.error ? 'error' : undefined"
+      v-tooltip="'Refresh'"
+      />
+      <v-divider vertical inset></v-divider>
       <v-select
+        class="pl-4"
         max-width="200"
         density="comfortable"
         hide-details
@@ -16,7 +26,7 @@
     </v-toolbar>
     <v-progress-linear
       :indeterminate="monitoringStore.loading"
-      :color="error ? 'error' : undefined"
+      :color="monitoringStore.error ? 'error' : undefined"
     ></v-progress-linear>
 
     <!-- Dashboard Container -->
@@ -56,7 +66,6 @@ const filters = [
   { value: "total", label: "Total" },
 ];
 const selectedFilter = ref(monitoringStore.timeframe);
-const error = ref(false);
 
 // Create Custom HTML for Cards
 function createCardHTML(
