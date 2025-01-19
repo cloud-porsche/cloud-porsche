@@ -1,4 +1,4 @@
-tenantId: enteprise-6y33t
+tenantId: enteprise-6y33t-staging
 
 resources:
   limits:
@@ -10,16 +10,16 @@ resources:
 
 propertyManagement:
   envs:
-    FIREBASE_STORAGE_BUCKET: property-management-enteprise-6y33t
-    FIRESTORE_DB: property-management-enteprise-6y33t
-    MONITORING_QUEUE: enteprise-6y33t-queue
+    FIREBASE_STORAGE_BUCKET: property-management-enteprise-6y33t-staging
+    FIRESTORE_DB: property-management-enteprise-6y33t-staging
+    MONITORING_QUEUE: enteprise-6y33t-staging-queue
 parkingManagement:
   envs:
-    FIREBASE_STORAGE_BUCKET: property-management-enteprise-6y33t
-    FIRESTORE_DB: property-management-enteprise-6y33t
+    FIREBASE_STORAGE_BUCKET: property-management-enteprise-6y33t-staging
+    FIRESTORE_DB: property-management-enteprise-6y33t-staging
     PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
-    MONITORING_QUEUE: enteprise-6y33t-queue
+    MONITORING_QUEUE: enteprise-6y33t-staging-queue
 monitoringManagement:
   envs:
-    FIRESTORE_DB: monitoring-enteprise-6y33t
-    QUEUE_SUBSCRIPTION: enteprise-6y33t-subscription
+    FIRESTORE_DB: monitoring-enteprise-6y33t-staging
+    QUEUE_SUBSCRIPTION: enteprise-6y33t-staging-subscription
