@@ -1,0 +1,25 @@
+tenantId: enteprise-6y33t
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+propertyManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-enteprise-6y33t
+    FIRESTORE_DB: property-management-enteprise-6y33t
+    MONITORING_QUEUE: enteprise-6y33t-queue
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-enteprise-6y33t
+    FIRESTORE_DB: property-management-enteprise-6y33t
+    PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
+    MONITORING_QUEUE: enteprise-6y33t-queue
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-enteprise-6y33t
+    QUEUE_SUBSCRIPTION: enteprise-6y33t-subscription
