@@ -536,7 +536,7 @@ const { parkingSpots } = storeToRefs(propertyStore);
 const required = (v: string | undefined) => !!v || "This field is required.";
 const minimumOneLayerExists = computed(() => {
   return (_: string | undefined) =>
-    newLayers.length > 0 || "At least one layer must exist.";
+    newLayers.value.length > 0 || "At least one layer must exist.";
 });
 
 const deleteDialog = ref(false);
@@ -554,7 +554,7 @@ function deleteProperty(name: string) {
 const stepperPages = computed(() => [
   "General Information",
   "Parking Spots",
-  ...newLayers.map((layer) => `Layer ${layer.floor}`),
+  ...newLayers.value.map((layer) => `Layer ${layer.floor}`),
   "Confirm",
 ]);
 const newPropertyDialog = ref(false);
@@ -582,7 +582,7 @@ let newProperty = reactive<
     "name" | "location" | "description" | "pricePerHour" | "parkingType"
   >
 >({ ...startingNewProperty });
-let newLayers = reactive<ParkingSpotLayer[]>([]);
+let newLayers = ref<ParkingSpotLayer[]>([]);
 
 const formRef = useTemplateRef("layer-form");
 watch(newLayers, () => {
@@ -593,14 +593,14 @@ watch(newLayers, () => {
 
 function nextOrGenerate(next: () => void) {
   if (step.value === 2) {
-    newLayers.map((layer) => {
+    newLayers.value.map((layer) => {
       layer.parkingSpots = generateParkingSpots(layer.spotCount);
     });
   } else if (
     step.value + 1 === stepperPages.value.length &&
     newProperty.parkingType === ParkingPropertyType.TRACK_INDIVIDUAL
   ) {
-    newLayers.forEach((layer) =>
+    newLayers.value.forEach((layer) =>
       layer.parkingSpots.map((spot, index) => {
         spot.id = spot.placeholder
           ? crypto.randomUUID()
@@ -652,7 +652,7 @@ async function saveNewProperty() {
   > = {
     ...newProperty,
     lastModified: new Date(),
-    layers: newLayers,
+    layers: newLayers.value,
     defects: [],
     tenantId: "",
   };
@@ -661,7 +661,7 @@ async function saveNewProperty() {
 
   newPropertyDialog.value = false;
   newProperty = { ...startingNewProperty };
-  newLayers = [];
+  newLayers.value = [];
   step.value = 1;
   newLoading.value = false;
   savingProcess.value = false;
