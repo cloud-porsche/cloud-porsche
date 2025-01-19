@@ -66,12 +66,11 @@ export class DefectsService {
     tenantId: string,
   ) {
     if (!search || !filter) return this.findAll(propertyId, tenantId);
-    return await this.defectRepository
-      .whereGreaterOrEqualThan(filter, search)
-      .whereLessOrEqualThan(filter, search + '\uf8ff')
+    const res = await this.defectRepository
       .whereEqualTo('propertyId', propertyId)
       .whereEqualTo('tenantId', tenantId)
       .find();
+    return res.filter((defect) => defect[filter].toString().includes(search));
   }
 
   async findOne(id: string) {
