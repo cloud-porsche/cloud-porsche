@@ -24,7 +24,9 @@ import Highcharts from "highcharts";
 import LayoutModule from "@highcharts/dashboards/modules/layout";
 import { registerSW } from "virtual:pwa-register";
 
-registerSW({ immediate: true });
+if (import.meta.env.MODE === "production") {
+  registerSW({ immediate: true });
+}
 
 const app = createApp(App);
 registerPlugins(app);

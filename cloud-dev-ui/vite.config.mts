@@ -61,14 +61,17 @@ export default ({ mode }) => {
       VitePWA({
         disable: mode !== "production",
         registerType: "autoUpdate",
+        base: process.env.VITE_BASE_URL ?? "/",
         devOptions: {
           enabled: false,
         },
+        scope: process.env.VITE_BASE_URL ?? "/",
         manifest: {
           name: "Cloud Porsche",
           short_name: "Cloud",
           lang: "en",
           start_url: process.env.VITE_BASE_URL ?? "/",
+          scope: process.env.VITE_BASE_URL ?? "/",
           description: "HTWG Cloud SaaS Project of Group 'Porsche'",
           icons: [
             {
