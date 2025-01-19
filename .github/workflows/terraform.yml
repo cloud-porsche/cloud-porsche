@@ -164,7 +164,7 @@ jobs:
         env:
           TENANT_ID: ${{ inputs.tenant_id }}
         with:
-          input: ./helm/cloud-porsche-default/enterprise-template.yaml
+          input: ./helm/cloud-porsche-default/enterprise-template-${{ github.ref_name == 'master' && 'prod' || 'staging' }}.yaml
           output: ./helm/cloud-porsche-default/values-${{ inputs.tenant_id }}${{ github.ref_name == 'master' && '' || '-staging' }}.yaml
       - name: Terraform init
         working-directory: ./tf/${{ github.ref_name == 'master' && 'prod' || 'staging' }}

@@ -1,0 +1,25 @@
+tenantId: ${TENANT_ID}-staging
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+propertyManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-${TENANT_ID}-staging
+    FIRESTORE_DB: property-management-${TENANT_ID}-staging
+    MONITORING_QUEUE: ${TENANT_ID}-staging-queue
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-${TENANT_ID}-staging
+    FIRESTORE_DB: property-management-${TENANT_ID}-staging
+    PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
+    MONITORING_QUEUE: ${TENANT_ID}-staging-queue
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-${TENANT_ID}-staging
+    QUEUE_SUBSCRIPTION: ${TENANT_ID}-staging-subscription
