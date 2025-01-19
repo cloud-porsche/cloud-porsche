@@ -69,6 +69,8 @@ export class ParkingSpot {
 export class Customer {
   id: string = crypto.randomUUID();
   licensePlate: string;
+  toPay: number;
+  hasPayed: boolean;
 
   constructor(obj?: Partial<Customer>) {
     Object.assign(this, obj);

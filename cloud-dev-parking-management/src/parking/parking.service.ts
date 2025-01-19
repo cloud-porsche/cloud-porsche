@@ -219,6 +219,10 @@ export class ParkingService {
       spot.state !== ParkingSpotState.CHARGING
     )
       throw new Error('Spot not occupied');
+
+    const parkingDuration = (new Date().getTime() - new Date(spot.lastStateChange).getTime()) / 1000 / 60 / 60 + simulated_duration;
+    const toPay = parkingDuration * parkingProperty.pricePerHour;
+
     await this.pubSubService.publishMessage({
       messageType: 'parking',
       tenantId: tenantId,
@@ -229,18 +233,16 @@ export class ParkingService {
       spotId: spot.id,
       currentUtilization: this.getUtilization(parkingProperty),
       costPerHour: parkingProperty.pricePerHour,
-      parkingDuration:
-        (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
-          1000 /
-          60 /
-          60 +
-        simulated_duration,
+      parkingDuration: parkingDuration,
     });
     return this.updateParkingProperty(
       token,
       tenantId,
       parkingPropertyId,
-      this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
+      {
+        ...this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
+        ...this.newCustomerState(parkingProperty, spot.customer.id, toPay),
+      }
     );
   }
 
@@ -264,6 +266,23 @@ export class ParkingService {
         );
         return l;
       }),
+    };
+  }
+
+  private newCustomerState(
+    parkingProperty: IParkingProperty,
+    customerId: string,
+    toPay: number,
+  ) {
+    return {
+      customers: parkingProperty.customers.map((c) =>
+        c.id === customerId
+          ? {
+              ...c,
+              toPay: toPay,
+            }
+          : c,
+      ),
     };
   }
 

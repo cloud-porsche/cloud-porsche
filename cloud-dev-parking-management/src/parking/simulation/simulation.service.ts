@@ -151,6 +151,8 @@ export class SimulationService {
         await this.parkingService.leave(token, tenantId, propertyId, {
           id: spot.customer.id,
           licensePlate: spot.customer.licensePlate,
+          toPay: 0,
+          hasPayed: true,
         });
       }
     }
@@ -209,11 +211,15 @@ export class SimulationService {
     await this.parkingService.enter(token, tenantId, propertyId, {
       id: id,
       licensePlate: 'SIMULATION',
+      toPay: 0,
+      hasPayed: false,
     });
 
     await this.parkingService.occupySpot(token, tenantId, propertyId, spot.id, {
       id,
       licensePlate: 'SIMULATION',
+      toPay: 0,
+      hasPayed: false,
     });
   }
 
@@ -237,7 +243,8 @@ export class SimulationService {
       spot.id,
       randomInt(1, 10),
     );
-
+    const property = await this.fetchParkingProperty(token, tenantId, propertyId);
+    const customer = property.customers.find((c) => c.id === spot.customer.id);
     const speed = this.simulationIntervals.get(propertyId) || 'normal';
     const leaveDelay = SIMULATION_SPEEDS[speed] / 2;
 
@@ -246,6 +253,8 @@ export class SimulationService {
       await this.parkingService.leave(token, tenantId, propertyId, {
         id,
         licensePlate: 'SIMULATION',
+        toPay: customer.toPay,
+        hasPayed: customer.hasPayed,
       });
     }, leaveDelay);
   }
