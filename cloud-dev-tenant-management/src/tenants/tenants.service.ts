@@ -305,7 +305,7 @@ export class TenantsService {
       const firestorePropertyNew = admin.firestore(tenantAppPropertyTo);
       const firestoreMonitoringOld = admin.firestore(tenantAppMonitoringTo);
       let newDbName =
-        oldTenant.tier === TenantTier.PRO ? 'pro-tier' : newTenantId;
+        newTenant.tier === TenantTier.PRO ? 'pro-tier' : newTenantId;
       if (process.env.NODE_ENV != 'production')
         newDbName = newDbName + '-staging';
       firestorePropertyNew.settings({
@@ -360,7 +360,7 @@ export class TenantsService {
         for (const doc of docs) {
           const data = doc.data();
           Object.assign(data, { tenantId: newTenantId });
-          await firestoreMonitoringOld
+          await firestoreMonitoringNew
             .collection(collection.id)
             .doc(doc.id)
             .set(data);
