@@ -145,7 +145,7 @@
 
       <v-dialog
         v-model="deleteDialogOpen"
-        max-width="400"
+        max-width="fit-content"
         @afterLeave="closeDeleteDialog"
       >
         <v-card class="pa-4">

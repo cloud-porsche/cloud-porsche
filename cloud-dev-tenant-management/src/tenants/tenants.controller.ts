@@ -173,6 +173,7 @@ export class TenantsController {
     description: 'The new tenant id.',
     example: 'tenant-428ux',
   })
+  @Roles(Role.ADMIN)
   async migrateTenant(
     @Param('tenantId') tenantId: string,
     @Param('newTenantId') newTenantId: string,

@@ -15,6 +15,7 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 import { ITenant, TenantTier } from '@cloud-porsche/types';
+import * as process from 'node:process';
 
 @Injectable()
 export class TenantsService {
@@ -205,20 +206,19 @@ export class TenantsService {
     if (!oldTenantId || !newTenantId || !userToken || !newUserToken) {
       throw new InternalServerErrorException('Missing parameters');
     }
-    if (newTenantId === 'free-tier') {
+    if (['free-tier', 'free'].includes(newTenantId)) {
       throw new BadRequestException('Migration to free tier not supported');
     }
 
-    const tenantAuth = admin.auth().tenantManager().authForTenant(oldTenantId);
+    const tenantAuth = ['free-tier', 'free'].includes(oldTenantId)
+      ? admin.auth()
+      : admin.auth().tenantManager().authForTenant(oldTenantId);
     const decodedToken = await tenantAuth.verifyIdToken(userToken);
     const newTenantAuth = admin
       .auth()
       .tenantManager()
       .authForTenant(newTenantId);
     const newDecodedToken = await newTenantAuth.verifyIdToken(newUserToken);
-    if (decodedToken.email !== newDecodedToken.email) {
-      throw new ForbiddenException('Unauthorized');
-    }
 
     const oldTenantDoc = admin
       .firestore()
@@ -233,7 +233,8 @@ export class TenantsService {
     }
     if (
       oldTenant.tier !== TenantTier.FREE &&
-      oldTenant.adminEmail !== decodedToken.email
+      oldTenant.adminEmail !== decodedToken.email &&
+      (await tenantAuth.getUser(decodedToken.uid)).customClaims.role !== 'admin'
     ) {
       throw new ForbiddenException('Not an admin');
     }
@@ -249,7 +250,11 @@ export class TenantsService {
     if (!newTenant) {
       throw new BadRequestException('New tenant information not found');
     }
-    if (newTenant.adminEmail !== newDecodedToken.email) {
+    if (
+      newTenant.adminEmail !== newDecodedToken.email &&
+      (await newTenantAuth.getUser(newDecodedToken.uid)).customClaims.role !==
+        'admin'
+    ) {
       throw new ForbiddenException('Not an admin');
     }
     const creds = {
@@ -270,26 +275,45 @@ export class TenantsService {
       databaseURL: process.env.FIREBASE_DATABASE_URL,
       projectId: process.env.FIREBASE_PROJECT_ID,
     };
-    const tenantAppFrom = admin.initializeApp(creds, 'old');
-    const tenantAppTo = admin.initializeApp(creds, 'new');
+    const tenantAppPropertyFrom = admin.initializeApp(creds, 'old-property');
+    const tenantAppPropertyTo = admin.initializeApp(creds, 'new-property');
+    const tenantAppMonitoringFrom = admin.initializeApp(
+      creds,
+      'old-monitoring',
+    );
+    const tenantAppMonitoringTo = admin.initializeApp(creds, 'new-monitoring');
 
     try {
-      const firestoreOld = admin.firestore(tenantAppFrom);
-      const oldDbName =
+      const firestorePropertyOld = admin.firestore(tenantAppPropertyFrom);
+      const firestoreMonitoringNew = admin.firestore(tenantAppMonitoringFrom);
+      let oldDbName =
         oldTenant.tier === TenantTier.FREE
           ? 'free-tier'
           : oldTenant.tier === TenantTier.PRO
             ? 'pro-tier'
             : oldTenantId;
-      firestoreOld.settings({
+      if (process.env.NODE_ENV != 'production')
+        oldDbName = oldDbName + '-staging';
+      firestorePropertyOld.settings({
         databaseId: 'property-management-' + oldDbName,
         ignoreUndefinedProperties: true,
       });
-      const firestoreNew = admin.firestore(tenantAppTo);
-      const newDbName =
+      firestoreMonitoringNew.settings({
+        databaseId: 'monitoring-' + oldDbName,
+        ignoreUndefinedProperties: true,
+      });
+      const firestorePropertyNew = admin.firestore(tenantAppPropertyTo);
+      const firestoreMonitoringOld = admin.firestore(tenantAppMonitoringTo);
+      let newDbName =
         oldTenant.tier === TenantTier.PRO ? 'pro-tier' : newTenantId;
-      firestoreNew.settings({
+      if (process.env.NODE_ENV != 'production')
+        newDbName = newDbName + '-staging';
+      firestorePropertyNew.settings({
         databaseId: 'property-management-' + newDbName,
+        ignoreUndefinedProperties: true,
+      });
+      firestoreMonitoringOld.settings({
+        databaseId: 'monitoring-' + newDbName,
         ignoreUndefinedProperties: true,
       });
 
@@ -297,7 +321,7 @@ export class TenantsService {
         newTenant.tier === TenantTier.PRO &&
         oldTenant.tier === TenantTier.ENTERPRISE
       ) {
-        const properties = await firestoreOld
+        const properties = await firestorePropertyOld
           .collection('ParkingProperties')
           .listDocuments();
         if (properties.length > 5)
@@ -309,20 +333,44 @@ export class TenantsService {
       const oldTenantIdField =
         oldTenant.tier === TenantTier.FREE ? decodedToken.uid : oldTenantId;
 
-      const collections = await firestoreOld.listCollections();
+      const collections = await firestorePropertyOld.listCollections();
       for (const collection of collections) {
-        const docs = await collection.listDocuments();
+        const docs = (
+          await collection.where('tenantId', '==', oldTenantIdField).get()
+        ).docs;
         for (const doc of docs) {
-          const data = (await doc.get()).data();
-          if (data.tenantId === oldTenantIdField) {
-            Object.assign(data, { tenantId: newTenantId });
-            await firestoreNew.collection(collection.id).doc(doc.id).set(data);
-          }
+          const data = doc.data();
+          Object.assign(data, { tenantId: newTenantId });
+          await firestorePropertyNew
+            .collection(collection.id)
+            .doc(doc.id)
+            .set(data);
         }
       }
 
-      await tenantAppFrom.delete();
-      await tenantAppTo.delete();
+      const monitoringCollections =
+        await firestoreMonitoringOld.listCollections();
+      const filteredMonitoringCollections = monitoringCollections.filter(
+        (collection) => collection.id !== 'ApiCalls',
+      );
+      for (const collection of filteredMonitoringCollections) {
+        const docs = (
+          await collection.where('tenantId', '==', oldTenantIdField).get()
+        ).docs;
+        for (const doc of docs) {
+          const data = doc.data();
+          Object.assign(data, { tenantId: newTenantId });
+          await firestoreMonitoringOld
+            .collection(collection.id)
+            .doc(doc.id)
+            .set(data);
+        }
+      }
+
+      await tenantAppPropertyFrom.delete();
+      await tenantAppPropertyTo.delete();
+      await tenantAppMonitoringFrom.delete();
+      await tenantAppMonitoringTo.delete();
 
       return {
         res: {
@@ -331,8 +379,10 @@ export class TenantsService {
         },
       };
     } catch (error) {
-      await tenantAppFrom.delete();
-      await tenantAppTo.delete();
+      await tenantAppPropertyFrom.delete();
+      await tenantAppPropertyTo.delete();
+      await tenantAppMonitoringFrom.delete();
+      await tenantAppMonitoringTo.delete();
       throw error;
     }
   }

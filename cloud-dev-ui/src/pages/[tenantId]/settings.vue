@@ -299,7 +299,8 @@ const doMigration = async () => {
       "temp",
     );
     const tempAuth = getAuth(tempApp);
-    tempAuth.tenantId = oldTenantId.value;
+    if (!["free", "free-tier"].includes(oldTenantId.value))
+      tempAuth.tenantId = oldTenantId.value;
     const oldUser = await signInWithEmailAndPassword(
       tempAuth,
       oldEmail.value,
