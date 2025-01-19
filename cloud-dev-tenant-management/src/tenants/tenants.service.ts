@@ -317,14 +317,15 @@ export class TenantsService {
         ignoreUndefinedProperties: true,
       });
 
-      if (
-        newTenant.tier === TenantTier.PRO &&
-        oldTenant.tier === TenantTier.ENTERPRISE
-      ) {
-        const properties = await firestorePropertyOld
+      if (newTenant.tier === TenantTier.PRO) {
+        const propertiesOld = await firestorePropertyOld
           .collection('ParkingProperties')
           .listDocuments();
-        if (properties.length > 5)
+        const propertiesNew = await firestorePropertyNew
+          .collection('ParkingProperties')
+          .where('tenantId', '==', newTenantId)
+          .get();
+        if (propertiesNew.size + propertiesOld.length > 5)
           throw new BadRequestException(
             'Migration to PRO tier only supports up to 5 properties',
           );
