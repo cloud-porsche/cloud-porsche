@@ -201,7 +201,12 @@ export class SimulationService {
     if (Math.random() > occupancyRate) {
       await this.simulateCarEntering(token, tenantId, propertyId, freeSpots);
     } else {
-      await this.simulateCarExiting(token, tenantId, propertyId, occupiedSpots);
+      await this.simulateCarExiting(
+        token,
+        tenantId,
+        parkingProperty,
+        occupiedSpots,
+      );
     }
     this.simulationIntervals.get(propertyId).locked = false;
   }
@@ -240,7 +245,7 @@ export class SimulationService {
   private async simulateCarExiting(
     token: string,
     tenantId: string,
-    propertyId: string,
+    parkingProperty: IParkingProperty,
     occupiedSpots: any[],
   ) {
     if (occupiedSpots.length === 0) {
@@ -253,18 +258,15 @@ export class SimulationService {
     await this.parkingService.freeSpot(
       token,
       tenantId,
-      propertyId,
+      parkingProperty.id,
       spot.id,
       randomInt(1, 10),
     );
-    const property = await this.fetchParkingProperty(
-      token,
-      tenantId,
-      propertyId,
+    const customer = parkingProperty.customers.find(
+      (c) => c.id === spot.customer.id,
     );
-    const customer = property.customers.find((c) => c.id === spot.customer.id);
     const id = spot.customer.id;
-    await this.parkingService.leave(token, tenantId, propertyId, {
+    await this.parkingService.leave(token, tenantId, parkingProperty.id, {
       id,
       licensePlate: 'SIMULATION',
       toPay: customer?.toPay ?? 0,
