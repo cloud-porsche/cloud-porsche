@@ -62,7 +62,6 @@ export class ParkingPropertiesGateway {
   }
 
   handleConnection(client: any) {
-    // console.log(client);
     const token = client.handshake.headers['authorization'];
     let tenantId = client.handshake.headers['tenant-id'];
 
@@ -72,7 +71,6 @@ export class ParkingPropertiesGateway {
       } else {
         this.client_tenantIds.set(client.id, tenantId);
       }
-      return;
     }
 
     this.logger.log(`Client id: ${client.id} connected`);
