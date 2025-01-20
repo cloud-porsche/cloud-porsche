@@ -21,11 +21,16 @@ const SIMULATION_SPEEDS = {
 
 export type SimulationSpeed = keyof typeof SIMULATION_SPEEDS;
 
+export type SimulationOptions = {
+  speed: SimulationSpeed;
+  locked: boolean;
+};
+
 @Injectable()
 export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
   private simulationIds = new Set<string>();
-  private simulationIntervals = new Map<string, SimulationSpeed>();
+  private simulationIntervals = new Map<string, SimulationOptions>();
   private readonly parkingPropertiesApi: string;
   private tenantDb = getFirestore(getApp('tenant'));
 
@@ -64,7 +69,10 @@ export class SimulationService {
     this.logger.debug('Simulation Speed: ' + intervalSpeed);
 
     this.simulationIds.add(propertyId);
-    this.simulationIntervals.set(propertyId, intervalSpeed);
+    this.simulationIntervals.set(propertyId, {
+      speed: intervalSpeed,
+      locked: false,
+    });
     this.logger.debug(
       'Simulation Intervals: ' + JSON.stringify([...this.simulationIntervals]),
     );
@@ -72,7 +80,7 @@ export class SimulationService {
     this.schedulerRegistry.addInterval(
       propertyId,
       setInterval(
-        async () => this.runSimulation(token, tenantId, propertyId),
+        async () => await this.runSimulation(token, tenantId, propertyId),
         intervalSpeed,
       ),
     );
@@ -105,7 +113,10 @@ export class SimulationService {
       ),
     );
 
-    this.simulationIntervals.set(propertyId, newIntervalSpeed);
+    this.simulationIntervals.set(propertyId, {
+      speed: newIntervalSpeed,
+      locked: false,
+    });
     this.logger.debug(
       `Simulation speed updated for ${propertyId} to: ${newIntervalSpeed}`,
     );
@@ -164,6 +175,8 @@ export class SimulationService {
   }
 
   async runSimulation(token: string, tenantId: string, propertyId: string) {
+    if (this.simulationIntervals.get(propertyId).locked) return;
+    this.simulationIntervals.get(propertyId).locked = true;
     this.logger.log('Running simulation for: ' + propertyId);
     const parkingProperty = await this.fetchParkingProperty(
       token,
@@ -190,6 +203,7 @@ export class SimulationService {
     } else {
       await this.simulateCarExiting(token, tenantId, propertyId, occupiedSpots);
     }
+    this.simulationIntervals.get(propertyId).locked = false;
   }
 
   private async simulateCarEntering(
@@ -243,20 +257,19 @@ export class SimulationService {
       spot.id,
       randomInt(1, 10),
     );
-    const property = await this.fetchParkingProperty(token, tenantId, propertyId);
+    const property = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      propertyId,
+    );
     const customer = property.customers.find((c) => c.id === spot.customer.id);
-    const speed = this.simulationIntervals.get(propertyId) || 'normal';
-    const leaveDelay = SIMULATION_SPEEDS[speed] / 2;
-
-    setTimeout(async () => {
-      const id = spot.customer.id;
-      await this.parkingService.leave(token, tenantId, propertyId, {
-        id,
-        licensePlate: 'SIMULATION',
-        toPay: customer.toPay,
-        hasPayed: customer.hasPayed,
-      });
-    }, leaveDelay);
+    const id = spot.customer.id;
+    await this.parkingService.leave(token, tenantId, propertyId, {
+      id,
+      licensePlate: 'SIMULATION',
+      toPay: customer.toPay,
+      hasPayed: customer.hasPayed,
+    });
   }
 
   private async fetchParkingProperty(
