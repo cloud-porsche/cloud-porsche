@@ -1,16 +1,16 @@
-{{- range .Values.autoscaling.enabled }}
+{{- if .Values.autoscaling.enabled.monitoringManagement }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .name }}
+  name: monitoring-management
   namespace: {{ $.Release.Namespace }}
   labels:
-    name: {{ .name }}
+    name: monitoring-management
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ .name }}
+    name: monitoring-management
   minReplicas: {{ $.Values.autoscaling.minReplicas }}
   maxReplicas: {{ $.Values.autoscaling.maxReplicas }}
   metrics:
