@@ -300,7 +300,14 @@ const route = useRoute();
 const id = computed(() => (route.params as any)["id"]);
 const tenantId = computed(() => (route.params as any)["tenantId"]);
 
-await propertyStore.fetchSimulationStatus(id.value);
+watch(
+  () => route.params,
+  async (newParams) => {
+    const newId = (newParams as any)["id"];
+    await propertyStore.fetchSimulationStatus(newId);
+    console.log("Fetching property", newId);
+  },
+);
 
 const [isoDefault, xDefault, yDefault, zoomDefault] = [false, 40, -100, 80];
 const isometric = useStorage("view-settings-iso", isoDefault);
