@@ -8,6 +8,13 @@ export enum ParkingSpotState {
   CHARGING,
 }
 
+export enum SimulationState {
+  OFF,
+  SLOW,
+  NORMAL,
+  FAST,
+}
+
 /**
  * The type of a parking property.
  * TRACK_TOTAL: The parking property has a gate and can only track in/out-going cars.
@@ -30,6 +37,7 @@ export abstract class IParkingProperty {
   parkingType: ParkingPropertyType;
   layers: ParkingSpotLayer[];
   defects: string[];
+  simulationState: SimulationState;
 }
 
 export class ParkingSpotLayer {
