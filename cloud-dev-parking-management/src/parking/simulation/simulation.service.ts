@@ -158,13 +158,21 @@ export class SimulationService {
           tenantId,
           propertyId,
           spot.id,
+          undefined,
+          parkingProperty,
         );
-        await this.parkingService.leave(token, tenantId, propertyId, {
-          id: spot.customer.id,
-          licensePlate: spot.customer.licensePlate,
-          toPay: 0,
-          hasPayed: true,
-        });
+        await this.parkingService.leave(
+          token,
+          tenantId,
+          propertyId,
+          {
+            id: spot.customer.id,
+            licensePlate: spot.customer.licensePlate,
+            toPay: 0,
+            hasPayed: true,
+          },
+          parkingProperty,
+        );
       }
     }
   }

@@ -8,17 +8,22 @@ import {
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { PubSubService } from 'src/pubsub/pubsub.service';
+import { ParkingProperty } from './entities/parking-property.entity';
+import { BaseFirestoreRepository, EntityConstructorOrPath, getRepository } from 'fireorm';
 
 @Injectable()
 export class ParkingService {
   private readonly logger = new Logger(ParkingService.name);
   private readonly parkingPropertiesApi: string;
+  private readonly parkingPropertyRepository: BaseFirestoreRepository<ParkingProperty>;
 
   constructor(
     private readonly httpService: HttpService,
     private readonly config: ConfigService,
     private readonly pubSubService: PubSubService,
+    repositoryClass: EntityConstructorOrPath<ParkingProperty>,
   ) {
+    this.parkingPropertyRepository = getRepository(repositoryClass);
     this.parkingPropertiesApi = this.config.get<string>(
       'PROPERTY_MANAGEMENT_API_URL',
     );
@@ -49,29 +54,14 @@ export class ParkingService {
   }
 
   private async updateParkingProperty(
-    token: string,
-    tenantId: string,
     parkingPropertyId: string,
     updateData: Partial<IParkingProperty>,
-  ): Promise<IParkingProperty> {
-    try {
-      const response = await lastValueFrom(
-        this.httpService.patch<IParkingProperty>(
-          `${this.parkingPropertiesApi}/v1/parking-properties/${parkingPropertyId}`,
-          updateData,
-          {
-            headers: {
-              authorization: token,
-              'tenant-id': tenantId,
-            },
-          },
-        ),
-      );
-      return response.data;
-    } catch (error) {
-      this.logger.error(`Failed to update parking property: ${error.message}`);
-      throw new Error('Failed to update parking property');
-    }
+  ) {
+    const toUpdate = {
+      id: parkingPropertyId,
+      ...updateData,
+    };
+    return this.parkingPropertyRepository.update(toUpdate as ParkingProperty);
   }
 
   // This method will publish the message to Pub/Sub when a customer enters
@@ -102,7 +92,7 @@ export class ParkingService {
       parkingDuration: null,
     });
     // Update the customers in the parking property
-    return this.updateParkingProperty(token, tenantId, parkingPropertyId, {
+    return this.updateParkingProperty(parkingPropertyId, {
       customers: [...currentCustomers, newCustomer],
     });
   }
@@ -112,8 +102,9 @@ export class ParkingService {
     tenantId: string,
     parkingPropertyId: string,
     customer: Customer,
+    parkingProperty?: IParkingProperty,
   ) {
-    const parkingProperty = await this.fetchParkingProperty(
+    parkingProperty = parkingProperty ?? await this.fetchParkingProperty(
       token,
       tenantId,
       parkingPropertyId,
@@ -140,7 +131,7 @@ export class ParkingService {
       parkingDuration: null,
     });
 
-    return this.updateParkingProperty(token, tenantId, parkingPropertyId, {
+    return this.updateParkingProperty(parkingPropertyId, {
       customers: currentCustomers.filter((c) => c.id !== customer.id),
     });
   }
@@ -184,8 +175,6 @@ export class ParkingService {
     });
 
     return this.updateParkingProperty(
-      token,
-      tenantId,
       parkingPropertyId,
       this.newSpotState(
         parkingProperty,
@@ -203,9 +192,10 @@ export class ParkingService {
     tenantId: string,
     parkingPropertyId: string,
     spotId: string,
-    simulated_duration: number = 0,
+    simulatedDuration?: number,
+    parkingProperty?: IParkingProperty,
   ) {
-    const parkingProperty = await this.fetchParkingProperty(
+    parkingProperty = parkingProperty ?? await this.fetchParkingProperty(
       token,
       tenantId,
       parkingPropertyId,
@@ -220,7 +210,7 @@ export class ParkingService {
     )
       throw new Error('Spot not occupied');
 
-    const parkingDuration = (new Date().getTime() - new Date(spot.lastStateChange).getTime()) / 1000 / 60 / 60 + simulated_duration;
+    const parkingDuration = (new Date().getTime() - new Date(spot.lastStateChange).getTime()) / 1000 / 60 / 60 + (simulatedDuration ?? 0);
     const toPay = parkingDuration * parkingProperty.pricePerHour;
 
     await this.pubSubService.publishMessage({
@@ -236,8 +226,6 @@ export class ParkingService {
       parkingDuration: parkingDuration,
     });
     return this.updateParkingProperty(
-      token,
-      tenantId,
       parkingPropertyId,
       {
         ...this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
