@@ -32,6 +32,9 @@ resource "google_container_cluster" "enterprise_tenant" {
     enabled = false
   }
 
+  cost_management_config {
+    enabled = true
+  }
   node_config {
     disk_size_gb = 20
     preemptible  = var.prod ? false : true
