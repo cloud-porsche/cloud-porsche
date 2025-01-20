@@ -2,15 +2,15 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ $service}}
+  name: {{ $service.name }}
   namespace: {{ $.Release.Namespace }}
   labels:
-    name: {{ $service }}
+    name: {{ $service.name }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ $service }}
+    name: {{ $service.name }}
   minReplicas: {{ $.Values.autoscaling.minReplicas }}
   maxReplicas: {{ $.Values.autoscaling.maxReplicas }}
   metrics:
