@@ -32,6 +32,11 @@ resource "google_container_cluster" "enterprise_tenant" {
     enabled = false
   }
 
+  maintenance_policy {
+    daily_maintenance_window {
+      start_time = "03:00"
+    }
+  }
   cost_management_config {
     enabled = true
   }
