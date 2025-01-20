@@ -75,6 +75,16 @@ export class DefectsController {
     return await this.defectsService.update(id, updateDefectDto, tenantId);
   }
 
+  @Delete('clearAllDone')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @UseGuards(RolesGuard)
+  async clearAllDone(
+      @Headers('tenant-id') tenantId: string,
+      @Query('propertyId') propertyId: string,
+    ) {
+    return await this.defectsService.clearDoneDefects(tenantId, propertyId);
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN, Role.MANAGER)
   @UseGuards(RolesGuard)
