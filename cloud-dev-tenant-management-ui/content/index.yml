@@ -43,6 +43,7 @@ pricing:
       description: A free plan to get you started.
       price: $0.00
       align: top
+      cycle: /month
       button:
         label: Get Started
         color: gray
@@ -53,13 +54,16 @@ pricing:
         - Live Parking Monitoring
         - Shared Compute
         - Management Overview
+        - Property Defect Management
         - Community Support
+        - 1000 API Calls
     - title: Pro
       description: Our most popular plan.
       price: $99.99
       highlight: true
       scale: true
       align: top
+      cycle: /month
       button:
         label: Get Started
         to: 'sign-up?plan=pro'
@@ -74,10 +78,12 @@ pricing:
         - Role Based Permissions
         - Income Reporting
         - Priority Support
+        - 100000 API Calls
     - title: Enterprise
       description: The best service experience for your business.
-      price: $449.99
+      price: $1299.99
       align: top
+      cycle: /month
       button:
         label: Get Started
         color: gray
@@ -88,6 +94,7 @@ pricing:
         - High Data Separation
         - Custom Branding
         - 24/7 Live Support
+        - Unlimited API Calls
 testimonials:
   headline: Testimonials
   title: What our customers are saying.

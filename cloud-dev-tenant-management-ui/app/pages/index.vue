@@ -56,7 +56,8 @@ useSeoMeta({
           "
           alt="Hero"
           class="w-full h-full object-cover border-gradient rounded-xl p-4"
-        ></NuxtImg>
+        >
+        </NuxtImg>
         <template #fallback>
           <NuxtLoadingIndicator />
         </template>
