@@ -25,7 +25,8 @@ resource "google_container_cluster" "enterprise_tenant" {
 
   location = var.location
 
-  initial_node_count = 1
+  initial_node_count       = 1
+  remove_default_node_pool = true
 
   service_external_ips_config {
     enabled = false
@@ -45,12 +46,12 @@ resource "google_container_cluster" "enterprise_tenant" {
     }
     resource_limits {
       resource_type = "cpu"
-      minimum       = 2
+      minimum       = 1
       maximum       = 12
     }
     resource_limits {
       resource_type = "memory"
-      minimum       = 2
+      minimum       = 1
       maximum       = 32
     }
     enabled = true
