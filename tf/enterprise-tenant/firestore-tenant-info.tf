@@ -1,4 +1,6 @@
 resource "google_firestore_document" "tenant_info" {
+  count = var.enableTenantInfo ? 1 : 0
+
   collection  = "Tenants"
   database    = "(default)"
   document_id = var.tenant_id == "free-tier" ? var.prod ? "free-tier" : "free" : var.tenant_id

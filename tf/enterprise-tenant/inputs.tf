@@ -50,3 +50,10 @@ variable "prod" {
   default     = false
   nullable    = false
 }
+
+variable "enableTenantInfo" {
+  type        = bool
+  description = "Enable tenant info"
+  default     = true
+  nullable    = false
+}

@@ -19,14 +19,15 @@ provider "kubernetes" {
 }
 
 module "pro-tier" {
-  source         = "../enterprise-tenant"
-  tenant_id      = "pro-tier"
-  tenant_name    = "pro-tier"
-  admin_email    = "osi.borkenhagen@gmail.com"
-  firebase_token = var.firebase_token
-  location       = "europe-west4"
-  image_tag      = var.image_tag
-  prod           = true
+  source           = "../enterprise-tenant"
+  tenant_id        = "pro-tier"
+  tenant_name      = "pro-tier"
+  admin_email      = "osi.borkenhagen@gmail.com"
+  firebase_token   = var.firebase_token
+  location         = "europe-west4"
+  image_tag        = var.image_tag
+  prod             = true
+  enableTenantInfo = false
   providers = {
     helm       = helm.pro-tier
     kubernetes = kubernetes.pro-tier
