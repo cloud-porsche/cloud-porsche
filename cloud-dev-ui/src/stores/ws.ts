@@ -17,6 +17,7 @@ export function initWs(authToken: string, tenantId: string) {
     path: (path ? "/" + path : "") + "/socket.io/",
     extraHeaders: extraHeaders,
     reconnectionAttempts: 5,
+    transports: ["websocket"],
   });
 
   socket.on("connect", function () {
