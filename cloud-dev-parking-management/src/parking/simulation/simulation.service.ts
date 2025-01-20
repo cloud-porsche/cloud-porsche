@@ -267,8 +267,8 @@ export class SimulationService {
     await this.parkingService.leave(token, tenantId, propertyId, {
       id,
       licensePlate: 'SIMULATION',
-      toPay: customer.toPay,
-      hasPayed: customer.hasPayed,
+      toPay: customer?.toPay ?? 0,
+      hasPayed: customer?.hasPayed ?? false,
     });
   }
 
