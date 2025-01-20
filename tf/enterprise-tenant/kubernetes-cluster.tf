@@ -37,7 +37,6 @@ resource "google_container_cluster" "enterprise_tenant" {
   }
   node_config {
     disk_size_gb = 20
-    preemptible  = var.prod ? false : true
   }
   cluster_autoscaling {
     auto_provisioning_defaults {
