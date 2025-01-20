@@ -94,6 +94,8 @@ resource "helm_release" "enterprise_tenant" {
   timeout       = 900
   wait_for_jobs = true
 
+  version = "0.6.0" # Set this when changing helm chart
+
   values = compact([
     file("${path.module}/../../helm/cloud-porsche-default/values.yaml"),
       fileexists("${path.module}/../../helm/cloud-porsche-default/values-secrets.yaml") ?
