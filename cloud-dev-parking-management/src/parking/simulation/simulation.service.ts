@@ -147,18 +147,23 @@ export class SimulationService {
     const newIntervalSpeed = SIMULATION_SPEEDS[newSpeed];
     const newState = this.mapSpeedToState(newIntervalSpeed);
 
-    // Setze den neuen Zustand in der Datenbank
     await this.updateSimulationState(token, tenantId, propertyId, newState);
 
-    // Aktualisiere den Scheduler
-    this.schedulerRegistry.deleteInterval(propertyId);
-    this.schedulerRegistry.addInterval(
-      propertyId,
-      setInterval(
-        async () => await this.runSimulation(token, tenantId, propertyId),
-        newIntervalSpeed,
-      ),
-    );
+    try {
+      this.schedulerRegistry.deleteInterval(propertyId);
+      this.schedulerRegistry.addInterval(
+        propertyId,
+        setInterval(
+          async () => await this.runSimulation(token, tenantId, propertyId),
+          newIntervalSpeed,
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to update the simulation interval for property: ${propertyId} `,
+        error,
+      );
+    }
 
     this.logger.debug(
       `Simulation speed updated for ${propertyId} to: ${newIntervalSpeed}`,
@@ -172,9 +177,14 @@ export class SimulationService {
       propertyId,
       SimulationState.OFF,
     );
-
-    this.schedulerRegistry.deleteInterval(propertyId);
-
+    try {
+      this.schedulerRegistry.deleteInterval(propertyId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete the simulation interval for property: ${propertyId} `,
+        error,
+      );
+    }
     await this.removeSimulationCars(token, tenantId, propertyId);
 
     this.logger.log('Simulation stopped for: ' + propertyId);
@@ -221,7 +231,9 @@ export class SimulationService {
           },
           parkingProperty,
         );
-        parkingProperty.customers = parkingProperty.customers.filter((c) => {c.id !== spot.customer.id})
+        parkingProperty.customers = parkingProperty.customers.filter((c) => {
+          c.id !== spot.customer.id;
+        });
       }
     }
   }
@@ -237,8 +249,6 @@ export class SimulationService {
         tenantId,
         propertyId,
       );
-
-      // Die Simulation ist aktiv, wenn der Zustand nicht OFF ist
       return parkingProperty.simulationState !== SimulationState.OFF;
     } catch (error) {
       this.logger.error(`Failed to get simulation status: ${error.message}`);
@@ -254,8 +264,15 @@ export class SimulationService {
     );
     this.logger.log('Running simulation for: ' + propertyId);
     if (parkingProperty.simulationState === SimulationState.OFF) {
-      this.logger.log('Simulation is turned off');
-      this.schedulerRegistry.deleteInterval(propertyId);
+      this.logger.log('Simulation is turned off for property: ' + propertyId);
+      try {
+        this.schedulerRegistry.deleteInterval(propertyId);
+      } catch (error) {
+        this.logger.error(
+          `Failed to delete the simulation interval for property: ${propertyId} `,
+          error,
+        );
+      }
       return;
     }
 
