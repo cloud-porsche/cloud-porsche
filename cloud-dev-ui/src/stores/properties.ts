@@ -145,10 +145,13 @@ export const usePropertyStore = defineStore("properties", {
       }
     },
     async updateSimulationSpeed(propertyId: string, state: SimulationState) {
+      const currentState = this.$state.properties.find(
+        (p) => p.id === propertyId,
+      )?.simulationState;
       if (
-        state ===
-          this.$state.properties.find((p) => p.id === propertyId)
-            ?.simulationState ||
+        !currentState ||
+        currentState === SimulationState.OFF ||
+        state === currentState ||
         state === SimulationState.OFF
       )
         return;

@@ -126,6 +126,12 @@ export class SimulationService {
   ) {
     if (newState === SimulationState.OFF)
       throw new Error('Cannot set simulation speed to OFF');
+    if (!(await this.getSimulationStatus(token, tenantId, propertyId))) {
+      this.logger.warn(
+        'Tried changing speed of inactive simulation - returning...',
+      );
+      return;
+    }
     const newIntervalSpeed = SIMULATION_SPEEDS[newState];
 
     await this.updateSimulationState(token, tenantId, propertyId, newState);

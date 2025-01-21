@@ -54,7 +54,7 @@
             v-model="selectedSpeed"
             @update:modelValue="
               selectedSpeed = $event;
-              propertyStore.updateSimulationSpeed(id, $event);
+              propertyStore.updateSimulationSpeed(id, selectedSpeed);
             "
             :disabled="!useAppStore().wsStatus || !useAppStore().hasAdminAccess"
             density="compact"
@@ -231,6 +231,7 @@
               v-if="!isometric"
               id="spot-container"
               ref="spot-container"
+              class="overflow-auto"
               :style="
                 currentLayer
                   ? {

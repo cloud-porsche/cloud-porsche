@@ -311,6 +311,7 @@
                   <v-col>
                     <div
                       id="spot-container"
+                      class="overflow-auto"
                       :style="{
                         gridTemplateColumns: `repeat(${layer.columns}, 1fr)`,
                       }"
@@ -656,7 +657,7 @@ async function saveNewProperty() {
     layers: newLayers.value,
     defects: [],
     tenantId: "",
-    simulationState: SimulationState.OFF
+    simulationState: SimulationState.OFF,
   };
 
   await propertyStore.addProperty(finalProperty);
