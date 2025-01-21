@@ -221,6 +221,7 @@ export class SimulationService {
           },
           parkingProperty,
         );
+        parkingProperty.customers = parkingProperty.customers.filter((c) => {c.id !== spot.customer.id})
       }
     }
   }
