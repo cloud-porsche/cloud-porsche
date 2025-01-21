@@ -46,8 +46,16 @@
           ></v-tooltip>
           <v-select
             label="Simulation Speed"
-            :items="['normal', 'fast', 'slow']"
+            :items="[
+              SimulationState.SLOW,
+              SimulationState.NORMAL,
+              SimulationState.FAST,
+            ]"
             v-model="selectedSpeed"
+            @update:modelValue="
+              selectedSpeed = $event;
+              propertyStore.updateSimulationSpeed(id, $event);
+            "
             :disabled="!useAppStore().wsStatus || !useAppStore().hasAdminAccess"
             density="compact"
             hide-details
@@ -55,10 +63,14 @@
           ></v-select>
           <v-btn
             :disabled="!useAppStore().wsStatus || !useAppStore().hasAdminAccess"
-            :append-icon="simulationState ? 'mdi-pause' : 'mdi-play'"
+            :append-icon="
+              property.simulationState !== SimulationState.OFF
+                ? 'mdi-pause'
+                : 'mdi-play'
+            "
             text="Simulation"
             @click="
-              simulationState
+              property.simulationState !== SimulationState.OFF
                 ? propertyStore.setSimulationInactive(property.id)
                 : propertyStore.setSimulationActive(property.id, selectedSpeed)
             "
@@ -319,29 +331,19 @@ const dragActive = ref(false);
 const property = computed(() =>
   propertyStore.properties.find((property) => property.id === id.value),
 );
-const simulationState = computed(() => property.value?.simulationState);
+const initialState = property.value?.simulationState ?? SimulationState.OFF;
+const selectedSpeed = ref<SimulationState>(
+  initialState === SimulationState.OFF ? SimulationState.NORMAL : initialState,
+);
 
-function toStateString(simulationstate?: SimulationState) {
-  switch (simulationstate) {
-    case SimulationState.SLOW:
-      return "slow";
-    case SimulationState.FAST:
-      return "fast";
-    default:
-      return "normal";
-  }
-}
-
-const selectedSpeed = ref(toStateString(property.value?.simulationState));
-watch(simulationState, () => {
-  if (selectedSpeed.value !== toStateString(simulationState.value)) {
-    selectedSpeed.value = toStateString(simulationState.value);
-  }
-});
-
-watch(selectedSpeed, async () => {
-  if (simulationState.value !== SimulationState.OFF) {
-    await propertyStore.updateSimulationSpeed(id.value, selectedSpeed.value);
+watch(property, () => {
+  if (
+    property.value &&
+    property.value.simulationState &&
+    selectedSpeed.value !== property.value?.simulationState &&
+    property.value.simulationState !== SimulationState.OFF
+  ) {
+    selectedSpeed.value = property.value.simulationState;
   }
 });
 

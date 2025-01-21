@@ -1,6 +1,10 @@
 // Utilities
 import { defineStore } from "pinia";
-import { IParkingProperty, ParkingSpot } from "@cloud-porsche/types";
+import {
+  IParkingProperty,
+  ParkingSpot,
+  SimulationState,
+} from "@cloud-porsche/types";
 import { del, get, patchJSON, post, postJSON } from "@/http/http";
 
 interface PropertyStoreState {
@@ -140,12 +144,19 @@ export const usePropertyStore = defineStore("properties", {
         this.$state.error = null;
       }
     },
-    async updateSimulationSpeed(propertyId: string, speed: string) {
+    async updateSimulationSpeed(propertyId: string, state: SimulationState) {
+      if (
+        state ===
+          this.$state.properties.find((p) => p.id === propertyId)
+            ?.simulationState ||
+        state === SimulationState.OFF
+      )
+        return;
       this.$state.loading = true;
       try {
         await postJSON(
           `/v1/simulation/${propertyId}/update-speed`,
-          { speed: speed },
+          { speed: state },
           undefined,
           "parkingManagement",
         );

@@ -9,7 +9,11 @@ import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { PubSubService } from 'src/pubsub/pubsub.service';
 import { ParkingProperty } from './entities/parking-property.entity';
-import { BaseFirestoreRepository, EntityConstructorOrPath, getRepository } from 'fireorm';
+import {
+  BaseFirestoreRepository,
+  EntityConstructorOrPath,
+  getRepository,
+} from 'fireorm';
 
 @Injectable()
 export class ParkingService {
@@ -70,12 +74,11 @@ export class ParkingService {
     tenantId: string,
     parkingPropertyId: string,
     newCustomer: Customer,
+    parkingProperty?: IParkingProperty,
   ) {
-    const parkingProperty = await this.fetchParkingProperty(
-      token,
-      tenantId,
-      parkingPropertyId,
-    );
+    parkingProperty =
+      parkingProperty ??
+      (await this.fetchParkingProperty(token, tenantId, parkingPropertyId));
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
 
@@ -91,9 +94,12 @@ export class ParkingService {
       costPerHour: parkingProperty.pricePerHour,
       parkingDuration: null,
     });
+
+    currentCustomers.push(newCustomer);
+    parkingProperty.customers = currentCustomers;
     // Update the customers in the parking property
     return this.updateParkingProperty(parkingPropertyId, {
-      customers: [...currentCustomers, newCustomer],
+      customers: parkingProperty.customers,
     });
   }
 
@@ -104,11 +110,9 @@ export class ParkingService {
     customer: Customer,
     parkingProperty?: IParkingProperty,
   ) {
-    parkingProperty = parkingProperty ?? await this.fetchParkingProperty(
-      token,
-      tenantId,
-      parkingPropertyId,
-    );
+    parkingProperty =
+      parkingProperty ??
+      (await this.fetchParkingProperty(token, tenantId, parkingPropertyId));
     if (!parkingProperty) throw new Error('Parking Property not found');
     const currentCustomers = parkingProperty.customers ?? [];
     const spot = parkingProperty.layers
@@ -131,8 +135,11 @@ export class ParkingService {
       parkingDuration: null,
     });
 
+    parkingProperty.customers = currentCustomers.filter(
+      (c) => c.id !== customer.id,
+    );
     return this.updateParkingProperty(parkingPropertyId, {
-      customers: currentCustomers.filter((c) => c.id !== customer.id),
+      customers: parkingProperty.customers,
     });
   }
 
@@ -142,12 +149,11 @@ export class ParkingService {
     parkingPropertyId: string,
     spotId: string,
     customer: Customer,
+    parkingProperty?: IParkingProperty,
   ) {
-    const parkingProperty = await this.fetchParkingProperty(
-      token,
-      tenantId,
-      parkingPropertyId,
-    );
+    parkingProperty =
+      parkingProperty ??
+      (await this.fetchParkingProperty(token, tenantId, parkingPropertyId));
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
@@ -195,11 +201,9 @@ export class ParkingService {
     simulatedDuration?: number,
     parkingProperty?: IParkingProperty,
   ) {
-    parkingProperty = parkingProperty ?? await this.fetchParkingProperty(
-      token,
-      tenantId,
-      parkingPropertyId,
-    );
+    parkingProperty =
+      parkingProperty ??
+      (await this.fetchParkingProperty(token, tenantId, parkingPropertyId));
     const spot = parkingProperty.layers
       .flatMap((l) => l.parkingSpots)
       .find((s) => s.id === spotId);
@@ -210,7 +214,12 @@ export class ParkingService {
     )
       throw new Error('Spot not occupied');
 
-    const parkingDuration = (new Date().getTime() - new Date(spot.lastStateChange).getTime()) / 1000 / 60 / 60 + (simulatedDuration ?? 0);
+    const parkingDuration =
+      (new Date().getTime() - new Date(spot.lastStateChange).getTime()) /
+        1000 /
+        60 /
+        60 +
+      (simulatedDuration ?? 0);
     const toPay = parkingDuration * parkingProperty.pricePerHour;
 
     await this.pubSubService.publishMessage({
@@ -225,13 +234,20 @@ export class ParkingService {
       costPerHour: parkingProperty.pricePerHour,
       parkingDuration: parkingDuration,
     });
-    return this.updateParkingProperty(
-      parkingPropertyId,
-      {
-        ...this.newSpotState(parkingProperty, spotId, ParkingSpotState.FREE),
-        ...this.newCustomerState(parkingProperty, spot.customer.id, toPay),
-      }
-    );
+    parkingProperty.customers = this.newCustomerState(
+      parkingProperty,
+      spot.customer.id,
+      toPay,
+    ).customers;
+    parkingProperty.layers = this.newSpotState(
+      parkingProperty,
+      spotId,
+      ParkingSpotState.FREE,
+    ).layers;
+    return this.updateParkingProperty(parkingPropertyId, {
+      customers: parkingProperty.customers,
+      layers: parkingProperty.layers,
+    });
   }
 
   private newSpotState(
@@ -240,20 +256,21 @@ export class ParkingService {
     state: ParkingSpotState,
     customer: Customer = null,
   ) {
+    parkingProperty.layers = parkingProperty.layers.map((l) => {
+      l.parkingSpots = l.parkingSpots.map((s) =>
+        s.id === spotId
+          ? {
+              ...s,
+              state: state,
+              lastStateChange: new Date(),
+              customer: customer,
+            }
+          : s,
+      );
+      return l;
+    });
     return {
-      layers: parkingProperty.layers.map((l) => {
-        l.parkingSpots = l.parkingSpots.map((s) =>
-          s.id === spotId
-            ? {
-                ...s,
-                state: state,
-                lastStateChange: new Date(),
-                customer: customer,
-              }
-            : s,
-        );
-        return l;
-      }),
+      layers: parkingProperty.layers,
     };
   }
 

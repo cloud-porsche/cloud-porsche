@@ -18,20 +18,14 @@ const SIMULATION_SPEEDS = {
   slow: 10000, // 10 Sekunden
   normal: 5000, // 5 Sekunden
   fast: 1000, // 1 Sekunde
-};
-
-export type SimulationSpeed = keyof typeof SIMULATION_SPEEDS;
-
-export type SimulationOptions = {
-  speed: SimulationSpeed;
-  locked: boolean;
-};
+} as Record<SimulationState, number>;
 
 @Injectable()
 export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
   private readonly parkingPropertiesApi: string;
   private tenantDb = getFirestore(getApp('tenant'));
+  private simIsRunning = new Set<string>();
 
   constructor(
     private readonly config: ConfigService,
@@ -48,7 +42,7 @@ export class SimulationService {
     token: string,
     tenantId: string,
     propertyId: string,
-    speed?: string,
+    state?: SimulationState,
   ) {
     const tenant = (
       await this.tenantDb.collection('Tenants').doc(tenantId).get()
@@ -72,15 +66,12 @@ export class SimulationService {
       throw new Error('Simulation already running');
     }
 
+    if (state === SimulationState.OFF)
+      throw new Error('Cannot start simulation with state OFF');
     const intervalSpeed =
-      SIMULATION_SPEEDS[speed] || SIMULATION_SPEEDS['normal'];
+      SIMULATION_SPEEDS[state] || SIMULATION_SPEEDS['normal'];
 
-    await this.updateSimulationState(
-      token,
-      tenantId,
-      propertyId,
-      this.mapSpeedToState(intervalSpeed),
-    );
+    await this.updateSimulationState(token, tenantId, propertyId, state);
 
     this.schedulerRegistry.addInterval(
       propertyId,
@@ -127,30 +118,21 @@ export class SimulationService {
     }
   }
 
-  private mapSpeedToState(speed: number): SimulationState {
-    switch (speed) {
-      case SIMULATION_SPEEDS.slow:
-        return SimulationState.SLOW;
-      case SIMULATION_SPEEDS.fast:
-        return SimulationState.FAST;
-      default:
-        return SimulationState.NORMAL;
-    }
-  }
-
   async updateSimulationSpeed(
     token: string,
     tenantId: string,
     propertyId: string,
-    newSpeed: string,
+    newState: SimulationState,
   ) {
-    const newIntervalSpeed = SIMULATION_SPEEDS[newSpeed];
-    const newState = this.mapSpeedToState(newIntervalSpeed);
+    if (newState === SimulationState.OFF)
+      throw new Error('Cannot set simulation speed to OFF');
+    const newIntervalSpeed = SIMULATION_SPEEDS[newState];
 
     await this.updateSimulationState(token, tenantId, propertyId, newState);
 
     try {
       this.schedulerRegistry.deleteInterval(propertyId);
+      this.simIsRunning.delete(propertyId);
       this.schedulerRegistry.addInterval(
         propertyId,
         setInterval(
@@ -179,6 +161,7 @@ export class SimulationService {
     );
     try {
       this.schedulerRegistry.deleteInterval(propertyId);
+      this.simIsRunning.delete(propertyId);
     } catch (error) {
       this.logger.error(
         `Failed to delete the simulation interval for property: ${propertyId} `,
@@ -231,9 +214,9 @@ export class SimulationService {
           },
           parkingProperty,
         );
-        parkingProperty.customers = parkingProperty.customers.filter((c) => {
-          c.id !== spot.customer.id;
-        });
+        parkingProperty.customers = parkingProperty.customers.filter(
+          (c) => c.id !== spot.customer.id,
+        );
       }
     }
   }
@@ -257,6 +240,14 @@ export class SimulationService {
   }
 
   async runSimulation(token: string, tenantId: string, propertyId: string) {
+    if (this.simIsRunning.has(propertyId)) {
+      this.logger.warn(
+        'Simulation already running - Skipping Interval: ' + propertyId,
+      );
+      return;
+    }
+    this.simIsRunning.add(propertyId);
+
     const parkingProperty = await this.fetchParkingProperty(
       token,
       tenantId,
@@ -289,7 +280,13 @@ export class SimulationService {
     const occupancyRate = occupiedSpots.length / totalSpots.length;
 
     if (Math.random() > occupancyRate) {
-      await this.simulateCarEntering(token, tenantId, propertyId, freeSpots);
+      await this.simulateCarEntering(
+        token,
+        tenantId,
+        propertyId,
+        freeSpots,
+        parkingProperty,
+      );
     } else {
       await this.simulateCarExiting(
         token,
@@ -298,6 +295,8 @@ export class SimulationService {
         occupiedSpots,
       );
     }
+
+    this.simIsRunning.delete(propertyId);
   }
 
   private async simulateCarEntering(
@@ -305,6 +304,7 @@ export class SimulationService {
     tenantId: string,
     propertyId: string,
     freeSpots: any[],
+    property: IParkingProperty,
   ) {
     if (freeSpots.length === 0) {
       this.logger.warn('No free spots available');
@@ -316,19 +316,32 @@ export class SimulationService {
     const spot = freeSpots[randomIndex];
 
     const id = crypto.randomUUID();
-    await this.parkingService.enter(token, tenantId, propertyId, {
-      id: id,
-      licensePlate: 'SIMULATION',
-      toPay: 0,
-      hasPayed: false,
-    });
+    await this.parkingService.enter(
+      token,
+      tenantId,
+      propertyId,
+      {
+        id: id,
+        licensePlate: 'SIMULATION',
+        toPay: 0,
+        hasPayed: false,
+      },
+      property,
+    );
 
-    await this.parkingService.occupySpot(token, tenantId, propertyId, spot.id, {
-      id,
-      licensePlate: 'SIMULATION',
-      toPay: 0,
-      hasPayed: false,
-    });
+    await this.parkingService.occupySpot(
+      token,
+      tenantId,
+      propertyId,
+      spot.id,
+      {
+        id,
+        licensePlate: 'SIMULATION',
+        toPay: 0,
+        hasPayed: false,
+      },
+      property,
+    );
   }
 
   private async simulateCarExiting(
@@ -350,17 +363,24 @@ export class SimulationService {
       parkingProperty.id,
       spot.id,
       randomInt(1, 10),
+      parkingProperty,
     );
     const customer = parkingProperty.customers.find(
       (c) => c.id === spot.customer.id,
     );
     const id = spot.customer.id;
-    await this.parkingService.leave(token, tenantId, parkingProperty.id, {
-      id,
-      licensePlate: 'SIMULATION',
-      toPay: customer?.toPay ?? 0,
-      hasPayed: customer?.hasPayed ?? false,
-    });
+    await this.parkingService.leave(
+      token,
+      tenantId,
+      parkingProperty.id,
+      {
+        id,
+        licensePlate: 'SIMULATION',
+        toPay: customer?.toPay ?? 0,
+        hasPayed: customer?.hasPayed ?? false,
+      },
+      parkingProperty,
+    );
   }
 
   private async fetchParkingProperty(

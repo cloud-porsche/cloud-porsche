@@ -9,10 +9,10 @@ export enum ParkingSpotState {
 }
 
 export enum SimulationState {
-  OFF,
-  SLOW,
-  NORMAL,
-  FAST,
+  OFF = "off",
+  SLOW = "slow",
+  NORMAL = "normal",
+  FAST = "fast",
 }
 
 /**
@@ -37,7 +37,7 @@ export abstract class IParkingProperty {
   parkingType: ParkingPropertyType;
   layers: ParkingSpotLayer[];
   defects: string[];
-  simulationState: SimulationState;
+  simulationState?: SimulationState;
 }
 
 export class ParkingSpotLayer {

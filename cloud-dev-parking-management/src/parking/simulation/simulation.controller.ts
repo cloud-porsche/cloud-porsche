@@ -8,6 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { SimulationService } from './simulation.service';
+import { SimulationState } from '@cloud-porsche/types';
 
 @Controller('simulation')
 export class SimulationController {
@@ -20,14 +21,14 @@ export class SimulationController {
     @Headers('tenant-id') tenantId: string,
     @Headers('authorization') token: string,
     @Param('propertyId') propertyId: string,
-    @Body('speed') speed: string,
+    @Body('speed') state: SimulationState,
   ) {
     try {
       return await this.simulationService.startSimulation(
         token,
         tenantId,
         propertyId,
-        speed,
+        state,
       );
     } catch (error) {
       this.logger.error(
@@ -44,16 +45,16 @@ export class SimulationController {
     @Headers('tenant-id') tenantId: string,
     @Headers('authorization') token: string,
     @Param('propertyId') propertyId: string,
-    @Body('speed') speed: string,
+    @Body('speed') state: SimulationState,
   ) {
     try {
       await this.simulationService.updateSimulationSpeed(
         token,
         tenantId,
         propertyId,
-        speed,
+        state,
       );
-      return { message: `Simulation speed updated to ${speed}` };
+      return { message: `Simulation speed updated to ${state}` };
     } catch (error) {
       this.logger.error('Error updating simulation speed', error);
       return { error: error.message };
