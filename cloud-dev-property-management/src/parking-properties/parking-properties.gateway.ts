@@ -25,31 +25,27 @@ export class ParkingPropertiesGateway {
   @WebSocketServer() io: Server;
 
   private db: Firestore;
-  private client_tenantIds: Map<string, string> = new Map();
 
   constructor() {
     this.db = getFirestore();
-    this.initializeFirestoreListener();
   }
 
-  private initializeFirestoreListener() {
-    const collectionRef = this.db.collection('ParkingProperties');
+  private initializeFirestoreListener(wsClientId: string, tenantId: string) {
+    const collectionRef = this.db
+      .collection('ParkingProperties')
+      .where('tenantId', '==', tenantId);
 
     collectionRef.onSnapshot(
       (snapshot) => {
-        this.client_tenantIds.forEach((tenantId, clientId) => {
-          const parkingProperties: ParkingProperty[] = [];
-          snapshot.forEach((doc) => {
-            if (doc.data().tenantId === tenantId) {
-              parkingProperties.push({
-                id: doc.id,
-                ...doc.data(),
-              } as ParkingProperty);
-            }
-          });
-          this.logger.debug('Parking property changed - Sending to clients');
-          this.io.to(clientId).emit('parking-properties', parkingProperties);
-        });
+        const parkingProperties = snapshot.docs.reduce((acc, doc) => {
+          acc.push({
+            id: doc.id,
+            ...doc.data(),
+          } as ParkingProperty);
+          return acc;
+        }, [] as ParkingProperty[]);
+        this.logger.debug('Parking property changed - Sending to clients');
+        this.io.to(wsClientId).emit('parking-properties', parkingProperties);
       },
       (error) => {
         this.logger.error('Error listening to Firestore changes:', error);
@@ -65,15 +61,12 @@ export class ParkingPropertiesGateway {
     const token = client.handshake.headers['authorization'];
     let tenantId = client.handshake.headers['tenant-id'];
 
-    if (client.handshake.headers['origin'].includes('localhost')) {
-      if (!client.handshake.headers['tenant-id']) {
-        this.client_tenantIds.set(client.id, 'localhost');
-      } else {
-        this.client_tenantIds.set(client.id, tenantId);
-      }
-    }
+    const clientId =
+      client.handshake.headers['origin'].includes('localhost') && !tenantId
+        ? 'localhost'
+        : client.id;
 
-    this.logger.log(`Client id: ${client.id} connected`);
+    this.logger.log(`Client id: ${clientId} connected`);
     if (!token) {
       this.logger.error('No token provided');
       client.disconnect();
@@ -89,7 +82,7 @@ export class ParkingPropertiesGateway {
       : admin.auth().verifyIdToken(token);
     verifyToken
       .then(() => {
-        this.client_tenantIds.set(client.id, tenantId);
+        this.initializeFirestoreListener(clientId, tenantId);
       })
       .catch((error: any) => {
         this.logger.error(error);
@@ -99,7 +92,6 @@ export class ParkingPropertiesGateway {
 
   handleDisconnect(client: any) {
     this.logger.log(`Client id: ${client.id} disconnected`);
-    this.client_tenantIds.delete(client.id);
   }
 
   @SubscribeMessage('ping')
