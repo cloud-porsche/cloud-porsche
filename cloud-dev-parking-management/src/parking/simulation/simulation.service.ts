@@ -25,7 +25,7 @@ export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
   private readonly parkingPropertiesApi: string;
   private tenantDb = getFirestore(getApp('tenant'));
-  private simIsRunning = new Set<string>();
+  public simIsRunning = new Map<string, { tenantId: string; token: string }>();
 
   constructor(
     private readonly config: ConfigService,
@@ -179,6 +179,12 @@ export class SimulationService {
     this.logger.log('Simulation stopped for: ' + propertyId);
   }
 
+  async stopAllSimulation() {
+    for await (const [propertyId, { tenantId, token }] of this.simIsRunning) {
+      await this.stopSimulation(token, tenantId, propertyId);
+    }
+  }
+
   private async removeSimulationCars(
     token: string,
     tenantId: string,
@@ -252,7 +258,7 @@ export class SimulationService {
       );
       return;
     }
-    this.simIsRunning.add(propertyId);
+    this.simIsRunning.set(propertyId, { tenantId, token });
 
     const parkingProperty = await this.fetchParkingProperty(
       token,

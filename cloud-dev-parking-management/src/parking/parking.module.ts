@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ParkingController } from './parking.controller';
 import { ParkingService } from './parking.service';
 import { SimulationService } from './simulation/simulation.service';
@@ -11,7 +11,10 @@ import { ParkingProperty } from './entities/parking-property.entity';
 @Module({
   imports: [forwardRef(() => ConfigModule), HttpModule],
   controllers: [ParkingController, SimulationController],
-  providers: [ParkingService, SimulationService, PubSubService,
+  providers: [
+    ParkingService,
+    SimulationService,
+    PubSubService,
     {
       useFactory: (...args) => {
         return new ParkingService(args[0], args[1], args[2], ParkingProperty);

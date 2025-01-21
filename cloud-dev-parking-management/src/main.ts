@@ -6,6 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as admin from 'firebase-admin';
 import { initialize } from 'fireorm';
 import { json, urlencoded } from 'express';
+import { setupGracefulShutdown } from 'nestjs-graceful-shutdown';
 
 async function bootstrap() {
   require('dotenv').config();
@@ -29,24 +30,27 @@ async function bootstrap() {
     projectId: process.env.FIREBASE_PROJECT_ID,
   });
 
-  admin.initializeApp({
-    credential:
-      process.env.FIREBASE_OVERWRITE_CREDENTIALS === 'true'
-        ? admin.credential.cert(
-            process.env.FIREBASE_CLIENT_EMAIL
-              ? {
-                  projectId: process.env.FIREBASE_PROJECT_ID,
-                  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                  privateKey: process.env.FIREBASE_PRIVATE_KEY.split(
-                    String.raw`\n`,
-                  ).join('\n'),
-                }
-              : require('cloud-porsche.json'),
-          )
-        : admin.credential.applicationDefault(),
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-  }, 'tenant');
+  admin.initializeApp(
+    {
+      credential:
+        process.env.FIREBASE_OVERWRITE_CREDENTIALS === 'true'
+          ? admin.credential.cert(
+              process.env.FIREBASE_CLIENT_EMAIL
+                ? {
+                    projectId: process.env.FIREBASE_PROJECT_ID,
+                    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                    privateKey: process.env.FIREBASE_PRIVATE_KEY.split(
+                      String.raw`\n`,
+                    ).join('\n'),
+                  }
+                : require('cloud-porsche.json'),
+            )
+          : admin.credential.applicationDefault(),
+      databaseURL: process.env.FIREBASE_DATABASE_URL,
+      projectId: process.env.FIREBASE_PROJECT_ID,
+    },
+    'tenant',
+  );
 
   const firestore = admin.firestore();
   firestore.settings({
@@ -67,6 +71,8 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
+
+  setupGracefulShutdown({ app });
 
   app.use(json({ limit: '15mb' }));
   app.use(urlencoded({ extended: true, limit: '15mb' }));

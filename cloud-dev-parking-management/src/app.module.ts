@@ -12,6 +12,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ParkingModule } from './parking/parking.module';
 import { LoggingMiddleware } from './pubsub/logging.middleware';
 import { PubSubModule } from './pubsub/pubsub.module';
+import { GracefulShutdownModule } from 'nestjs-graceful-shutdown';
+import { SimulationService } from './parking/simulation/simulation.service';
 
 @Module({
   imports: [
@@ -21,6 +23,18 @@ import { PubSubModule } from './pubsub/pubsub.module';
     }),
     ParkingModule,
     PubSubModule,
+    GracefulShutdownModule.forRoot({
+      cleanup: async (app, signal) => {
+        const simService = app.get(SimulationService);
+        await simService.stopAllSimulation();
+
+        console.info(
+          `Cleanup on ${signal} - sims still running: ${simService.simIsRunning.size}`,
+        );
+      },
+      gracefulShutdownTimeout: 30000,
+      keepNodeProcessAlive: true,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
