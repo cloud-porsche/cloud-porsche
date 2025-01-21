@@ -6,7 +6,6 @@ import {
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { Firestore, getFirestore } from 'firebase-admin/firestore';
-import { ParkingProperty } from './entities/parking-property.entity';
 import * as admin from 'firebase-admin';
 
 @WebSocketGateway({
@@ -37,13 +36,7 @@ export class ParkingPropertiesGateway {
 
     collectionRef.onSnapshot(
       (snapshot) => {
-        const parkingProperties = snapshot.docs.reduce((acc, doc) => {
-          acc.push({
-            id: doc.id,
-            ...doc.data(),
-          } as ParkingProperty);
-          return acc;
-        }, [] as ParkingProperty[]);
+        const parkingProperties = snapshot.docs.map((d) => d.data());
         this.logger.debug('Parking property changed - Sending to clients');
         this.io.to(wsClientId).emit('parking-properties', parkingProperties);
       },
