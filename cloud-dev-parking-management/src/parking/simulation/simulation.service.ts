@@ -138,7 +138,6 @@ export class SimulationService {
 
     try {
       this.schedulerRegistry.deleteInterval(propertyId);
-      this.simIsRunning.delete(propertyId);
       this.schedulerRegistry.addInterval(
         propertyId,
         setInterval(
@@ -152,6 +151,7 @@ export class SimulationService {
         error,
       );
     }
+    this.simIsRunning.delete(propertyId);
 
     this.logger.debug(
       `Simulation speed updated for ${propertyId} to: ${newIntervalSpeed}`,
@@ -167,13 +167,13 @@ export class SimulationService {
     );
     try {
       this.schedulerRegistry.deleteInterval(propertyId);
-      this.simIsRunning.delete(propertyId);
     } catch (error) {
       this.logger.error(
         `Failed to delete the simulation interval for property: ${propertyId} `,
         error,
       );
     }
+    this.simIsRunning.delete(propertyId);
     await this.removeSimulationCars(token, tenantId, propertyId);
 
     this.logger.log('Simulation stopped for: ' + propertyId);
