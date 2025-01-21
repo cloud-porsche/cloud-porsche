@@ -25,10 +25,7 @@
         density="comfortable"
         :icon="'mdi-sync'"
         v-tooltip="'Refresh'"
-        @click="
-          propertyStore.fetchProperty(property.id);
-          propertyStore.fetchSimulationStatus(property.id);
-        "
+        @click="propertyStore.fetchProperty(property.id)"
       />
       <v-btn
         class="ml-4 mr-4"
@@ -282,7 +279,11 @@
 
 <script lang="ts" setup>
 import { usePropertyStore } from "@/stores/properties";
-import { ParkingSpot, ParkingSpotState } from "@cloud-porsche/types";
+import {
+  ParkingSpot,
+  ParkingSpotState,
+  SimulationState,
+} from "@cloud-porsche/types";
 import { useRoute } from "vue-router";
 import CounterCard from "@/components/CounterCard.vue";
 import { useFullscreen, useStorage } from "@vueuse/core";
@@ -299,15 +300,6 @@ const propertyStore = usePropertyStore();
 const route = useRoute();
 const id = computed(() => (route.params as any)["id"]);
 const tenantId = computed(() => (route.params as any)["tenantId"]);
-
-watch(
-  () => route.params,
-  async (newParams) => {
-    const newId = (newParams as any)["id"];
-    await propertyStore.fetchSimulationStatus(newId);
-    console.log("Fetching property", newId);
-  },
-);
 
 const [isoDefault, xDefault, yDefault, zoomDefault] = [false, 40, -100, 80];
 const isometric = useStorage("view-settings-iso", isoDefault);
@@ -327,13 +319,28 @@ const dragActive = ref(false);
 const property = computed(() =>
   propertyStore.properties.find((property) => property.id === id.value),
 );
-const simulationState = computed(() =>
-  propertyStore.simulationActive.includes(id.value),
-);
-let selectedSpeed = ref("normal");
+const simulationState = computed(() => property.value?.simulationState);
+
+function toStateString(simulationstate?: SimulationState) {
+  switch (simulationstate) {
+    case SimulationState.SLOW:
+      return "slow";
+    case SimulationState.FAST:
+      return "fast";
+    default:
+      return "normal";
+  }
+}
+
+const selectedSpeed = ref(toStateString(property.value?.simulationState));
+watch(simulationState, () => {
+  if (selectedSpeed.value !== toStateString(simulationState.value)) {
+    selectedSpeed.value = toStateString(simulationState.value);
+  }
+});
 
 watch(selectedSpeed, async () => {
-  if (propertyStore.simulationActive.includes(id.value)) {
+  if (simulationState.value !== SimulationState.OFF) {
     await propertyStore.updateSimulationSpeed(id.value, selectedSpeed.value);
   }
 });
