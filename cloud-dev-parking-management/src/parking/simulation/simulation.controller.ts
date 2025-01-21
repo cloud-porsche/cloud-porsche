@@ -79,7 +79,15 @@ export class SimulationController {
   }
 
   @Get(':propertyId/status')
-  getSimulationStatus(@Param('propertyId') propertyId: string) {
-    return this.simulationService.getSimulationStatus(propertyId);
+  getSimulationStatus(
+    @Headers('tenant-id') tenantId: string,
+    @Headers('authorization') token: string,
+    @Param('propertyId') propertyId: string,
+  ) {
+    return this.simulationService.getSimulationStatus(
+      token,
+      tenantId,
+      propertyId,
+    );
   }
 }

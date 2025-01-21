@@ -515,6 +515,7 @@ import {
   ParkingSpot,
   ParkingSpotLayer,
   ParkingSpotState,
+  SimulationState,
   TenantTier,
 } from "@cloud-porsche/types";
 import { useDisplay } from "vuetify";
@@ -655,6 +656,7 @@ async function saveNewProperty() {
     layers: newLayers.value,
     defects: [],
     tenantId: "",
+    simulationState: SimulationState.OFF
   };
 
   await propertyStore.addProperty(finalProperty);

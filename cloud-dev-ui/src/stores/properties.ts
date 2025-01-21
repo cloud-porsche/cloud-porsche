@@ -5,7 +5,6 @@ import { del, get, patchJSON, post, postJSON } from "@/http/http";
 
 interface PropertyStoreState {
   properties: IParkingProperty[];
-  simulationActive: string[];
   loading: boolean;
   error: any;
 }
@@ -13,7 +12,6 @@ interface PropertyStoreState {
 export const usePropertyStore = defineStore("properties", {
   state: (): PropertyStoreState => ({
     properties: [],
-    simulationActive: [],
     loading: true,
     error: null,
   }),
@@ -140,7 +138,6 @@ export const usePropertyStore = defineStore("properties", {
       } finally {
         this.$state.loading = false;
         this.$state.error = null;
-        await this.fetchSimulationStatus(propertyId);
       }
     },
     async updateSimulationSpeed(propertyId: string, speed: string) {
@@ -158,7 +155,6 @@ export const usePropertyStore = defineStore("properties", {
       } finally {
         this.$state.loading = false;
         this.$state.error = null;
-        await this.fetchSimulationStatus(propertyId);
       }
     },
     async setSimulationInactive(propertyId: string) {
@@ -170,34 +166,6 @@ export const usePropertyStore = defineStore("properties", {
           undefined,
           "parkingManagement",
         );
-      } catch (error) {
-        this.$state.loading = false;
-        this.$state.error = error;
-      } finally {
-        this.$state.loading = false;
-        this.$state.error = null;
-        await this.fetchSimulationStatus(propertyId);
-      }
-    },
-    async fetchSimulationStatus(propertyId: string) {
-      this.$state.loading = true;
-      try {
-        const isRunning =
-          (await get(
-            `/v1/simulation/${propertyId}/status`,
-            undefined,
-            "parkingManagement",
-          ).json()) === "true";
-        if (isRunning && !this.$state.simulationActive.includes(propertyId)) {
-          this.$state.simulationActive = [
-            ...this.$state.simulationActive,
-            propertyId,
-          ];
-        } else if (!isRunning) {
-          this.$state.simulationActive = this.$state.simulationActive.filter(
-            (id) => id !== propertyId,
-          );
-        }
       } catch (error) {
         this.$state.loading = false;
         this.$state.error = error;

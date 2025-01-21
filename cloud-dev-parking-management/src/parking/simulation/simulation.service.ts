@@ -7,6 +7,7 @@ import {
   IParkingProperty,
   ITenant,
   ParkingSpotState,
+  SimulationState,
 } from '@cloud-porsche/types';
 import { lastValueFrom } from 'rxjs';
 import { getApp } from 'firebase-admin/app';
@@ -29,8 +30,6 @@ export type SimulationOptions = {
 @Injectable()
 export class SimulationService {
   private readonly logger = new Logger(SimulationService.name);
-  private simulationIds = new Set<string>();
-  private simulationIntervals = new Map<string, SimulationOptions>();
   private readonly parkingPropertiesApi: string;
   private tenantDb = getFirestore(getApp('tenant'));
 
@@ -59,22 +58,28 @@ export class SimulationService {
       return;
     }
 
-    if (this.simulationIds.has(propertyId)) {
-      this.logger.error('Simulation already running');
-      return;
+    const parkingProperty = await this.fetchParkingProperty(
+      token,
+      tenantId,
+      propertyId,
+    );
+
+    if (!parkingProperty) {
+      throw new Error('Property not found');
+    }
+
+    if (parkingProperty.simulationState !== SimulationState.OFF) {
+      throw new Error('Simulation already running');
     }
 
     const intervalSpeed =
       SIMULATION_SPEEDS[speed] || SIMULATION_SPEEDS['normal'];
-    this.logger.debug('Simulation Speed: ' + intervalSpeed);
 
-    this.simulationIds.add(propertyId);
-    this.simulationIntervals.set(propertyId, {
-      speed: intervalSpeed,
-      locked: false,
-    });
-    this.logger.debug(
-      'Simulation Intervals: ' + JSON.stringify([...this.simulationIntervals]),
+    await this.updateSimulationState(
+      token,
+      tenantId,
+      propertyId,
+      this.mapSpeedToState(intervalSpeed),
     );
 
     this.schedulerRegistry.addInterval(
@@ -91,44 +96,97 @@ export class SimulationService {
     this.logger.debug(`Active intervals: ${intervals.length}`);
   }
 
+  private async updateSimulationState(
+    token: string,
+    tenantId: string,
+    propertyId: string,
+    state: SimulationState,
+  ) {
+    try {
+      await lastValueFrom(
+        this.httpService.patch(
+          `${this.parkingPropertiesApi}/v1/parking-properties/${propertyId}`,
+          { simulationState: state },
+          {
+            headers: {
+              authorization: token,
+              'tenant-id': tenantId,
+            },
+          },
+        ),
+      );
+
+      this.logger.log(
+        `Successfully updated simulationState to ${state} for property ${propertyId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to update simulationState for property ${propertyId}: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
+  private mapSpeedToState(speed: number): SimulationState {
+    switch (speed) {
+      case SIMULATION_SPEEDS.slow:
+        return SimulationState.SLOW;
+      case SIMULATION_SPEEDS.fast:
+        return SimulationState.FAST;
+      default:
+        return SimulationState.NORMAL;
+    }
+  }
+
   async updateSimulationSpeed(
     token: string,
     tenantId: string,
     propertyId: string,
     newSpeed: string,
   ) {
-    if (!this.simulationIds.has(propertyId)) {
-      throw new Error('Simulation not running for this property');
+    const newIntervalSpeed = SIMULATION_SPEEDS[newSpeed];
+    const newState = this.mapSpeedToState(newIntervalSpeed);
+
+    await this.updateSimulationState(token, tenantId, propertyId, newState);
+
+    try {
+      this.schedulerRegistry.deleteInterval(propertyId);
+      this.schedulerRegistry.addInterval(
+        propertyId,
+        setInterval(
+          async () => await this.runSimulation(token, tenantId, propertyId),
+          newIntervalSpeed,
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to update the simulation interval for property: ${propertyId} `,
+        error,
+      );
     }
 
-    this.schedulerRegistry.deleteInterval(propertyId);
-
-    const newIntervalSpeed = SIMULATION_SPEEDS[newSpeed];
-
-    this.schedulerRegistry.addInterval(
-      propertyId,
-      setInterval(
-        async () => this.runSimulation(token, tenantId, propertyId),
-        newIntervalSpeed,
-      ),
-    );
-
-    this.simulationIntervals.set(propertyId, {
-      speed: newIntervalSpeed,
-      locked: false,
-    });
     this.logger.debug(
       `Simulation speed updated for ${propertyId} to: ${newIntervalSpeed}`,
     );
   }
 
   async stopSimulation(token: string, tenantId: string, propertyId: string) {
-    this.schedulerRegistry.deleteInterval(propertyId);
-
+    await this.updateSimulationState(
+      token,
+      tenantId,
+      propertyId,
+      SimulationState.OFF,
+    );
+    try {
+      this.schedulerRegistry.deleteInterval(propertyId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete the simulation interval for property: ${propertyId} `,
+        error,
+      );
+    }
     await this.removeSimulationCars(token, tenantId, propertyId);
 
-    this.simulationIds.delete(propertyId);
-    this.simulationIntervals.delete(propertyId);
     this.logger.log('Simulation stopped for: ' + propertyId);
   }
 
@@ -173,25 +231,50 @@ export class SimulationService {
           },
           parkingProperty,
         );
+        parkingProperty.customers = parkingProperty.customers.filter((c) => {
+          c.id !== spot.customer.id;
+        });
       }
     }
   }
 
-  getSimulationStatus(propertyId: string) {
-    // TODO maybe noch den Speed mit zurückgeben
-    return this.simulationIds.has(propertyId);
+  async getSimulationStatus(
+    token: string,
+    tenantId: string,
+    propertyId: string,
+  ): Promise<boolean> {
+    try {
+      const parkingProperty = await this.fetchParkingProperty(
+        token,
+        tenantId,
+        propertyId,
+      );
+      return parkingProperty.simulationState !== SimulationState.OFF;
+    } catch (error) {
+      this.logger.error(`Failed to get simulation status: ${error.message}`);
+      return false; // Falls ein Fehler auftritt, gilt die Simulation als inaktiv
+    }
   }
 
   async runSimulation(token: string, tenantId: string, propertyId: string) {
-    if (this.simulationIntervals.get(propertyId).locked) return;
-    this.simulationIntervals.get(propertyId).locked = true;
-    this.logger.log('Running simulation for: ' + propertyId);
     const parkingProperty = await this.fetchParkingProperty(
       token,
       tenantId,
       propertyId,
     );
-    this.logger.log('Found parking property: ' + parkingProperty.name);
+    this.logger.log('Running simulation for: ' + propertyId);
+    if (parkingProperty.simulationState === SimulationState.OFF) {
+      this.logger.log('Simulation is turned off for property: ' + propertyId);
+      try {
+        this.schedulerRegistry.deleteInterval(propertyId);
+      } catch (error) {
+        this.logger.error(
+          `Failed to delete the simulation interval for property: ${propertyId} `,
+          error,
+        );
+      }
+      return;
+    }
 
     const totalSpots = parkingProperty.layers.flatMap((l) => l.parkingSpots);
     const freeSpots = totalSpots.filter(
@@ -205,7 +288,6 @@ export class SimulationService {
 
     const occupancyRate = occupiedSpots.length / totalSpots.length;
 
-    // Entscheidungslogik: Mehr Autos einfahren, wenn die Auslastung gering ist
     if (Math.random() > occupancyRate) {
       await this.simulateCarEntering(token, tenantId, propertyId, freeSpots);
     } else {
@@ -216,7 +298,6 @@ export class SimulationService {
         occupiedSpots,
       );
     }
-    this.simulationIntervals.get(propertyId).locked = false;
   }
 
   private async simulateCarEntering(

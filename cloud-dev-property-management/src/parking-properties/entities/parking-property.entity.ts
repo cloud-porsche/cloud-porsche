@@ -3,6 +3,7 @@ import {
   Customer,
   IParkingProperty,
   ParkingSpotLayer,
+  SimulationState,
 } from '@cloud-porsche/types';
 
 @Collection()
@@ -12,6 +13,7 @@ export class ParkingProperty extends IParkingProperty {
   customers: Customer[] = [];
   layers: ParkingSpotLayer[] = [];
   defects: string[] = [];
+  simulationState: SimulationState = SimulationState.OFF;
 
   constructor(obj?: Partial<IParkingProperty>) {
     super();
