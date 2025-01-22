@@ -1,0 +1,25 @@
+tenantId: enterprise-prod-6fwyn
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+propertyManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-enterprise-prod-6fwyn
+    FIRESTORE_DB: property-management-enterprise-prod-6fwyn
+    MONITORING_QUEUE: enterprise-prod-6fwyn-queue
+parkingManagement:
+  envs:
+    FIREBASE_STORAGE_BUCKET: property-management-enterprise-prod-6fwyn
+    FIRESTORE_DB: property-management-enterprise-prod-6fwyn
+    PROPERTY_MANAGEMENT_API_URL: http://property-management:8080
+    MONITORING_QUEUE: enterprise-prod-6fwyn-queue
+monitoringManagement:
+  envs:
+    FIRESTORE_DB: monitoring-enterprise-prod-6fwyn
+    QUEUE_SUBSCRIPTION: enterprise-prod-6fwyn-subscription
