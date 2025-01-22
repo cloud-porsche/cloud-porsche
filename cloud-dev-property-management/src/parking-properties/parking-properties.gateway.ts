@@ -74,8 +74,11 @@ export class ParkingPropertiesGateway {
           .verifyIdToken(token)
       : admin.auth().verifyIdToken(token);
     verifyToken
-      .then(() => {
-        this.initializeFirestoreListener(clientId, tenantId);
+      .then((decodedToken) => {
+        this.initializeFirestoreListener(
+          clientId,
+          tenantId ?? decodedToken.uid,
+        );
       })
       .catch((error: any) => {
         this.logger.error(error);

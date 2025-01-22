@@ -4,12 +4,12 @@
       <h1 class="text-h5 bold">Management Dashboard</h1>
       <v-spacer></v-spacer>
       <v-btn
-      class="mr-4"
-      icon="mdi-refresh"
-      @click="monitoringStore.fetchAllData()"
-      :loading="monitoringStore.loading"
-      :color="monitoringStore.error ? 'error' : undefined"
-      v-tooltip="'Refresh'"
+        class="mr-4"
+        icon="mdi-refresh"
+        @click="monitoringStore.fetchAllData()"
+        :loading="monitoringStore.loading"
+        :color="monitoringStore.error ? 'error' : undefined"
+        v-tooltip="'Refresh'"
       />
       <v-divider vertical inset></v-divider>
       <v-select
@@ -47,6 +47,9 @@ import { useAppStore } from "@/stores/app";
 import { useMonitoringStore } from "@/stores/monitoring";
 import { DefectState } from "@cloud-porsche/types";
 import router from "@/router";
+import "highcharts/modules/exporting";
+import "highcharts/modules/offline-exporting";
+import "highcharts/modules/data";
 
 // Highcharts Configuration
 Highcharts.setOptions({
