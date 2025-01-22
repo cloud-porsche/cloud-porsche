@@ -3,6 +3,18 @@
     Defects
     <v-spacer />
     <v-btn
+    :prepend-icon="mobile ? undefined : 'mdi-delete'"
+    :icon="mobile ? 'mdi-delete' : undefined"
+    @click="emit('deleteAllDone')"
+    class="me-2"
+    v-tooltip="
+      useAppStore().isUserRole ? 'Not enough permissions!' : 'Clear all done'
+    "
+    :text="mobile ? '' : 'Clear all done'"
+    :disabled="useAppStore().isUserRole"
+    >
+    </v-btn>
+    <v-btn
       :prepend-icon="mobile ? undefined : 'mdi-plus'"
       :icon="mobile ? 'mdi-plus' : undefined"
       @click="emit('add')"
@@ -71,7 +83,7 @@ const { mobile } = useDisplay();
 const search = ref("");
 const filter = ref("name");
 
-const emit = defineEmits(["updateList", "refresh", "add"]);
+const emit = defineEmits(["updateList", "refresh", "add", "deleteAllDone"]);
 
 const props = defineProps<{
   loading: boolean;

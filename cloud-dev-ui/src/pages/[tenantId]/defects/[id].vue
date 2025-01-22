@@ -5,6 +5,7 @@
         @updateList="handleUpdateList"
         @refresh="refetch()"
         @add="openDialog"
+        @deleteAllDone="deleteAllDone"
         :error="error"
         :loading="loading"
       />
@@ -450,6 +451,13 @@ function deleteDefect(id: string | number) {
     refetch();
   });
   confirmDialog.value = false;
+}
+
+function deleteAllDone() {
+  loading.value = true;
+  del(`/v1/defects/clearAllDone?propertyId=${id.value}`).then(() => {
+    refetch();
+  })
 }
 
 function patchDefect(

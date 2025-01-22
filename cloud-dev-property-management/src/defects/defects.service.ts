@@ -7,6 +7,7 @@ import { ObjectStorageService } from '../object-storage/object-storage.service';
 import { ParkingPropertiesService } from '../parking-properties/parking-properties.service';
 import { ParkingProperty } from '../parking-properties/entities/parking-property.entity';
 import { PubSubService } from 'src/pubsub/pubsub.service';
+import { DefectState } from '@cloud-porsche/types';
 
 @Injectable()
 export class DefectsService {
@@ -129,5 +130,17 @@ export class DefectsService {
       date: new Date(),
     })
     return await this.defectRepository.delete(id);
+  }
+
+  async clearDoneDefects(tenantId: string, propertyId: string) {
+    const doneDefects = await this.defectRepository
+      .whereEqualTo('propertyId', propertyId)
+      .whereEqualTo('tenantId', tenantId)
+      .whereEqualTo('status', DefectState.DONE)
+      .find();
+
+    for (const defect of doneDefects) {
+      await this.remove(tenantId, defect.id);
+    }
   }
 }
