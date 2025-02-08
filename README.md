@@ -3,6 +3,8 @@
 This is the combined monorepo of all the services that are part of the Cloud Porsche Management Solution for
 `Cloud Application Development @ HTWG`.
 
+![Cloud Porsche Management Solution](./system-overview.png)
+
 ## Docker Compose
 
 To run the entire solution locally, you can use the provided `docker-compose.yml` file. This file contains all the
